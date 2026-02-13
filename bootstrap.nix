@@ -9,18 +9,17 @@
   services.xserver.videoDrivers = [ "amdgpu" ];
   services.xserver.windowManager.awesome.enable = true;
 
-  # Minimal login manager: greetd + tuigreet
-  services.greetd.enable = true;
-  services.greetd.settings = {
-    default_session = {
-      command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --remember --user-menu";
-    };
-  };
+  # Minimal login manager
+  services.displayManager.sddm.enable = true;
+  services.libinput.enable = true;
 
   # Bra att ha direkt
   environment.systemPackages = with pkgs; [
     git
     curl
+    google-chrome
+    alacritty
+    xclip
   ];
 
   # Polkit behövs ofta för “desktopiga” saker även utan DE
