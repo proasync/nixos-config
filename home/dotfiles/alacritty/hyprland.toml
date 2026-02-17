@@ -1,0 +1,45 @@
+# Alacritty config
+
+[window]
+opacity = 0.92
+padding = { x = 6, y = 6 }
+
+[font]
+size = 11.0
+
+[font.normal]
+family = "mononoki Nerd Font"
+style = "Regular"
+
+[font.bold]
+family = "mononoki Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "mononoki Nerd Font"
+style = "Italic"
+
+# Dracula-inspired colors matching the Hyprland theme
+[colors.primary]
+background = "#1a1a1a"
+foreground = "#DDDDFF"
+
+[colors.normal]
+black   = "#3F3F3F"
+red     = "#CC9393"
+green   = "#7F9F7F"
+yellow  = "#F0DFAF"
+blue    = "#8CD0D3"
+magenta = "#ff79c6"
+cyan    = "#93E0E3"
+white   = "#DCDCCC"
+
+[colors.bright]
+black   = "#6F6F6F"
+red     = "#DCA3A3"
+green   = "#BFEBBF"
+yellow  = "#F0DFAF"
+blue    = "#8CD0D3"
+magenta = "#ff79c6"
+cyan    = "#93E0E3"
+white   = "#FFFFFF"

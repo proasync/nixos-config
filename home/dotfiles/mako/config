@@ -1,0 +1,28 @@
+# Mako notification daemon config
+# Dark theme matching Hyprland/waybar styling
+
+font=mononoki Nerd Font 11
+background-color=#1a1a1aee
+text-color=#DDDDFF
+border-color=#ff79c6
+border-size=2
+border-radius=8
+padding=12
+margin=8
+width=350
+height=150
+max-visible=3
+default-timeout=5000
+anchor=top-right
+layer=overlay
+icons=1
+max-icon-size=48
+markup=1
+
+[urgency=low]
+border-color=#3F3F3F
+default-timeout=3000
+
+[urgency=critical]
+border-color=#CC9393
+default-timeout=0

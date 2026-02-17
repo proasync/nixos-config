@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=imv (directory)
+Comment=Lightweight image viewer with directory browsing
+Exec=/home/proasync/.local/bin/imv-dir %f
+Type=Application
+MimeType=image/png;image/jpeg;image/gif;image/bmp;image/webp;image/tiff;image/svg+xml;
+NoDisplay=true

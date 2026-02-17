@@ -1,0 +1,74 @@
+/* Waybar styling — Dracula-inspired dark theme */
+/* Font: mononoki Nerd Font (matching Awesome WM) */
+
+* {
+    font-family: "mononoki Nerd Font", monospace;
+    font-size: 13px;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+}
+
+window#waybar {
+    background-color: rgba(26, 26, 26, 0.95);
+    color: #DDDDFF;
+}
+
+/* Workspaces */
+#workspaces button {
+    padding: 0 8px;
+    color: #DDDDFF;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+}
+
+#workspaces button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#workspaces button.active {
+    color: #ff79c6;
+    border-bottom: 2px solid #ff79c6;
+}
+
+#workspaces button.urgent {
+    color: #CC9393;
+    border-bottom: 2px solid #CC9393;
+}
+
+/* Window title */
+#window {
+    color: #DDDDFF;
+    padding: 0 10px;
+}
+
+/* Right-side modules */
+#clock, #pulseaudio, #network, #tray {
+    padding: 0 10px;
+    color: #DDDDFF;
+}
+
+#clock {
+    color: #ff79c6;
+    font-weight: bold;
+}
+
+#pulseaudio.muted {
+    color: #666666;
+}
+
+#network.disconnected {
+    color: #666666;
+}
+
+/* Module separator look via margin */
+#clock, #pulseaudio, #network {
+    margin: 4px 2px;
+    padding: 0 10px;
+    background-color: rgba(49, 49, 49, 0.6);
+    border-radius: 4px;
+}
+
+#tray {
+    margin: 4px 4px 4px 2px;
+}
