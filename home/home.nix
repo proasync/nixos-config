@@ -42,6 +42,7 @@
     wl-clipboard
     grim
     slurp
+    satty
     brightnessctl
     playerctl
     nwg-displays
@@ -62,6 +63,11 @@
     whatsapp-electron
     signal-desktop
 
+    # Productivity & media
+    obsidian
+    spotify
+    libreoffice-fresh
+
     # Development
     nodejs_20
     yarn
@@ -80,6 +86,10 @@
     lsof
     fastfetch
     nerd-fonts.mononoki
+
+    # Theming
+    (catppuccin-gtk.override { variant = "mocha"; accents = [ "mauve" ]; })
+    papirus-icon-theme
   ];
 
   fonts.fontconfig.enable = true;
@@ -179,8 +189,8 @@
   # ── GTK theme ──────────────────────────────────────────
   gtk = {
     enable = true;
-    theme.name = "Adwaita-dark";
-    iconTheme.name = "Adwaita";
+    theme.name = "catppuccin-mocha-mauve-standard+default";
+    iconTheme.name = "Papirus-Dark";
     cursorTheme = {
       name = "Bibata-Modern-Ice";
       size = 24;
@@ -227,6 +237,10 @@
   home.file.".config/wallpapers".source =
     config.lib.file.mkOutOfStoreSymlink
       "/home/proasync/nixos-config/home/dotfiles/wallpapers";
+
+  home.file.".config/imv".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "/home/proasync/nixos-config/home/dotfiles/imv";
 
   # User scripts
   home.file.".local/bin/imv-dir" = {

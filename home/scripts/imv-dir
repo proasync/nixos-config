@@ -6,17 +6,21 @@
 FILE="$1"
 [ -z "$FILE" ] && exit 1
 
+# Resolve symlinks so we work with real files (needed for NixOS/Home Manager)
+FILE="$(readlink -f "$FILE")"
 DIR="$(dirname "$FILE")"
 BASENAME="$(basename "$FILE")"
 
-# Collect all common image files in the directory, sorted
+# Collect all common image files using glob (works with symlinks unlike find -type f)
+shopt -s nullglob nocaseglob
 IMAGES=()
-while IFS= read -r -d '' img; do
-    IMAGES+=("$img")
-done < <(find "$DIR" -maxdepth 1 -type f \( \
-    -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o \
-    -iname '*.gif' -o -iname '*.bmp' -o -iname '*.webp' -o \
-    -iname '*.tiff' -o -iname '*.svg' \) -print0 | sort -z)
+for img in "$DIR"/*.{jpg,jpeg,png,gif,bmp,webp,tiff,svg}; do
+    [ -e "$img" ] && IMAGES+=("$img")
+done
+shopt -u nullglob nocaseglob
+
+# Sort
+IFS=$'\n' IMAGES=($(printf '%s\n' "${IMAGES[@]}" | sort)); unset IFS
 
 if [ ${#IMAGES[@]} -eq 0 ]; then
     exec imv "$FILE"

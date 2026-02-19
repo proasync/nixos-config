@@ -1,13 +1,12 @@
-# Mako notification daemon config
-# Dark theme matching Hyprland/waybar styling
+# Mako — Catppuccin Mocha
 
 font=mononoki Nerd Font 11
-background-color=#1a1a1aee
-text-color=#DDDDFF
-border-color=#ff79c6
+background-color=#1e1e2eee
+text-color=#cdd6f4
+border-color=#cba6f7
 border-size=2
-border-radius=8
-padding=12
+border-radius=10
+padding=14
 margin=8
 width=350
 height=150
@@ -20,9 +19,9 @@ max-icon-size=48
 markup=1
 
 [urgency=low]
-border-color=#3F3F3F
+border-color=#313244
 default-timeout=3000
 
 [urgency=critical]
-border-color=#CC9393
+border-color=#f38ba8
 default-timeout=0

@@ -11,8 +11,11 @@ DB_USER="wordpress"
 SITE_URL="http://localhost"
 SITE_TITLE="Wisdom Dev"
 ADMIN_USER="admin"
-ADMIN_PASS="admin"
 ADMIN_EMAIL="admin@localhost.com"
+
+# Prompt for admin password rather than hardcoding it
+read -rsp "WordPress admin password: " ADMIN_PASS
+echo
 
 echo "=== WordPress Setup for NixOS ==="
 

@@ -1,74 +1,68 @@
-/* Power menu theme — dark, centered, minimal */
+/* Power menu — Catppuccin Mocha */
 
-* {
-    bg:       #1a1a1aee;
-    fg:       #ffffff;
-    accent:   #5294e2;
-    urgent:   #e24b52;
-    font:     "Mononoki Nerd Font 14";
-}
+@import "catppuccin-mocha.rasi"
 
 configuration {
     show-icons: false;
 }
 
 window {
-    transparency:  "real";
-    fullscreen:    true;
-    background-color: @bg;
+    transparency: "real";
+    fullscreen: true;
+    background-color: #11111bcc;
 }
 
 mainbox {
-    enabled:  true;
+    enabled: true;
     children: [ "inputbar", "listview" ];
-    spacing:  20px;
-    padding:  30% 35%;
+    spacing: 20px;
+    padding: 30% 35%;
     background-color: transparent;
 }
 
 inputbar {
-    enabled:  true;
+    enabled: true;
     children: [ "prompt", "entry" ];
     background-color: transparent;
     spacing: 10px;
 }
 
 prompt {
-    font:             "Mononoki Nerd Font Bold 18";
-    text-color:       @accent;
+    font: "mononoki Nerd Font Bold 18";
+    text-color: @mauve;
     background-color: transparent;
 }
 
 entry {
-    font:             "Mononoki Nerd Font 16";
-    text-color:       @fg;
+    font: "mononoki Nerd Font 16";
+    text-color: @text;
     background-color: transparent;
-    placeholder:      "type to filter...";
-    placeholder-color: #666666;
+    placeholder: "type to filter...";
+    placeholder-color: @overlay0;
 }
 
 listview {
-    columns:  1;
-    lines:    5;
-    spacing:  8px;
+    columns: 1;
+    lines: 5;
+    spacing: 8px;
     fixed-height: false;
     background-color: transparent;
 }
 
 element {
-    padding:          12px 20px;
-    border-radius:    6px;
-    text-color:       @fg;
-    background-color: #2a2a2a;
+    padding: 14px 20px;
+    border-radius: 10px;
+    text-color: @text;
+    background-color: @surface0;
 }
 
 element selected {
-    text-color:       @bg;
-    background-color: @accent;
+    text-color: @base;
+    background-color: @mauve;
 }
 
 element-text {
-    font:             "Mononoki Nerd Font 16";
-    text-color:       inherit;
+    font: "mononoki Nerd Font 16";
+    text-color: inherit;
     background-color: inherit;
 }

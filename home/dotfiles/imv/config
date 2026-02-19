@@ -1,0 +1,5 @@
+[options]
+title_text = $(basename "$imv_current_file") [$imv_index/$imv_count] ${imv_width}x${imv_height}
+
+[binds]
+<Escape> = quit
