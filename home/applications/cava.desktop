@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Cava
+Comment=Console-based Audio Visualizer
+Exec=alacritty --config-file ~/.config/alacritty/hyprland.toml -e cava
+Icon=multimedia-volume-control
+Type=Application
+Categories=AudioVideo;Audio;
+Keywords=visualizer;music;audio;spectrum;

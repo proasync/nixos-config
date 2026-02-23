@@ -7,9 +7,9 @@
     "margin-left": 8,
     "margin-right": 8,
 
-    "modules-left": ["hyprland/workspaces"],
+    "modules-left": ["hyprland/workspaces", "mpris"],
     "modules-center": ["hyprland/window"],
-    "modules-right": ["cpu", "memory", "pulseaudio", "network", "clock", "tray"],
+    "modules-right": ["cpu", "memory", "pulseaudio", "battery", "network", "clock", "tray"],
 
     "hyprland/workspaces": {
         "format": "{id}",
@@ -33,19 +33,19 @@
 
     "cpu": {
         "interval": 5,
-        "format": " {usage}%",
+        "format": "󰻠 {usage}%",
         "tooltip": true
     },
 
     "memory": {
         "interval": 10,
-        "format": " {percentage}%",
+        "format": "󰍛 {percentage}%",
         "tooltip-format": "{used:0.1f}G / {total:0.1f}G"
     },
 
     "clock": {
-        "format": " {:%H:%M}",
-        "format-alt": " {:%A, %B %d  %H:%M}",
+        "format": "󰥔 {:%H:%M}",
+        "format-alt": "󰥔 {:%A, %B %d  %H:%M}",
         "tooltip-format": "<tt>{calendar}</tt>"
     },
 
@@ -53,21 +53,50 @@
         "format": "{icon} {volume}%",
         "format-muted": "󰝟 muted",
         "format-icons": {
-            "default": ["", "", ""]
+            "default": ["󰕿", "󰖀", "󰕾"]
         },
         "on-click": "pavucontrol"
     },
 
     "network": {
-        "format-wifi": "  {signalStrength}%",
-        "format-ethernet": "  {ipaddr}",
-        "format-disconnected": "  off",
+        "format-wifi": "󰤨 {signalStrength}%",
+        "format-ethernet": "󰈀 {ipaddr}",
+        "format-disconnected": "󰤭 off",
         "tooltip-format-ethernet": "{ifname}: {ipaddr}/{cidr}",
         "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ifname}: {ipaddr}/{cidr}"
+    },
+
+    "battery": {
+        "interval": 30,
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{icon} {capacity}%",
+        "format-charging": "󰂄 {capacity}%",
+        "format-plugged": "󰚥 {capacity}%",
+        "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
     },
 
     "tray": {
         "icon-size": 16,
         "spacing": 8
+    },
+
+    "mpris": {
+        "format": "󰝚 {title} — {artist}",
+        "format-paused": "󰏤 {title} — {artist}",
+        "format-stopped": "",
+        "max-length": 40,
+        "player-icons": {
+            "spotify": "",
+            "default": "󰝚"
+        },
+        "status-icons": {
+            "paused": "󰏤",
+            "playing": "󰝚",
+            "stopped": ""
+        },
+        "ignored-players": ["firefox", "brave"]
     }
 }

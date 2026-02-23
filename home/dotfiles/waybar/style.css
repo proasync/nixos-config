@@ -80,6 +80,19 @@ window#waybar > box {
     color: @lavender;
 }
 
+/* ── MPRIS (media player) ───────────────────── */
+#mpris {
+    color: @green;
+    padding: 0 12px;
+    margin: 4px 3px;
+    background-color: alpha(@surface0, 0.5);
+    border-radius: 8px;
+}
+
+#mpris.paused {
+    color: @overlay0;
+}
+
 /* ── Window title ───────────────────────────── */
 #window {
     color: @subtext0;
@@ -91,6 +104,7 @@ window#waybar > box {
 #cpu,
 #memory,
 #pulseaudio,
+#battery,
 #network,
 #clock,
 #tray {
@@ -116,6 +130,22 @@ window#waybar > box {
 #pulseaudio.muted {
     color: @overlay0;
     background-color: alpha(@surface0, 0.3);
+}
+
+#battery {
+    color: @green;
+}
+
+#battery.warning {
+    color: @yellow;
+}
+
+#battery.critical {
+    color: @red;
+}
+
+#battery.charging {
+    color: @teal;
 }
 
 #network {

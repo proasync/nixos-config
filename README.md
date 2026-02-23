@@ -1,8 +1,9 @@
 # nixos-config
 
-Flake-based NixOS configuration for `home-desktop` (and future hosts).
+Flake-based NixOS configuration for `home-desktop` and `proasync-laptop`.
 
 - **Desktop:** i5-12400F + RX 7600, AMD GPU
+- **Laptop:** ASUS Zenbook S 13 UX5304MA, Intel Core Ultra 7 155U, Intel GPU
 - **WM:** Hyprland (Wayland) + Awesome WM (Xorg fallback)
 - **Theme:** Catppuccin Mocha Mauve — applied to SDDM, Hyprland, Waybar, Rofi, Alacritty, Mako, Hyprlock, GTK
 
@@ -16,8 +17,11 @@ nixos-config/
 ├── bootstrap.nix                 # Minimal config for first boot before flake is applied
 ├── assets/                       # Static assets (wallpapers used at build time, e.g. SDDM bg)
 ├── hosts/
-│   └── desktop/
-│       ├── configuration.nix     # Host-specific: hostname, GPU, dev services
+│   ├── desktop/
+│   │   ├── configuration.nix     # Host-specific: hostname, AMD GPU, dev services
+│   │   └── hardware-configuration.nix  # Auto-generated — do NOT copy between machines
+│   └── laptop/
+│       ├── configuration.nix     # Host-specific: hostname, Intel GPU, dev services
 │       └── hardware-configuration.nix  # Auto-generated — do NOT copy between machines
 ├── modules/
 │   └── common.nix                # Shared: SDDM, Hyprland, theming, fonts, system packages
@@ -73,6 +77,7 @@ cp /etc/nixos/hardware-configuration.nix ~/nixos-config/hosts/laptop/
 ```
 
 Create `~/nixos-config/hosts/laptop/configuration.nix` based on `hosts/desktop/configuration.nix`, adjusting:
+
 - `networking.hostName` — e.g. `"proasync-laptop"`
 - `services.xserver.videoDrivers` — e.g. `[ "intel" ]` or `[ "modesetting" ]` for Intel GPU, or remove for auto-detect
 - Remove `services.mysql`, `services.httpd`, `services.postgresql` if you don't want dev services on the laptop
@@ -111,20 +116,16 @@ These cannot be automated and must be done by hand on each new machine.
 
 ### Git Credentials
 
-The git config in `home/home.nix` contains a name and email. Update these if needed:
+Git identity is managed declaratively in `home/home.nix`. The config file is a read-only nix store symlink — do **not** run `git config --global`, it will fail. To change name or email, edit `home/home.nix`:
 
 ```nix
-programs.git.settings.user = {
-  name = "your-name";
-  email = "your@email.com";
+programs.git = {
+  settings.user.name = "your-name";
+  settings.user.email = "your@email.com";
 };
 ```
 
-Or set them locally after install:
-```bash
-git config --global user.name "Your Name"
-git config --global user.email "your@email.com"
-```
+Then run `nrs` to apply.
 
 ### SSH Keys
 
@@ -154,6 +155,7 @@ wallpaper {
 ```
 
 Then restart hyprpaper:
+
 ```bash
 pkill hyprpaper && hyprpaper &
 ```
@@ -162,15 +164,15 @@ Wallpaper files are in `home/dotfiles/wallpapers/` (symlinked to `~/.config/wall
 
 ### App Accounts (must log in manually)
 
-| App | Notes |
-|-----|-------|
-| Google Chrome | Sign in to sync bookmarks/extensions |
-| VS Code | Sign in for Settings Sync |
-| Signal | Link as new device from phone |
-| WhatsApp | Scan QR code from phone |
-| Teams | Sign in with Microsoft account |
-| Spotify | Sign in |
-| Obsidian | Point at your vault folder (`~/notes/` or wherever) |
+| App           | Notes                                               |
+| ------------- | --------------------------------------------------- |
+| Google Chrome | Sign in to sync bookmarks/extensions                |
+| VS Code       | Sign in for Settings Sync                           |
+| Signal        | Link as new device from phone                       |
+| WhatsApp      | Scan QR code from phone                             |
+| Teams         | Sign in with Microsoft account                      |
+| Spotify       | Sign in                                             |
+| Obsidian      | Point at your vault folder (`~/notes/` or wherever) |
 
 ### WordPress Dev Setup (desktop only)
 
@@ -197,34 +199,58 @@ git clone git@github.com:proasync/wisdom-woocommerce-plugin.git ~/dev/wisdom-woo
 
 ---
 
+## Keyboard Remapping: Vim Arrows with CapsLock
+
+CapsLock → Nav layer, Nav+HJKL → arrow keys. Declared in `modules/common.nix` via `services.keyd` and applied automatically on every `nixos-rebuild`. No manual steps needed on a new machine.
+
+| Key combo       | Output     |
+| --------------- | ---------- |
+| `CapsLock + H`  | ← Left     |
+| `CapsLock + J`  | ↓ Down     |
+| `CapsLock + K`  | ↑ Up       |
+| `CapsLock + L`  | → Right    |
+| `CapsLock + 1`  | F1         |
+| `CapsLock + 2`  | F2         |
+| `CapsLock + 3`  | F3         |
+| `CapsLock + 4`  | F4         |
+| `CapsLock + 5`  | F5         |
+| `CapsLock + 6`  | F6         |
+| `CapsLock + 7`  | F7         |
+| `CapsLock + 8`  | F8         |
+| `CapsLock + 9`  | F9         |
+
+Works system-wide at the kernel input level — terminals, browsers, Hyprland, everything. For more customization, see [keyd documentation](https://github.com/rvaiya/keyd).
+
+---
+
 ## Day-to-Day Usage
 
-| Command | Action |
-|---------|--------|
-| `nrs` | Rebuild and switch (`sudo nixos-rebuild switch --flake ~/nixos-config#<hostname>`) |
-| `hyprctl reload` | Reload Hyprland (picks up sourced config files) |
-| `pkill hyprpaper && hyprpaper &` | Reload wallpaper after changing hyprpaper.conf |
+| Command                          | Action                                                                             |
+| -------------------------------- | ---------------------------------------------------------------------------------- |
+| `nrs`                            | Rebuild and switch (`sudo nixos-rebuild switch --flake ~/nixos-config#<hostname>`) |
+| `hyprctl reload`                 | Reload Hyprland (picks up sourced config files)                                    |
+| `pkill hyprpaper && hyprpaper &` | Reload wallpaper after changing hyprpaper.conf                                     |
 
 ### Key Hyprland Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `Super + Return` | Terminal (Alacritty) |
-| `Super + R` / `Super + Shift + D` | App launcher (Rofi) |
-| `Super + Q` | Close window |
-| `Super + P` | Screenshot → Satty annotation tool |
-| `Super + X` | Power menu |
-| `Super + H/J/K/L` | Focus window (vim keys) |
-| `Super + Shift + H/J/K/L` | Move window |
-| `Super + Alt + H/J/K/L` | Resize window |
-| `Super + 1-9` | Switch workspace |
-| `Super + Tab` / `Alt + Tab` | Cycle workspaces |
-| `Super + F` | Fullscreen |
-| `Super + Shift + Space` | Toggle floating |
-| `Super + B` | Toggle Waybar |
-| `Super + V` | PulseAudio volume control |
-| `Super + Escape` | Kill window (cursor mode) |
-| `Ctrl + Shift + Escape` | Task manager (htop) |
+| Shortcut                          | Action                             |
+| --------------------------------- | ---------------------------------- |
+| `Super + Return`                  | Terminal (Alacritty)               |
+| `Super + R` / `Super + Shift + D` | App launcher (Rofi)                |
+| `Super + Q`                       | Close window                       |
+| `Super + P`                       | Screenshot → Satty annotation tool |
+| `Super + X`                       | Power menu                         |
+| `Super + H/J/K/L`                 | Focus window (vim keys)            |
+| `Super + Shift + H/J/K/L`         | Move window                        |
+| `Super + Alt + H/J/K/L`           | Resize window                      |
+| `Super + 1-9`                     | Switch workspace                   |
+| `Super + Tab` / `Alt + Tab`       | Cycle workspaces                   |
+| `Super + F`                       | Fullscreen                         |
+| `Super + Shift + Space`           | Toggle floating                    |
+| `Super + B`                       | Toggle Waybar                      |
+| `Super + V`                       | PulseAudio volume control          |
+| `Super + Escape`                  | Kill window (cursor mode)          |
+| `Ctrl + Shift + Escape`           | Task manager (htop)                |
 
 ---
 

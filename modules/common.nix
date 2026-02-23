@@ -51,6 +51,32 @@
     XCURSOR_SIZE = "24";
   };
 
+  # ── Keyboard remapping (CapsLock → Fn, Fn+HJKL = arrows) ──
+  services.keyd = {
+    enable = true;
+    keyboards.default = {
+      ids = [ "*" ];
+      settings = {
+        main.capslock = "layer(nav)";
+        nav = {
+          h = "left";
+          j = "down";
+          k = "up";
+          l = "right";
+          "1" = "f1";
+          "2" = "f2";
+          "3" = "f3";
+          "4" = "f4";
+          "5" = "f5";
+          "6" = "f6";
+          "7" = "f7";
+          "8" = "f8";
+          "9" = "f9";
+        };
+      };
+    };
+  };
+
   # ── Desktop services ───────────────────────────────────
   services.dbus.enable = true;
   services.gnome.gnome-keyring.enable = true;

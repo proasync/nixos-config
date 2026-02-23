@@ -1,5 +1,17 @@
-{ config, pkgs, ... }:
+{ config, pkgs, osConfig, ... }:
 
+let
+  hyprDir = "/home/proasync/nixos-config/home/dotfiles/hypr";
+  hostName = osConfig.networking.hostName or "";
+  flakeHost =
+    if hostName == "proasync-laptop"
+    then "proasync-laptop"
+    else hostName;
+  hyprMonitorsPath =
+    if hostName == "proasync-laptop"
+    then "/home/proasync/nixos-config/hosts/laptop/hypr/monitors.conf"
+    else "${hyprDir}/monitors.conf";
+in
 {
   home.username = "proasync";
   home.homeDirectory = "/home/proasync";
@@ -52,6 +64,7 @@
     # File management
     thunar
     thunar-archive-plugin
+    xfce.tumbler          # thumbnail service for Thunar
     xarchiver
     unzip
     zip
@@ -66,6 +79,7 @@
     # Productivity & media
     obsidian
     spotify
+    cava
     libreoffice-fresh
 
     # Development
@@ -86,6 +100,7 @@
     lsof
     fastfetch
     nerd-fonts.mononoki
+    font-awesome
 
     # Theming
     (catppuccin-gtk.override { variant = "mocha"; accents = [ "mauve" ]; })
@@ -113,9 +128,9 @@
       psa = "ps auxf";
       "cd.." = "cd ..";
       # NixOS rebuild shortcuts
-      nrs = "sudo nixos-rebuild switch --flake ~/nixos-config#$(hostname)";
-      nrt = "sudo nixos-rebuild test --flake ~/nixos-config#$(hostname)";
-      nrd = "sudo nixos-rebuild dry-build --flake ~/nixos-config#$(hostname)";
+      nrs = "sudo nixos-rebuild switch --flake ~/nixos-config#proasync-laptop";
+      nrt = "sudo nixos-rebuild test --flake ~/nixos-config#proasync-laptop";
+      nrd = "sudo nixos-rebuild dry-build --flake ~/nixos-config#proasync-laptop";
     };
 
     bashrcExtra = ''
@@ -180,10 +195,8 @@
   # ── Git ────────────────────────────────────────────────
   programs.git = {
     enable = true;
-    settings.user = {
-      name = "proasync";
-      email = "andreas@pagodalog.com";
-    };
+    settings.user.name = "proasync";
+    settings.user.email = "andreas@pagodalog.com";
   };
 
   # ── GTK theme ──────────────────────────────────────────
@@ -210,9 +223,31 @@
   };
 
   # ── Dotfiles (symlinked to repo for live editing) ──────
-  home.file.".config/hypr".source =
-    config.lib.file.mkOutOfStoreSymlink
-      "/home/proasync/nixos-config/home/dotfiles/hypr";
+  # Keep Hyprland mostly shared, but bind monitors.conf per host.
+  home.file.".config/hypr/hyprland.conf".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/hyprland.conf";
+  home.file.".config/hypr/input.conf".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/input.conf";
+  home.file.".config/hypr/appearance.conf".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/appearance.conf";
+  home.file.".config/hypr/keybindings.conf".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/keybindings.conf";
+  home.file.".config/hypr/windowrules.conf".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/windowrules.conf";
+  home.file.".config/hypr/autostart.conf".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/autostart.conf";
+  home.file.".config/hypr/hyprlock.conf".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/hyprlock.conf";
+  home.file.".config/hypr/hyprpaper.conf".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/hyprpaper.conf";
+  home.file.".config/hypr/workspaces.conf".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/workspaces.conf";
+  home.file.".config/hypr/scripts".source =
+    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/scripts";
+  home.file.".config/hypr/monitors.conf" = {
+    source = config.lib.file.mkOutOfStoreSymlink hyprMonitorsPath;
+    force = true;
+  };
 
   home.file.".config/awesome".source =
     config.lib.file.mkOutOfStoreSymlink
@@ -242,6 +277,10 @@
     config.lib.file.mkOutOfStoreSymlink
       "/home/proasync/nixos-config/home/dotfiles/imv";
 
+  home.file.".config/cava".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "/home/proasync/nixos-config/home/dotfiles/cava";
+
   # User scripts
   home.file.".local/bin/imv-dir" = {
     source = ./scripts/imv-dir;
@@ -251,4 +290,22 @@
   # Desktop entries
   home.file.".local/share/applications/imv-dir.desktop".source =
     ./applications/imv-dir.desktop;
+  home.file.".local/share/applications/cava.desktop".source =
+    ./applications/cava.desktop;
+
+  # MIME type associations
+  xdg.mimeApps = {
+    enable = true;
+    defaultApplications = {
+      "image/jpeg"    = "imv-dir.desktop";
+      "image/png"     = "imv-dir.desktop";
+      "image/gif"     = "imv-dir.desktop";
+      "image/webp"    = "imv-dir.desktop";
+      "image/bmp"     = "imv-dir.desktop";
+      "image/tiff"    = "imv-dir.desktop";
+      "image/svg+xml" = "imv-dir.desktop";
+      "image/avif"    = "imv-dir.desktop";
+      "image/heic"    = "imv-dir.desktop";
+    };
+  };
 }
