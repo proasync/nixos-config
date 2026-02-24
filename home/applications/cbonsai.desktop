@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Cbonsai
+Comment=Animated bonsai tree in terminal
+Exec=bash -c "alacritty --config-file ~/.config/alacritty/hyprland.toml -e cbonsai -l"
+Icon=utilities-terminal
+Type=Application
+Categories=Amusement;
+Keywords=bonsai;tree;terminal;rice;

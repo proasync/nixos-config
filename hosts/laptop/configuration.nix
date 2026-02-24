@@ -68,6 +68,18 @@
   services.thermald.enable = true;          # Intel thermal daemon — prevents throttling/overheating
   services.power-profiles-daemon.enable = true;  # Balanced/performance/power-save switching
 
+  # ── Lid switch — let Hyprland handle it ───────────────
+  services.logind.lidSwitch = "ignore";
+  services.logind.lidSwitchExternalPower = "ignore";
+  services.logind.lidSwitchDocked = "ignore";
+
+  # ── SDDM HiDPI (2880x1800 display) ────────────────────
+  services.displayManager.sddm.settings = {
+    General.EnableHiDPI = true;
+    Wayland.EnableHiDPI = true;
+  };
+  systemd.services.display-manager.environment.QT_SCALE_FACTOR = "2";
+
   # ── Host-specific services ─────────────────────────────
 
   # MariaDB for WordPress development

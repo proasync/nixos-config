@@ -14,8 +14,14 @@
 
   # ── SDDM ──────────────────────────────────────────────
   services.displayManager.sddm.enable = true;
-  services.displayManager.sddm.theme = "catppuccin-mocha-mauve";
+  services.displayManager.sddm.theme = "catppuccin-sddm-corners";
   services.displayManager.sddm.package = pkgs.kdePackages.sddm;
+  services.displayManager.sddm.extraPackages = with pkgs.qt6; [
+    qt5compat
+    qtwayland
+    qtquick3d
+    qtsvg
+  ];
   services.libinput.enable = true;
 
   # ── X11 Session Commands ───────────────────────────────
@@ -40,7 +46,7 @@
     nerd-fonts.mononoki
     adwaita-icon-theme
     bibata-cursors
-    (catppuccin-sddm.override { flavor = "mocha"; background = ../assets/nixos-dark.png; })
+    catppuccin-sddm-corners
     libsecret
   ];
 

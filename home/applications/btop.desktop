@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=btop
+Comment=Resource monitor
+Exec=bash -c "alacritty --config-file ~/.config/alacritty/hyprland.toml -e btop"
+Icon=utilities-system-monitor
+Type=Application
+Categories=System;Monitor;
+Keywords=cpu;memory;process;monitor;

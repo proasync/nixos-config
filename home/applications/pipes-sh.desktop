@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Pipes
+Comment=Animated terminal pipes screensaver
+Exec=bash -c "alacritty --config-file ~/.config/alacritty/hyprland.toml -e pipes-rs"
+Icon=utilities-terminal
+Type=Application
+Categories=Amusement;
+Keywords=pipes;screensaver;terminal;rice;

@@ -64,7 +64,7 @@ in
     # File management
     thunar
     thunar-archive-plugin
-    xfce.tumbler          # thumbnail service for Thunar
+    tumbler               # thumbnail service for Thunar
     xarchiver
     unzip
     zip
@@ -82,6 +82,11 @@ in
     cava
     libreoffice-fresh
 
+    # Terminal rice
+    yazi
+    pipes-rs
+    cbonsai
+
     # Development
     nodejs_20
     yarn
@@ -92,6 +97,7 @@ in
     # GUI utilities
     pavucontrol
     htop
+    btop
     networkmanagerapplet
     dbeaver-bin
     gimp
@@ -281,6 +287,10 @@ in
     config.lib.file.mkOutOfStoreSymlink
       "/home/proasync/nixos-config/home/dotfiles/cava";
 
+  home.file.".config/btop".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "/home/proasync/nixos-config/home/dotfiles/btop";
+
   # User scripts
   home.file.".local/bin/imv-dir" = {
     source = ./scripts/imv-dir;
@@ -292,6 +302,14 @@ in
     ./applications/imv-dir.desktop;
   home.file.".local/share/applications/cava.desktop".source =
     ./applications/cava.desktop;
+  home.file.".local/share/applications/btop.desktop".source =
+    ./applications/btop.desktop;
+  home.file.".local/share/applications/yazi.desktop".source =
+    ./applications/yazi.desktop;
+  home.file.".local/share/applications/pipes-sh.desktop".source =
+    ./applications/pipes-sh.desktop;
+  home.file.".local/share/applications/cbonsai.desktop".source =
+    ./applications/cbonsai.desktop;
 
   # MIME type associations
   xdg.mimeApps = {

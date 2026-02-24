@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Yazi
+Comment=Terminal file manager with image preview
+Exec=bash -c "alacritty --config-file ~/.config/alacritty/hyprland.toml -e yazi"
+Icon=system-file-manager
+Type=Application
+Categories=System;FileManager;
+Keywords=files;terminal;manager;
