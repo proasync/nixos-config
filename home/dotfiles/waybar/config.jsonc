@@ -9,14 +9,14 @@
 
     "modules-left": ["hyprland/workspaces", "mpris"],
     "modules-center": ["hyprland/window"],
-    "modules-right": ["cpu", "memory", "pulseaudio", "battery", "network", "clock", "tray"],
+    "modules-right": ["cpu", "memory", "pulseaudio", "battery", "network", "hyprland/language", "clock", "tray"],
 
     "hyprland/workspaces": {
         "format": "{id}",
         "on-click": "activate",
         "sort-by-number": true,
         "persistent-workspaces": {
-            "*": 9
+            "*": [1, 2, 3, 4, 5, 6, 7, 8, 9]
         }
     },
 
@@ -76,6 +76,10 @@
         "format-charging": "󰂄 {capacity}%",
         "format-plugged": "󰚥 {capacity}%",
         "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
+    },
+
+    "hyprland/language": {
+        "format": "󰌌 {short}"
     },
 
     "tray": {

@@ -28,6 +28,8 @@ in
 
     # Terminal & editor
     alacritty
+    vim
+    neovim
     (vscode.override {
       commandLineArgs = [ "--password-store=gnome-libsecret" ];
     })
@@ -48,7 +50,7 @@ in
     # Wayland / Hyprland tools
     waybar
     mako
-    hyprpaper
+    swww
     hyprlock
     hypridle
     wl-clipboard
@@ -60,11 +62,15 @@ in
     nwg-displays
     wlr-randr
     libnotify
+    socat
 
     # File management
     thunar
     thunar-archive-plugin
+    thunar-volman           # volume manager plugin for Thunar
     tumbler               # thumbnail service for Thunar
+    udiskie               # auto-mount daemon
+    gvfs                  # virtual filesystem (Thunar mount support)
     xarchiver
     unzip
     zip
@@ -80,6 +86,8 @@ in
     obsidian
     spotify
     cava
+    mpv
+    waypaper
     libreoffice-fresh
 
     # Terminal rice
@@ -93,12 +101,15 @@ in
     rsync
     jq
     wp-cli
+    heroku
+    gh
 
     # GUI utilities
     pavucontrol
     htop
     btop
     networkmanagerapplet
+    openfortivpn
     dbeaver-bin
     gimp
     inkscape
@@ -134,15 +145,15 @@ in
       psa = "ps auxf";
       "cd.." = "cd ..";
       # NixOS rebuild shortcuts
-      nrs = "sudo nixos-rebuild switch --flake ~/nixos-config#proasync-laptop";
-      nrt = "sudo nixos-rebuild test --flake ~/nixos-config#proasync-laptop";
-      nrd = "sudo nixos-rebuild dry-build --flake ~/nixos-config#proasync-laptop";
+      nrs = "sudo nixos-rebuild switch --flake ~/nixos-config#$(hostname)";
+      nrt = "sudo nixos-rebuild test --flake ~/nixos-config#$(hostname)";
+      nrd = "sudo nixos-rebuild dry-build --flake ~/nixos-config#$(hostname)";
     };
 
     bashrcExtra = ''
       # Default editor
-      export EDITOR='code --wait'
-      export VISUAL='code --wait'
+      export EDITOR='nvim'
+      export VISUAL='nvim'
 
       # Git prompt
       if [ -f /run/current-system/sw/share/bash-completion/completions/git-prompt.sh ]; then
@@ -244,8 +255,6 @@ in
     config.lib.file.mkOutOfStoreSymlink "${hyprDir}/autostart.conf";
   home.file.".config/hypr/hyprlock.conf".source =
     config.lib.file.mkOutOfStoreSymlink "${hyprDir}/hyprlock.conf";
-  home.file.".config/hypr/hyprpaper.conf".source =
-    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/hyprpaper.conf";
   home.file.".config/hypr/workspaces.conf".source =
     config.lib.file.mkOutOfStoreSymlink "${hyprDir}/workspaces.conf";
   home.file.".config/hypr/scripts".source =
@@ -315,6 +324,10 @@ in
   xdg.mimeApps = {
     enable = true;
     defaultApplications = {
+      "x-scheme-handler/http"  = "google-chrome.desktop";
+      "x-scheme-handler/https" = "google-chrome.desktop";
+      "text/html"              = "google-chrome.desktop";
+      "application/xhtml+xml"  = "google-chrome.desktop";
       "image/jpeg"    = "imv-dir.desktop";
       "image/png"     = "imv-dir.desktop";
       "image/gif"     = "imv-dir.desktop";
@@ -324,6 +337,25 @@ in
       "image/svg+xml" = "imv-dir.desktop";
       "image/avif"    = "imv-dir.desktop";
       "image/heic"    = "imv-dir.desktop";
+      # Video
+      "video/mp4"                 = "mpv.desktop";
+      "video/x-matroska"          = "mpv.desktop";
+      "video/webm"                = "mpv.desktop";
+      "video/x-msvideo"           = "mpv.desktop";
+      "video/quicktime"           = "mpv.desktop";
+      "video/x-flv"               = "mpv.desktop";
+      "video/mpeg"                = "mpv.desktop";
+      "video/ogg"                 = "mpv.desktop";
+      "video/3gpp"                = "mpv.desktop";
+      "video/x-ogm+ogg"           = "mpv.desktop";
+      # Audio (standalone files)
+      "audio/mpeg"                = "mpv.desktop";
+      "audio/flac"                = "mpv.desktop";
+      "audio/ogg"                 = "mpv.desktop";
+      "audio/wav"                 = "mpv.desktop";
+      "audio/x-wav"               = "mpv.desktop";
+      "audio/mp4"                 = "mpv.desktop";
+      "audio/aac"                 = "mpv.desktop";
     };
   };
 }

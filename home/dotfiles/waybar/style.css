@@ -106,6 +106,7 @@ window#waybar > box {
 #pulseaudio,
 #battery,
 #network,
+#language,
 #clock,
 #tray {
     padding: 0 12px;
@@ -155,6 +156,10 @@ window#waybar > box {
 #network.disconnected {
     color: @overlay0;
     background-color: alpha(@surface0, 0.3);
+}
+
+#language {
+    color: @flamingo;
 }
 
 #clock {

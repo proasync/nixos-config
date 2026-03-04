@@ -77,8 +77,10 @@
   services.displayManager.sddm.settings = {
     General.EnableHiDPI = true;
     Wayland.EnableHiDPI = true;
+    Theme.Background = "/etc/sddm/background.jpeg";
   };
   systemd.services.display-manager.environment.QT_SCALE_FACTOR = "2";
+  environment.etc."sddm/background.jpeg".source = /home/proasync/.config/wallpapers/ultrawide/UltrawideWallpapersDotNet-3284.jpeg;
 
   # ── Host-specific services ─────────────────────────────
 

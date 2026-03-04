@@ -358,10 +358,7 @@ globalkeys = my_table.join(
         { description = "swap with next client by index", group = "client" }),
     awful.key({ modkey, "Shift" }, "k", function() awful.client.swap.byidx(-1) end,
         { description = "swap with previous client by index", group = "client" }),
-    awful.key({ modkey, "Control" }, "j", function() awful.screen.focus_relative(1) end,
-        { description = "focus the next screen", group = "screen" }),
-    awful.key({ modkey, "Control" }, "k", function() awful.screen.focus_relative(-1) end,
-        { description = "focus the previous screen", group = "screen" }),
+    -- Screen focus via Super+A/D instead (matching Hyprland)
     awful.key({ modkey, }, "u", awful.client.urgent.jumpto,
         { description = "jump to urgent client", group = "client" }),
     awful.key({ ctrlKey, }, "Tab",
@@ -420,14 +417,11 @@ globalkeys = my_table.join(
         { description = "reload awesome", group = "awesome" }),
 
     -- Screens
-    awful.key({ modkey, }, "a", function() awful.screen.focus_bydirection("left") end,
-        { description = "Focus screen left", group = "screens" }),
-    awful.key({ modkey, }, "d", function() awful.screen.focus_bydirection("right") end,
-        { description = "Focus screen right", group = "screens" }),
-    awful.key({ modkey, }, "w", function() awful.screen.focus_bydirection("up") end,
-        { description = "Focus screen up", group = "screens" }),
-    awful.key({ modkey, }, "s", function() awful.screen.focus_bydirection("down") end,
-        { description = "Focus screen down", group = "screens" }),
+    -- Screen focus (Super+,/. — matching Hyprland)
+    awful.key({ modkey, }, ",", function() awful.screen.focus_relative(-1) end,
+        { description = "Focus previous screen", group = "screens" }),
+    awful.key({ modkey, }, ".", function() awful.screen.focus_relative(1) end,
+        { description = "Focus next screen", group = "screens" }),
     -- super + ... function keys
     awful.key({ modkey }, "F1", function() awful.util.spawn(browser1) end,
         { description = browser1, group = "function keys" }),
@@ -441,21 +435,20 @@ globalkeys = my_table.join(
         { description = "gimp", group = "function keys" }),
     awful.key({ modkey }, "F6", function() awful.util.spawn("inkscape") end,
         { description = "inkscape", group = "function keys" }),
-    -- Layout
-    awful.key({ altkey, "Shift" }, "l", function() awful.tag.incmwfact(0.05) end,
-        { description = "increase master width factor", group = "layout" }),
-    awful.key({ altkey, "Shift" }, "h", function() awful.tag.incmwfact(-0.05) end,
-        { description = "decrease master width factor", group = "layout" }),
-    awful.key({ modkey, "Shift" }, "l", function() awful.tag.incnmaster(1, nil, true) end,
-        { description = "increase the number of master clients", group = "layout" }),
-    awful.key({ modkey, "Shift" }, "j", function() awful.tag.incnmaster(-1, nil, true) end,
-        { description = "decrease the number of master clients", group = "layout" }),
-    awful.key({ modkey, "Control" }, "l", function() awful.tag.incncol(1, nil, true) end,
-        { description = "increase the number of columns", group = "layout" }),
-    awful.key({ modkey, "Control" }, "j", function() awful.tag.incncol(-1, nil, true) end,
-        { description = "decrease the number of columns", group = "layout" }),
+    -- Layout resize (Super+Ctrl+HJKL — matching Hyprland)
+    awful.key({ modkey, "Control" }, "h", function() awful.tag.incmwfact(-0.05) end,
+        { description = "decrease master width", group = "layout" }),
+    awful.key({ modkey, "Control" }, "l", function() awful.tag.incmwfact(0.05) end,
+        { description = "increase master width", group = "layout" }),
+    awful.key({ modkey, "Control" }, "k", function() awful.tag.incnmaster(1, nil, true) end,
+        { description = "increase master clients", group = "layout" }),
+    awful.key({ modkey, "Control" }, "j", function() awful.tag.incnmaster(-1, nil, true) end,
+        { description = "decrease master clients", group = "layout" }),
+    -- Toggle layout (Super+Shift+S — matching Hyprland)
+    awful.key({ modkey, "Shift" }, "s", function() awful.layout.inc(1) end,
+        { description = "next layout", group = "layout" }),
     awful.key({ altkey, }, "space", function() awful.layout.inc(1) end,
-        { description = "select next", group = "layout" }),
+        { description = "next layout", group = "layout" }),
 
     awful.key({ modkey, "Control" }, "n",
         function()
@@ -536,18 +529,11 @@ clientkeys = my_table.join(
         { description = "toggle floating", group = "client" }),
     awful.key({ modkey, "Control" }, "Return", function(c) c:swmap(awful.client.getmaster()) end,
         { description = "move to master", group = "client" }),
-    awful.key({ modkey, }, ",", function(c) c:move_to_screen(c.screen.index - 1) end,
-        { description = "move to next screen", group = "client" }),
-    awful.key({ modkey, }, ".", function(c) c:move_to_screen(c.screen.index + 1) end,
+    -- Move window to screen (Super+Shift+,/. — matching Hyprland)
+    awful.key({ modkey, "Shift" }, ",", function(c) c:move_to_screen(c.screen.index - 1) end,
         { description = "move to previous screen", group = "client" }),
-    awful.key({ modkey, "Shift" }, "m", function(c) c:move_to_screen(1) end,
-        { description = "move to screen 1", group = "client" }),
-    awful.key({ modkey, "Shift" }, ",", function(c) c:move_to_screen(2) end,
-        { description = "move to screen 2", group = "client" }),
-    awful.key({ modkey, "Shift" }, ".", function(c) c:move_to_screen(3) end,
-        { description = "move to screen 3", group = "client" }),
-    awful.key({ modkey, "Shift" }, "/", function(c) c:move_to_screen(4) end,
-        { description = "move to screen 4", group = "client" })
+    awful.key({ modkey, "Shift" }, ".", function(c) c:move_to_screen(c.screen.index + 1) end,
+        { description = "move to next screen", group = "client" })
 )
 
 -- Bind all key numbers to tags.

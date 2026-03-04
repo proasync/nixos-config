@@ -24,6 +24,9 @@
   ];
   services.libinput.enable = true;
 
+  # ── USB auto-mount ───────────────────────────────────
+  services.udisks2.enable = true;
+
   # ── X11 Session Commands ───────────────────────────────
   services.xserver.displayManager.sessionCommands = ''
     export GNOME_KEYRING_CONTROL=/run/user/$UID/keyring
