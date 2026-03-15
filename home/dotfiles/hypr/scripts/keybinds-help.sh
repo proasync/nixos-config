@@ -83,5 +83,6 @@ key "Super + T"            "Toggle touchpad"
 key "Super + I"            "Pin window (all workspaces)"
 key "Super + O"            "Toggle scratchpad"
 key "Super + Shift + O"    "Send window to scratchpad"
+key "Super + Ctrl + Esc"   "Emergency: drop to TTY"
 
 echo -e "\n ${DIM}Press q to close${R}\n"

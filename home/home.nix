@@ -11,6 +11,10 @@ let
     if hostName == "proasync-laptop"
     then "/home/proasync/nixos-config/hosts/laptop/hypr/monitors.conf"
     else "${hyprDir}/monitors.conf";
+  hyprHostExtrasPath =
+    if hostName == "proasync-laptop"
+    then "/home/proasync/nixos-config/hosts/laptop/hypr/hostextras.conf"
+    else "${hyprDir}/hostextras.conf";
 in
 {
   home.username = "proasync";
@@ -63,6 +67,7 @@ in
     wlr-randr
     libnotify
     socat
+    openssl
 
     # File management
     thunar
@@ -96,6 +101,7 @@ in
     cbonsai
 
     # Development
+    claude-code
     nodejs_20
     yarn
     rsync
@@ -263,6 +269,17 @@ in
     source = config.lib.file.mkOutOfStoreSymlink hyprMonitorsPath;
     force = true;
   };
+  home.file.".config/hypr/hostextras.conf" = {
+    source = config.lib.file.mkOutOfStoreSymlink hyprHostExtrasPath;
+    force = true;
+  };
+
+  home.file.".claude/settings.json".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "/home/proasync/nixos-config/home/dotfiles/claude/settings.json";
+  home.file.".claude/settings.local.json".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "/home/proasync/nixos-config/home/dotfiles/claude/settings.local.json";
 
   home.file.".config/awesome".source =
     config.lib.file.mkOutOfStoreSymlink

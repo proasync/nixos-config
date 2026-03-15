@@ -44,6 +44,9 @@
   # GPU drivers (desktop = AMD)
   services.xserver.videoDrivers = [ "amdgpu" ];
 
+  # SDDM theme (unmodified)
+  environment.systemPackages = [ pkgs.catppuccin-sddm-corners ];
+
   # ── Host-specific services ─────────────────────────────
 
   # MariaDB for WordPress development

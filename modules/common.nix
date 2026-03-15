@@ -49,7 +49,6 @@
     nerd-fonts.mononoki
     adwaita-icon-theme
     bibata-cursors
-    catppuccin-sddm-corners
     libsecret
   ];
 

@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(systemctl status:*)",
+      "Bash(google-chrome-stable:*)",
+      "Bash(ls:*)",
+      "Bash(hyprctl devices:*)",
+      "Bash(chmod:*)",
+      "Bash(hyprctl getoption:*)",
+      "Bash(xdg-mime query:*)",
+      "Bash(wpctl status:*)",
+      "Bash(convert ~/Pictures/avatars/hacker-avatar4.png -resize 200x200^ -gravity center -extent 200x200 ~/.face.icon)",
+      "Bash(git -C ~/nixos-config diff --stat HEAD)",
+      "Bash(sudo mkdir:*)",
+      "Bash(sudo cp:*)",
+      "Bash(sudo chmod:*)",
+      "Bash(hyprctl workspaces:*)",
+      "Bash(hyprctl monitors)",
+      "Bash(hyprctl binds)",
+      "Bash(hyprctl binds -j)",
+      "Bash(hyprctl clients -j)",
+      "Bash(~/.config/hypr/scripts/lid-check.sh)",
+      "Bash(pgrep -f float-popups)",
+      "Bash(pkill -f float-popups)",
+      "Bash(hyprctl dispatch exec \"~/.config/hypr/scripts/float-popups.sh\")",
+      "Bash(echo \"NIXOS_OZONE_WL=$NIXOS_OZONE_WL\")",
+      "Bash(hyprctl version)",
+      "Bash(hyprctl protocols)",
+      "Bash(nix-env -qaP heroku)",
+      "Bash(git commit:*)",
+      "Bash(git push)"
+    ]
+  }
+}

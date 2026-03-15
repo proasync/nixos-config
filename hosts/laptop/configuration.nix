@@ -55,7 +55,17 @@
     ];
   };
   environment.variables.LIBVA_DRIVER_NAME = "iHD";
-  environment.systemPackages = with pkgs; [ libva-utils ];
+  environment.systemPackages = with pkgs; [
+    libva-utils
+    # Override the SDDM theme to include our custom wallpaper
+    (catppuccin-sddm-corners.overrideAttrs (old: {
+      postInstall = (old.postInstall or "") + ''
+        cp ${./sddm-background.jpeg} $out/share/sddm/themes/catppuccin-sddm-corners/backgrounds/custom.jpeg
+        substituteInPlace $out/share/sddm/themes/catppuccin-sddm-corners/theme.conf \
+          --replace-fail 'Background="backgrounds/flatppuccin_macchiato.png"' 'Background="backgrounds/custom.jpeg"'
+      '';
+    }))
+  ];
 
   # ── Bluetooth ──────────────────────────────────────────
   hardware.bluetooth = {
@@ -77,10 +87,8 @@
   services.displayManager.sddm.settings = {
     General.EnableHiDPI = true;
     Wayland.EnableHiDPI = true;
-    Theme.Background = "/etc/sddm/background.jpeg";
   };
   systemd.services.display-manager.environment.QT_SCALE_FACTOR = "2";
-  environment.etc."sddm/background.jpeg".source = /home/proasync/.config/wallpapers/ultrawide/UltrawideWallpapersDotNet-3284.jpeg;
 
   # ── Host-specific services ─────────────────────────────
 
