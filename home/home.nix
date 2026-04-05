@@ -1,4 +1,4 @@
-{ config, pkgs, osConfig, ... }:
+{ config, pkgs, lib, osConfig, ... }:
 
 let
   hyprDir = "/home/proasync/nixos-config/home/dotfiles/hypr";
@@ -23,12 +23,15 @@ in
 
   programs.home-manager.enable = true;
 
+  home.sessionVariables = {
+    BROWSER = "google-chrome-stable";
+  };
+
   # ── User packages ──────────────────────────────────────
   home.packages = with pkgs; [
     # Browsers
     google-chrome
     brave
-    firefox
 
     # Terminal & editor
     alacritty
@@ -50,6 +53,7 @@ in
     xkill
     arandr
     xclip
+    alsa-utils  # amixer — needed by Awesome WM volume widget/keys
 
     # Wayland / Hyprland tools
     waybar
@@ -109,6 +113,8 @@ in
     wp-cli
     heroku
     gh
+    awscli2
+    ngrok
 
     # GUI utilities
     pavucontrol
@@ -119,6 +125,8 @@ in
     dbeaver-bin
     gimp
     inkscape
+    imagemagick
+    wineWowPackages.stable
     seahorse
     lsof
     fastfetch
@@ -131,6 +139,15 @@ in
   ];
 
   fonts.fontconfig.enable = true;
+
+  # ── Firefox (prevent it from hijacking default browser) ──
+  programs.firefox = {
+    enable = true;
+    policies = {
+      DontCheckDefaultBrowser = true;
+      DefaultDownloadDirectory = "\${home}/Downloads";
+    };
+  };
 
   # ── Shell (bash) ───────────────────────────────────────
   programs.bash = {
@@ -243,6 +260,8 @@ in
   xresources.properties = {
     "Xcursor.theme" = "Bibata-Modern-Ice";
     "Xcursor.size" = 24;
+  } // lib.optionalAttrs (hostName == "proasync-laptop") {
+    "Xft.dpi" = 160;  # 2880x1800 @ 1.67× scale (matches Hyprland)
   };
 
   # ── Dotfiles (symlinked to repo for live editing) ──────
@@ -274,12 +293,20 @@ in
     force = true;
   };
 
-  home.file.".claude/settings.json".source =
-    config.lib.file.mkOutOfStoreSymlink
+  home.file.".claude/settings.json" = {
+    source = config.lib.file.mkOutOfStoreSymlink
       "/home/proasync/nixos-config/home/dotfiles/claude/settings.json";
-  home.file.".claude/settings.local.json".source =
-    config.lib.file.mkOutOfStoreSymlink
+    force = true;
+  };
+  home.file.".claude/settings.local.json" = {
+    source = config.lib.file.mkOutOfStoreSymlink
       "/home/proasync/nixos-config/home/dotfiles/claude/settings.local.json";
+    force = true;
+  };
+
+  home.file.".config/niri".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "/home/proasync/nixos-config/home/dotfiles/niri";
 
   home.file.".config/awesome".source =
     config.lib.file.mkOutOfStoreSymlink

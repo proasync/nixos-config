@@ -1,0 +1,292 @@
+// Niri configuration — Catppuccin Mocha theme
+// Keybindings matched to Hyprland/AwesomeWM layout
+
+// ── Input ──────────────────────────────────────────────
+input {
+    keyboard {
+        xkb {
+            layout "us,se"
+            options "grp:win_space_toggle"
+        }
+        repeat-rate 30
+        repeat-delay 300
+    }
+
+    touchpad {
+        tap
+        natural-scroll
+        disabled-on-external-mouse
+    }
+
+    mouse {
+        accel-profile "flat"
+    }
+
+    focus-follows-mouse max-scroll-amount="0%"
+}
+
+// ── Output / Monitor defaults ──────────────────────────
+// Per-host monitor config can override these
+
+// ── Layout ─────────────────────────────────────────────
+layout {
+    gaps 8
+    center-focused-column "never"
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
+
+    preset-window-heights {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+        proportion 1.0
+    }
+
+    default-column-width {
+        proportion 0.5
+    }
+
+    focus-ring {
+        off
+    }
+
+    border {
+        width 2
+        active-gradient from="#cba6f7" to="#89b4fa" angle=45
+        inactive-color "#313244"
+    }
+
+    shadow {
+        on
+        softness 12
+        spread 3
+        offset x=0 y=2
+        color "#1e1e2eee"
+    }
+
+    tab-indicator {
+        hide-when-single-tab
+        color "#cba6f7"
+    }
+}
+
+// ── Appearance ─────────────────────────────────────────
+prefer-no-csd
+
+animations {
+    slowdown 0.8
+
+    workspace-switch {
+        spring damping-ratio=1.0 stiffness=500 epsilon=0.0001
+    }
+
+    window-open {
+        duration-ms 200
+        curve "ease-out-expo"
+    }
+
+    window-close {
+        duration-ms 150
+        curve "ease-out-quad"
+    }
+
+    horizontal-view-movement {
+        spring damping-ratio=1.0 stiffness=500 epsilon=0.0001
+    }
+
+    window-movement {
+        spring damping-ratio=1.0 stiffness=500 epsilon=0.0001
+    }
+
+    window-resize {
+        spring damping-ratio=1.0 stiffness=500 epsilon=0.0001
+    }
+}
+
+// ── Environment ────────────────────────────────────────
+environment {
+    XCURSOR_THEME "Bibata-Modern-Ice"
+    XCURSOR_SIZE "24"
+    XDG_CURRENT_DESKTOP "niri"
+    XDG_SESSION_TYPE "wayland"
+    QT_QPA_PLATFORM "wayland"
+    GDK_BACKEND "wayland"
+    GTK_THEME "catppuccin-mocha-mauve-standard+default"
+}
+
+// ── Startup ────────────────────────────────────────────
+spawn-at-startup "waybar" "-c" "/home/proasync/.config/niri/waybar/config.jsonc" "-s" "/home/proasync/.config/niri/waybar/style.css"
+spawn-at-startup "mako"
+spawn-at-startup "swww-daemon"
+spawn-at-startup "nm-applet" "--indicator"
+spawn-at-startup "blueman-applet"
+spawn-at-startup "udiskie" "--automount" "--notify" "--tray"
+spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
+
+// ── Window rules ───────────────────────────────────────
+window-rule {
+    geometry-corner-radius 10
+    clip-to-geometry true
+}
+
+// Float popups and dialogs
+window-rule {
+    match is-floating=true
+    shadow {
+        on
+        softness 20
+        spread 5
+        color "#1e1e2ecc"
+    }
+}
+
+window-rule {
+    match app-id=r#"^pavucontrol$"#
+    open-floating true
+}
+
+window-rule {
+    match app-id=r#"^com\.gabm\.satty$"#
+    open-floating true
+    default-floating-window-width { fixed 1600; }
+}
+
+window-rule {
+    match app-id=r#"^blueman-manager$"#
+    open-floating true
+}
+
+// Dim inactive windows
+window-rule {
+    match is-active=false
+    opacity 0.90
+}
+
+// ── Keybindings ────────────────────────────────────────
+binds {
+    // ── Core WM ────────────────────────────────────────
+    Mod+Return { spawn "alacritty"; }
+    Mod+Shift+Return { spawn "thunar"; }
+    Mod+Q { close-window; }
+    Mod+F { maximize-column; }
+    Mod+Shift+F { fullscreen-window; }
+    Mod+Shift+Space { toggle-floating; }
+
+    // ── Window focus (vim HJKL) ────────────────────────
+    Mod+H { focus-column-left; }
+    Mod+L { focus-column-right; }
+    Mod+K { focus-window-or-workspace-up; }
+    Mod+J { focus-window-or-workspace-down; }
+
+    // Arrow key alternatives
+    Ctrl+Mod+Left { focus-column-left; }
+    Ctrl+Mod+Right { focus-column-right; }
+    Ctrl+Mod+Up { focus-window-or-workspace-up; }
+    Ctrl+Mod+Down { focus-window-or-workspace-down; }
+
+    // ── Window move ────────────────────────────────────
+    Mod+Shift+H { move-column-left; }
+    Mod+Shift+L { move-column-right; }
+    Mod+Shift+K { move-window-up-or-to-workspace-up; }
+    Mod+Shift+J { move-window-down-or-to-workspace-down; }
+
+    // ── Window resize ──────────────────────────────────
+    Mod+Ctrl+H { set-column-width "-5%"; }
+    Mod+Ctrl+L { set-column-width "+5%"; }
+    Mod+Ctrl+K { set-window-height "-5%"; }
+    Mod+Ctrl+J { set-window-height "+5%"; }
+
+    // Preset widths (1/3, 1/2, 2/3)
+    Mod+R { switch-preset-column-width; }
+    Mod+Shift+R { switch-preset-window-height; }
+
+    // ── Workspaces (1-9) ──────────────────────────────
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+
+    // Move window to workspace
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
+    Mod+Shift+6 { move-column-to-workspace 6; }
+    Mod+Shift+7 { move-column-to-workspace 7; }
+    Mod+Shift+8 { move-column-to-workspace 8; }
+    Mod+Shift+9 { move-column-to-workspace 9; }
+
+    // Cycle workspaces
+    Mod+Tab { focus-workspace-down; }
+    Mod+Shift+Tab { focus-workspace-up; }
+
+    // ── Multi-monitor ──────────────────────────────────
+    Mod+Comma { focus-monitor-left; }
+    Mod+Period { focus-monitor-right; }
+    Mod+Shift+Comma { move-column-to-monitor-left; }
+    Mod+Shift+Period { move-column-to-monitor-right; }
+
+    // ── App launchers ──────────────────────────────────
+    Mod+R { spawn "rofi" "-show" "drun" "-theme" "/home/proasync/.config/rofi/launcher.rasi"; }
+    Mod+X { spawn "sh" "-c" "/home/proasync/.config/hypr/scripts/powermenu.sh"; }
+    Mod+D { spawn "nwg-displays"; }
+    Mod+V { spawn "pavucontrol"; }
+    Mod+P { screenshot; }
+    Mod+Escape { quit; }
+
+    // Function key launchers
+    Mod+F1 { spawn "sh" "-c" "/home/proasync/.config/hypr/scripts/chrome.sh"; }
+    Mod+F2 { spawn "code"; }
+    Mod+F3 { spawn "teams-for-linux"; }
+    Mod+F4 { spawn "dbeaver"; }
+    Mod+F5 { spawn "gimp"; }
+    Mod+F6 { spawn "inkscape"; }
+
+    // ── Media / volume keys ────────────────────────────
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%+"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%-"; }
+    XF86AudioMute allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
+    XF86MonBrightnessUp allow-when-locked=true { spawn "brightnessctl" "set" "+10%"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "set" "10%-"; }
+
+    // Volume shortcuts
+    Ctrl+Shift+M { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "100%"; }
+
+    // Task manager
+    Ctrl+Shift+Escape { spawn "alacritty" "-e" "htop"; }
+
+    // ── Mouse bindings ─────────────────────────────────
+    Mod+WheelScrollDown { focus-workspace-down; }
+    Mod+WheelScrollUp { focus-workspace-up; }
+
+    // ── Scratchpad ─────────────────────────────────────
+    Mod+O { toggle-overview; }
+
+    // ── Bar toggle ─────────────────────────────────────
+    Mod+B { spawn "sh" "-c" "pkill waybar || waybar -c /home/proasync/.config/niri/waybar/config.jsonc -s /home/proasync/.config/niri/waybar/style.css"; }
+
+    // ── Touchpad toggle ────────────────────────────────
+    Mod+T { spawn "sh" "-c" "/home/proasync/.config/hypr/scripts/touchpad-toggle.sh"; }
+
+    // ── Emergency TTY escape ───────────────────────────
+    Mod+Ctrl+Escape { spawn "loginctl" "terminate-session" "self"; }
+
+    // ── Consume/expel (Niri-specific column management) ──
+    Mod+BracketLeft { consume-or-expel-window-left; }
+    Mod+BracketRight { consume-or-expel-window-right; }
+
+    // ── Screenshot ─────────────────────────────────────
+    Mod+P { screenshot; }
+    Print { screenshot-screen; }
+    Mod+Print { screenshot-window; }
+}

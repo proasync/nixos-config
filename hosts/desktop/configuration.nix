@@ -38,7 +38,7 @@
   users.users.proasync = {
     isNormalUser = true;
     description = "Proasync";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "docker" "lp" ];
   };
 
   # GPU drivers (desktop = AMD)

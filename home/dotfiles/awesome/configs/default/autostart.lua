@@ -1,24 +1,22 @@
 local awful = require("awful")
+local gears = require("gears")
 
 -- Function to run commands once
 local function run_once(cmd)
   awful.spawn.with_shell("pgrep -u $USER -fx '" .. cmd .. "' > /dev/null || (" .. cmd .. ")")
 end
 
--- Launch applications with specific tag placement at startup
-awful.spawn(function()
-  -- Launch Google Chrome on screen 1, tag "➊" on startup
-  local screen_index = 1
-  local tag_name = "➊"
-  local cmd = "google-chrome-stable --no-default-browser-check"
-
-  -- Start the application
-  awful.spawn(cmd, {
-    screen = screen_index,
-    tag = awful.tag.find_by_name(awful.screen.getbyindex(screen_index), tag_name),
-    switchtotag = true, -- Optionally switch to the tag when launching
-    maximized = false,  -- Tile with other windows
+-- Launch Google Chrome on tag "➊" after startup settles
+gears.timer.start_new(2, function()
+  local s = awful.screen.focused()
+  local tag = s.tags[1]
+  awful.spawn("google-chrome-stable --no-default-browser-check", {
+    screen = s,
+    tag = tag,
+    switchtotag = true,
+    maximized = false,
   })
+  return false -- don't repeat
 end)
 
 -- Autostart other applications

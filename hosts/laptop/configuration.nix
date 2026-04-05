@@ -9,6 +9,9 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Enable full Magic SysRq for emergency recovery (Alt+SysRq+REISUB)
+  boot.kernel.sysctl."kernel.sysrq" = 1;
+
   # Networking
   networking.hostName = "proasync-laptop";
   networking.networkmanager.enable = true;
@@ -38,7 +41,7 @@
   users.users.proasync = {
     isNormalUser = true;
     description = "Proasync";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "docker" "lp" ];
   };
 
   # ── USB root protection ────────────────────────────────
@@ -79,9 +82,9 @@
   services.power-profiles-daemon.enable = true;  # Balanced/performance/power-save switching
 
   # ── Lid switch — let Hyprland handle it ───────────────
-  services.logind.lidSwitch = "ignore";
-  services.logind.lidSwitchExternalPower = "ignore";
-  services.logind.lidSwitchDocked = "ignore";
+  services.logind.settings.Login.HandleLidSwitch = "ignore";
+  services.logind.settings.Login.HandleLidSwitchExternalPower = "ignore";
+  services.logind.settings.Login.HandleLidSwitchDocked = "ignore";
 
   # ── SDDM HiDPI (2880x1800 display) ────────────────────
   services.displayManager.sddm.settings = {
@@ -89,6 +92,15 @@
     Wayland.EnableHiDPI = true;
   };
   systemd.services.display-manager.environment.QT_SCALE_FACTOR = "2";
+
+  # ── X11 HiDPI (for Awesome WM on 2880x1800) ──────────
+  # 160 DPI ≈ 1.67× scale, matching Hyprland's monitor scale
+  services.xserver.displayManager.sessionCommands = ''
+    echo "Xft.dpi: 160" | ${pkgs.xrdb}/bin/xrdb -merge
+    export GDK_SCALE=2
+    export GDK_DPI_SCALE=0.5
+    export QT_AUTO_SCREEN_SCALE_FACTOR=1
+  '';
 
   # ── Host-specific services ─────────────────────────────
 

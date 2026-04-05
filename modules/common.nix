@@ -11,6 +11,7 @@
   services.xserver.enable = true;
   services.xserver.windowManager.awesome.enable = true;
   programs.hyprland.enable = true;
+  programs.niri.enable = true;
 
   # ── SDDM ──────────────────────────────────────────────
   services.displayManager.sddm.enable = true;
@@ -50,6 +51,7 @@
     adwaita-icon-theme
     bibata-cursors
     libsecret
+    usbutils
   ];
 
   # ── Cursor theme ───────────────────────────────────────
@@ -85,6 +87,26 @@
     };
   };
 
+  # ── AppImage support (FUSE2) ───────────────────────────
+  programs.appimage = {
+    enable = true;
+    binfmt = true;   # run AppImages directly without appimage-run wrapper
+  };
+
+  # ── Printing (CUPS) ────────────────────────────────────
+  services.printing = {
+    enable = true;
+    drivers = with pkgs; [ gutenprint hplip ];
+  };
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+  };
+
+  # ── Docker ─────────────────────────────────────────────
+  virtualisation.docker.enable = true;
+
   # ── Desktop services ───────────────────────────────────
   services.dbus.enable = true;
   services.gnome.gnome-keyring.enable = true;
@@ -92,5 +114,34 @@
   security.pam.services.login.enableGnomeKeyring = true;
   programs.dconf.enable = true;
   programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = with pkgs; [
+    # Electron / Chromium runtime dependencies
+    glib
+    gtk3
+    nss
+    nspr
+    dbus
+    atk
+    at-spi2-atk
+    at-spi2-core
+    cups
+    libdrm
+    pango
+    cairo
+    libx11
+    libxcomposite
+    libxdamage
+    libxext
+    libxfixes
+    libxrandr
+    mesa
+    libgbm
+    expat
+    libxcb
+    libxkbcommon
+    alsa-lib
+    gdk-pixbuf
+    systemd
+  ];
   security.polkit.enable = true;
 }

@@ -461,10 +461,10 @@ globalkeys = my_table.join(
         end,
         { description = "restore minimized", group = "client" }),
 
-    -- Brightness
-    awful.key({}, "XF86MonBrightnessUp", function() os.execute("xbacklight -inc 10") end,
+    -- Brightness (brightnessctl)
+    awful.key({}, "XF86MonBrightnessUp", function() os.execute("brightnessctl set +10%") end,
         { description = "+10%", group = "hotkeys" }),
-    awful.key({}, "XF86MonBrightnessDown", function() os.execute("xbacklight -dec 10") end,
+    awful.key({}, "XF86MonBrightnessDown", function() os.execute("brightnessctl set 10%-") end,
         { description = "-10%", group = "hotkeys" }),
 
     -- ALSA volume control
@@ -527,7 +527,7 @@ clientkeys = my_table.join(
         { description = "toggle maximize", group = "client" }),
     awful.key({ modkey, "Shift" }, "space", awful.client.floating.toggle,
         { description = "toggle floating", group = "client" }),
-    awful.key({ modkey, "Control" }, "Return", function(c) c:swmap(awful.client.getmaster()) end,
+    awful.key({ modkey, "Control" }, "Return", function(c) c:swap(awful.client.getmaster()) end,
         { description = "move to master", group = "client" }),
     -- Move window to screen (Super+Shift+,/. — matching Hyprland)
     awful.key({ modkey, "Shift" }, ",", function(c) c:move_to_screen(c.screen.index - 1) end,
