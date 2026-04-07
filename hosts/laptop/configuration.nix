@@ -95,10 +95,9 @@
 
   # ── X11 HiDPI (for Awesome WM on 2880x1800) ──────────
   # 160 DPI ≈ 1.67× scale, matching Hyprland's monitor scale
+  # GTK/Qt apps pick up DPI from Xft.dpi automatically
   services.xserver.displayManager.sessionCommands = ''
     echo "Xft.dpi: 160" | ${pkgs.xrdb}/bin/xrdb -merge
-    export GDK_SCALE=2
-    export GDK_DPI_SCALE=0.5
     export QT_AUTO_SCREEN_SCALE_FACTOR=1
   '';
 

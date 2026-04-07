@@ -250,8 +250,8 @@ globalkeys = my_table.join(
 
 -- super + ...
     awful.key({ modkey }, "space", function() kbdcfg.switch() end),
-    awful.key({ modkey }, "r", function() awful.util.spawn("rofi-theme-selector") end,
-        { description = "rofi theme selector", group = "super" }),
+    awful.key({ modkey }, "r", function() awful.util.spawn("rofi -show drun -theme ~/.config/rofi/launcher.rasi") end,
+        { description = "rofi launcher", group = "super" }),
     awful.key({ modkey }, "v", function() awful.util.spawn("pavucontrol") end,
         { description = "pulseaudio control", group = "super" }),
     awful.key({ modkey }, "p", function() awful.util.spawn("flameshot gui") end,
@@ -266,7 +266,7 @@ globalkeys = my_table.join(
     awful.key({ modkey, "Shift" }, "d",
         function()
             awful.spawn(string.format(
-                "dmenu_run -i -nb '#6ffccb' -nf '#373c3d' -sb '#373c3d' -sf '#6ffccb' -fn NotoMonoRegular:bold:pixelsize=14",
+                "dmenu_run -i -nb '#6ffccb' -nf '#373c3d' -sb '#373c3d' -sf '#6ffccb' -fn NotoMonoRegular:bold:pixelsize=24",
                 beautiful.bg_normal, beautiful.fg_normal, beautiful.bg_focus, beautiful.fg_focus))
         end,
         { description = "show dmenu", group = "hotkeys" }),
@@ -278,7 +278,7 @@ globalkeys = my_table.join(
 
     -- Hotkeys Awesome
 
-    awful.key({ modkey, }, "h", hotkeys_popup.show_help,
+    awful.key({ modkey, }, "w", hotkeys_popup.show_help,
         { description = "show help", group = "awesome" }),
 
     -- Tag browsing with modkey
@@ -698,10 +698,22 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 
 -- }}}
 
--- Load rules and autostart
-dofile(config_dir .. "configs/default/rules.lua")
-dofile(config_dir .. "configs/default/autostart.lua")
+-- Load per-host rules and autostart, fall back to default
+local function load_config(name)
+    local host_path = config_dir .. "configs/" .. hostname .. "/" .. name
+    local default_path = config_dir .. "configs/default/" .. name
+    local f = io.open(host_path, "r")
+    if f then
+        f:close()
+        dofile(host_path)
+    else
+        dofile(default_path)
+    end
+end
+
+load_config("rules.lua")
+load_config("autostart.lua")
 
 -- Autostart applications
 
-awful.spawn.with_shell("picom -b --config  $HOME/.config/awesome/picom.conf")
+awful.spawn.with_shell("pgrep -u $USER -x picom > /dev/null || picom -b --config $HOME/.config/awesome/picom.conf")

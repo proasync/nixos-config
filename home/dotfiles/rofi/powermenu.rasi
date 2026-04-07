@@ -4,6 +4,7 @@
 
 configuration {
     show-icons: false;
+    dpi: 160;
 }
 
 window {
@@ -28,13 +29,13 @@ inputbar {
 }
 
 prompt {
-    font: "mononoki Nerd Font Bold 18";
+    font: "mononoki Nerd Font Bold 28";
     text-color: @mauve;
     background-color: transparent;
 }
 
 entry {
-    font: "mononoki Nerd Font 16";
+    font: "mononoki Nerd Font 24";
     text-color: @text;
     background-color: transparent;
     placeholder: "type to filter...";
@@ -50,8 +51,8 @@ listview {
 }
 
 element {
-    padding: 14px 20px;
-    border-radius: 10px;
+    padding: 24px 34px;
+    border-radius: 16px;
     text-color: @text;
     background-color: @surface0;
 }
@@ -62,7 +63,7 @@ element selected {
 }
 
 element-text {
-    font: "mononoki Nerd Font 16";
+    font: "mononoki Nerd Font 24";
     text-color: inherit;
     background-color: inherit;
 }

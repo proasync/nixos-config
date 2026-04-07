@@ -19,6 +19,9 @@ gears.timer.start_new(2, function()
   return false -- don't repeat
 end)
 
+-- Monitor setup (detect external monitors, set DPI accordingly)
+awful.spawn.with_shell("~/.config/awesome/scripts/monitor-setup.sh")
+
 -- Autostart other applications
 local startup_apps = {
   "nm-applet",         -- Network manager applet

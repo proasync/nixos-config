@@ -1,7 +1,7 @@
 --[[
 
      proasync - Awesome WM theme
-     Based on Powerarrow Dark by lcpz
+     Catppuccin Mocha — matching Hyprland
 
 --]]
 
@@ -14,23 +14,49 @@ local dpi   = require("beautiful.xresources").apply_dpi
 local os = os
 local my_table = awful.util.table or gears.table -- 4.{0,1} compatibility
 
+-- Catppuccin Mocha palette
+local colors = {
+    base      = "#1e1e2e",
+    mantle    = "#181825",
+    crust     = "#11111b",
+    surface0  = "#313244",
+    surface1  = "#45475a",
+    surface2  = "#585b70",
+    overlay0  = "#6c7086",
+    overlay1  = "#7f849c",
+    subtext0  = "#a6adc8",
+    text      = "#cdd6f4",
+    lavender  = "#b4befe",
+    blue      = "#89b4fa",
+    sapphire  = "#74c7ec",
+    teal      = "#94e2d5",
+    green     = "#a6e3a1",
+    yellow    = "#f9e2af",
+    peach     = "#fab387",
+    red       = "#f38ba8",
+    mauve     = "#cba6f7",
+    pink      = "#f5c2e7",
+    flamingo  = "#f2cdcd",
+    rosewater = "#f5e0dc",
+}
+
 local theme                                     = {}
 theme.dir                                       = os.getenv("HOME") .. "/.config/awesome/themes/proasync"
 theme.font                                      = "mononoki Nerd Font 11"
-theme.fg_normal                                 = "#DDDDFF"
-theme.fg_focus                                  = "#ff79c6"
-theme.fg_urgent                                 = "#CC9393"
-theme.bg_normal                                 = "#1A1A1A"
-theme.bg_focus                                  = "#313131"
-theme.bg_urgent                                 = "#1A1A1A"
+theme.fg_normal                                 = colors.text
+theme.fg_focus                                  = colors.mauve
+theme.fg_urgent                                 = colors.red
+theme.bg_normal                                 = colors.base
+theme.bg_focus                                  = colors.surface0
+theme.bg_urgent                                 = colors.base
 theme.border_width                              = dpi(2)
-theme.border_normal                             = "#3F3F3F"
-theme.border_focus                              = "#ff79c6"
-theme.border_marked                             = "#CC9393"
-theme.tasklist_bg_focus                         = "#1A1A1A"
-theme.titlebar_bg_focus                         = theme.bg_focus
-theme.titlebar_bg_normal                        = theme.bg_normal
-theme.titlebar_fg_focus                         = theme.fg_focus
+theme.border_normal                             = colors.surface0
+theme.border_focus                              = colors.mauve
+theme.border_marked                             = colors.red
+theme.tasklist_bg_focus                         = colors.base
+theme.titlebar_bg_focus                         = colors.surface0
+theme.titlebar_bg_normal                        = colors.base
+theme.titlebar_fg_focus                         = colors.mauve
 theme.menu_height                               = dpi(16)
 theme.menu_width                                = dpi(140)
 theme.menu_submenu_icon                         = theme.dir .. "/icons/submenu.png"
@@ -63,7 +89,7 @@ theme.widget_vol_no                             = theme.dir .. "/icons/vol_no.pn
 theme.widget_vol_mute                           = theme.dir .. "/icons/vol_mute.png"
 theme.tasklist_plain_task_name                  = true
 theme.tasklist_disable_icon                     = true
-theme.useless_gap                               = dpi(3)
+theme.useless_gap                               = dpi(4)
 theme.titlebar_close_button_focus               = theme.dir .. "/icons/titlebar/close_focus.png"
 theme.titlebar_close_button_normal              = theme.dir .. "/icons/titlebar/close_normal.png"
 theme.titlebar_ontop_button_focus_active        = theme.dir .. "/icons/titlebar/ontop_focus_active.png"
@@ -93,7 +119,7 @@ local clockicon = wibox.widget.imagebox(theme.widget_clock)
 local clock = awful.widget.watch(
     "date +'%a %d %b %R'", 60,
     function(widget, stdout)
-        widget:set_markup(" " .. markup.font(theme.font, markup("#f1fa8c", stdout)))
+        widget:set_markup(" " .. markup.font(theme.font, markup(colors.yellow, stdout)))
     end
 )
 
@@ -104,8 +130,8 @@ theme.cal = lain.widget.cal({
     followtag = true,
     notification_preset = {
         font = "mononoki Nerd Font 10",
-        fg   = "#8be9fd",
-        bg   = theme.bg_normal
+        fg   = colors.sapphire,
+        bg   = colors.base
     }
 })
 
@@ -113,7 +139,7 @@ theme.cal = lain.widget.cal({
 local memicon = wibox.widget.imagebox(theme.widget_mem)
 local mem = lain.widget.mem({
     settings = function()
-        widget:set_markup(markup.font(theme.font, markup("#50fa7b", " " .. mem_now.used .. "MB ")))
+        widget:set_markup(markup.font(theme.font, markup(colors.green, " " .. mem_now.used .. "MB ")))
     end
 })
 
@@ -121,7 +147,7 @@ local mem = lain.widget.mem({
 local cpuicon = wibox.widget.imagebox(theme.widget_cpu)
 local cpu = lain.widget.cpu({
     settings = function()
-        widget:set_markup(markup.font(theme.font, " " .. cpu_now.usage .. "% "))
+        widget:set_markup(markup.font(theme.font, markup(colors.blue, " " .. cpu_now.usage .. "% ")))
     end
 })
 
@@ -129,7 +155,7 @@ local cpu = lain.widget.cpu({
 local tempicon = wibox.widget.imagebox(theme.widget_temp)
 local temp = lain.widget.temp({
     settings = function()
-        widget:set_markup(markup.font(theme.font, " " .. coretemp_now .. "°C "))
+        widget:set_markup(markup.font(theme.font, markup(colors.peach, " " .. coretemp_now .. "°C ")))
     end
 })
 
@@ -147,9 +173,9 @@ local bat = lain.widget.bat({
             else
                 baticon:set_image(theme.widget_battery)
             end
-            widget:set_markup(markup.font(theme.font, " " .. bat_now.perc .. "% "))
+            widget:set_markup(markup.font(theme.font, markup(colors.lavender, " " .. bat_now.perc .. "% ")))
         else
-            widget:set_markup(markup.font(theme.font, " AC "))
+            widget:set_markup(markup.font(theme.font, markup(colors.lavender, " AC ")))
             baticon:set_image(theme.widget_ac)
         end
     end
@@ -169,7 +195,7 @@ theme.volume = lain.widget.alsa({
             volicon:set_image(theme.widget_vol)
         end
 
-        widget:set_markup(markup.font(theme.font, " " .. volume_now.level .. "% "))
+        widget:set_markup(markup.font(theme.font, markup(colors.teal, " " .. volume_now.level .. "% ")))
     end
 })
 theme.volume.widget:buttons(awful.util.table.join(
@@ -188,16 +214,16 @@ local neticon = wibox.widget.imagebox(theme.widget_net)
 local net = lain.widget.net({
     settings = function()
         widget:set_markup(markup.font(theme.font,
-                          markup("#ff79c6", " " .. string.format("%06.1f", net_now.received))
+                          markup(colors.pink, " " .. string.format("%06.1f", net_now.received))
                           .. " " ..
-                          markup("#bd93f9", " " .. string.format("%06.1f", net_now.sent) .. " ")))
+                          markup(colors.mauve, " " .. string.format("%06.1f", net_now.sent) .. " ")))
     end
 })
 
 -- Separators
 local spr     = wibox.widget.textbox(' ')
-local arrl_dl = separators.arrow_left(theme.bg_focus, "alpha")
-local arrl_ld = separators.arrow_left("alpha", theme.bg_focus)
+local arrl_dl = separators.arrow_left(colors.surface0, "alpha")
+local arrl_ld = separators.arrow_left("alpha", colors.surface0)
 
 function theme.at_screen_connect(s)
     -- Quake application
@@ -224,14 +250,13 @@ function theme.at_screen_connect(s)
     s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, awful.util.tasklist_buttons)
 
     -- Create the wibox
-    s.mywibox = awful.wibar({ position = "top", screen = s, height = dpi(20), bg = theme.bg_normal, fg = theme.fg_normal })
+    s.mywibox = awful.wibar({ position = "top", screen = s, height = dpi(20), bg = colors.base, fg = colors.text })
 
     -- Add widgets to the wibox
     s.mywibox:setup {
         layout = wibox.layout.align.horizontal,
         { -- Left widgets
             layout = wibox.layout.fixed.horizontal,
-            --spr,
             s.mytaglist,
             s.mypromptbox,
             spr,
@@ -249,21 +274,21 @@ function theme.at_screen_connect(s)
             memicon,
             mem.widget,
             arrl_ld,
-            wibox.container.background(cpuicon, theme.bg_focus),
-            wibox.container.background(cpu.widget, theme.bg_focus),
+            wibox.container.background(cpuicon, colors.surface0),
+            wibox.container.background(cpu.widget, colors.surface0),
             arrl_dl,
             tempicon,
             temp.widget,
             arrl_ld,
-            wibox.container.background(bat.widget, theme.bg_focus),
+            wibox.container.background(bat.widget, colors.surface0),
             arrl_dl,
-            wibox.container.background(neticon, theme.bg_focus),
-            wibox.container.background(net.widget, theme.bg_focus),
+            wibox.container.background(neticon, colors.surface0),
+            wibox.container.background(net.widget, colors.surface0),
             arrl_dl,
             clock,
             spr,
             arrl_ld,
-            wibox.container.background(s.mylayoutbox, theme.bg_focus),
+            wibox.container.background(s.mylayoutbox, colors.surface0),
         },
     }
 end
