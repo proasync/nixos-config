@@ -75,7 +75,7 @@ local function run_once(cmd_arr)
     end
 end
 
-run_once({ "unclutter -root" }) -- entries must be comma-separated
+run_once({ "unclutter -root", "blueman-applet" }) -- entries must be comma-separated
 
 -- Load external configuration files
 local home_dir = os.getenv("HOME")
@@ -241,6 +241,7 @@ kbdcfg.switch = function()
     kbdcfg.current = kbdcfg.current % #(kbdcfg.layout) + 1
     local t = kbdcfg.layout[kbdcfg.current]
     os.execute(kbdcfg.cmd .. " " .. t[1] .. " " .. t[2])
+    if beautiful.set_keyboard_layout then beautiful.set_keyboard_layout(t[1]) end
 end
 
 -- {{{ Key bindings

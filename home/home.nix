@@ -3,10 +3,6 @@
 let
   hyprDir = "/home/proasync/nixos-config/home/dotfiles/hypr";
   hostName = osConfig.networking.hostName or "";
-  flakeHost =
-    if hostName == "proasync-laptop"
-    then "proasync-laptop"
-    else hostName;
   hyprMonitorsPath =
     if hostName == "proasync-laptop"
     then "/home/proasync/nixos-config/hosts/laptop/hypr/monitors.conf"
@@ -62,6 +58,7 @@ in
     hyprlock
     hypridle
     wl-clipboard
+    cliphist    # clipboard history — autostarted by Hyprland and niri
     grim
     slurp
     satty
@@ -106,7 +103,8 @@ in
 
     # Development
     claude-code
-    nodejs_20
+    nodejs_22   # general-purpose Node; repos pin their own via shell.nix + direnv
+                # (pagoda → Node 18, proasync → Node 20)
     yarn
     rsync
     jq
@@ -115,6 +113,13 @@ in
     gh
     awscli2
     ngrok
+    # Native node-module build toolchain (bcrypt, zpl-image, better-sqlite3 …
+    # need these when prebuilt binaries don't run on NixOS)
+    python3
+    gcc
+    gnumake
+    pkg-config
+    watchman    # faster file watching for Metro/Expo (training-mobile)
 
     # GUI utilities
     pavucontrol
@@ -126,12 +131,11 @@ in
     gimp
     inkscape
     imagemagick
-    wineWowPackages.stable
+    wineWow64Packages.stable   # wineWowPackages renamed upstream (WoW64)
     seahorse
     lsof
     fastfetch
-    nerd-fonts.mononoki
-    font-awesome
+    # (fonts live in modules/common.nix → fonts.packages)
 
     # Theming
     (catppuccin-gtk.override { variant = "mocha"; accents = [ "mauve" ]; })
@@ -280,8 +284,6 @@ in
     config.lib.file.mkOutOfStoreSymlink "${hyprDir}/autostart.conf";
   home.file.".config/hypr/hyprlock.conf".source =
     config.lib.file.mkOutOfStoreSymlink "${hyprDir}/hyprlock.conf";
-  home.file.".config/hypr/workspaces.conf".source =
-    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/workspaces.conf";
   home.file.".config/hypr/scripts".source =
     config.lib.file.mkOutOfStoreSymlink "${hyprDir}/scripts";
   home.file.".config/hypr/monitors.conf" = {

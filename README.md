@@ -1,263 +1,121 @@
 # nixos-config
 
-Flake-based NixOS configuration for `home-desktop` and `proasync-laptop`.
+Flake-based NixOS + Home Manager configuration for two machines:
 
-- **Desktop:** i5-12400F + RX 7600, AMD GPU
-- **Laptop:** ASUS Zenbook S 13 UX5304MA, Intel Core Ultra 7 155U, Intel GPU
-- **WM:** Hyprland (Wayland) + Awesome WM (Xorg fallback)
-- **Theme:** Catppuccin Mocha Mauve — applied to SDDM, Hyprland, Waybar, Rofi, Alacritty, Mako, Hyprlock, GTK
+| | `home-desktop` | `proasync-laptop` |
+| --- | --- | --- |
+| Hardware | i5-12400F + RX 7600 | ASUS Zenbook S 13 UX5304MA (Core Ultra 7 155U) |
+| GPU | AMD (`amdgpu`) | Intel Arc iGPU (`modesetting` + iHD VA-API) |
+| Display | standard DPI | 2880x1800 HiDPI (SDDM 2×, Xft.dpi 160, Hyprland 1.67×) |
+| Laptop-only quirks | — | USB-root autosuspend guard, Intel ISH blacklist, thermald, power-profiles-daemon, lid handling, Bluetooth |
+| SDDM theme | stock catppuccin-sddm-corners | same theme + custom wallpaper override |
+| Dev services | MariaDB, Apache+PHP, PostgreSQL | same (via `modules/dev-services.nix`) |
 
----
+- **WMs (all hosts):** Hyprland (Wayland, primary), niri (Wayland), Awesome (Xorg fallback)
+- **Theme:** Catppuccin Mocha Mauve — SDDM, Hyprland, Waybar, Rofi, Alacritty, Mako, Hyprlock, GTK
+- **Wallpaper:** nitrogen (X11/current setup); `swww` daemon + `waypaper` picker available on Wayland — final approach TBD
 
-## Repo Structure
+## Repo structure
 
 ```
 nixos-config/
-├── flake.nix                     # Entry point — defines all hosts
-├── bootstrap.nix                 # Minimal config for first boot before flake is applied
-├── assets/                       # Static assets (wallpapers used at build time, e.g. SDDM bg)
+├── flake.nix                  # Entry point — one mkHost call per machine
+├── bootstrap.nix              # Minimal config for first boot before the flake is applied
+├── assets/                    # Build-time static assets
+├── docs/
+│   └── dev-environments.md    # pagoda/proasync monorepo dev setup on NixOS
 ├── hosts/
-│   ├── desktop/
-│   │   ├── configuration.nix     # Host-specific: hostname, AMD GPU, dev services
-│   │   └── hardware-configuration.nix  # Auto-generated — do NOT copy between machines
-│   └── laptop/
-│       ├── configuration.nix     # Host-specific: hostname, Intel GPU, dev services
-│       └── hardware-configuration.nix  # Auto-generated — do NOT copy between machines
+│   ├── desktop/               # hostname, AMD GPU, SDDM theme
+│   └── laptop/                # hostname, Intel GPU/VA-API, HiDPI, power, hardware quirks
+│       └── hypr/              # laptop-only monitors.conf + hostextras.conf overrides
 ├── modules/
-│   └── common.nix                # Shared: SDDM, Hyprland, theming, fonts, system packages
+│   ├── common.nix             # Everything shared: boot, locale, user, WMs, SDDM, audio,
+│   │                          #   fonts, keyd, nix-ld (Electron libs), docker, printing, gc
+│   └── dev-services.nix       # MariaDB + Apache/PHP (WordPress) + PostgreSQL — imported per host
 ├── home/
-│   ├── home.nix                  # Home Manager: user packages, GTK, git, dotfile symlinks
-│   ├── scripts/                  # User scripts (imv-dir, etc.)
-│   └── dotfiles/                 # Configs symlinked into ~/.config/
-│       ├── hypr/                 # Hyprland modular config
-│       ├── waybar/               # Bar config + style
-│       ├── rofi/                 # Launcher + powermenu themes
-│       ├── alacritty/            # Terminal
-│       ├── mako/                 # Notifications
-│       ├── imv/                  # Image viewer
-│       └── wallpapers/           # Wallpaper files for hyprpaper
+│   ├── home.nix               # Home Manager: packages, bash, git, GTK, dotfile symlinks
+│   ├── scripts/               # User scripts installed to ~/.local/bin
+│   ├── applications/          # Custom .desktop entries
+│   └── dotfiles/              # Live-symlinked into ~/.config/ (edit → takes effect, no rebuild)
+│       ├── hypr/  niri/  awesome/   # window managers
+│       ├── waybar/  rofi/  mako/    # bar, launcher, notifications
+│       ├── alacritty/  btop/  cava/ # terminal & TUI rice
+│       ├── claude/                  # Claude Code settings
+│       └── wallpapers/              # browsable by waypaper
 └── scripts/
-    └── setup-wordpress.sh        # One-time WordPress/WooCommerce dev setup
+    └── setup-wordpress.sh     # One-time WordPress/WooCommerce dev setup
 ```
 
----
+**Desktop vs laptop:** shared config lives in `modules/`; anything host-specific lives in
+`hosts/<host>/configuration.nix`. Hyprland's `monitors.conf` and `hostextras.conf` are the
+same pattern at the dotfile level — `home/home.nix` binds the laptop to
+`hosts/laptop/hypr/*` and every other host to the defaults in `home/dotfiles/hypr/`.
+Those two default files must stay **regular files** (they were once accidentally committed
+as symlinks into `/nix/store`, which breaks any other machine).
 
-## Installing on a New Machine (e.g. laptop)
+## Day-to-day
 
-### Step 1 — Install NixOS
+| Command | Action |
+| --- | --- |
+| `nrs` | rebuild + switch (`sudo nixos-rebuild switch --flake ~/nixos-config#$(hostname)`) |
+| `nrt` / `nrd` | rebuild test / dry-build |
+| `hyprctl reload` | reload Hyprland config |
+| `waypaper` | pick a wallpaper for the current Wayland session (not auto-restored on reboot) |
+| `Super + W` | popup listing all current Hyprland keybindings |
 
-Boot the NixOS ISO and install normally. When partitioning, choose EFI + ext4 (or btrfs). Complete the graphical installer or do a minimal install via terminal.
+Frequently used binds: `Super+Return` terminal · `Super+R` launcher · `Super+Q` close ·
+`Super+P` screenshot→satty · `Super+X` powermenu · `Super+HJKL` focus ·
+`Super+1-9` workspaces · `Super+Tab`/`Alt+Tab` cycle · `Super+O` scratchpad ·
+`Super+F1-F6` app launchers. The full, always-current list is in
+[keybindings.conf](home/dotfiles/hypr/keybindings.conf) or via `Super+W`.
 
-The installer will generate `/etc/nixos/hardware-configuration.nix` — keep that file, you'll need it.
+CapsLock is a nav layer via keyd (`modules/common.nix`): `CapsLock+HJKL` → arrows,
+`CapsLock+1-9` → F1-F9. Works system-wide at the kernel level on every host.
 
-### Step 2 — Enable Flakes and Clone the Repo
+## Adding things
 
-After first boot, open a terminal:
+- **User packages** (apps, CLI tools): `home/home.nix` → `home.packages`
+- **System packages / services** (all hosts): `modules/common.nix`
+- **Host-specific anything**: `hosts/<hostname>/configuration.nix`
+- **Fonts**: `modules/common.nix` → `fonts.packages`
+- **New dotfile dir**: put it in `home/dotfiles/` and add a `mkOutOfStoreSymlink` entry in `home/home.nix`
 
-```bash
-# Enable flakes temporarily
-sudo nix --extra-experimental-features 'nix-command flakes' shell nixpkgs#git
+After editing nix files, run `nrs`. Dotfile edits under `home/dotfiles/` take effect
+immediately (live symlinks) — no rebuild needed unless you add/remove a symlink.
 
-# Clone the config
-git clone git@github.com:proasync/nixos-config.git ~/nixos-config
-# Or via HTTPS if SSH keys aren't set up yet:
-git clone https://github.com/proasync/nixos-config.git ~/nixos-config
-```
-
-### Step 3 — Create a Host Entry for the New Machine
-
-```bash
-mkdir -p ~/nixos-config/hosts/laptop
-```
-
-Copy the auto-generated hardware config from the installer:
-
-```bash
-cp /etc/nixos/hardware-configuration.nix ~/nixos-config/hosts/laptop/
-```
-
-Create `~/nixos-config/hosts/laptop/configuration.nix` based on `hosts/desktop/configuration.nix`, adjusting:
-
-- `networking.hostName` — e.g. `"proasync-laptop"`
-- `services.xserver.videoDrivers` — e.g. `[ "intel" ]` or `[ "modesetting" ]` for Intel GPU, or remove for auto-detect
-- Remove `services.mysql`, `services.httpd`, `services.postgresql` if you don't want dev services on the laptop
-- Keep `system.stateVersion` matching what the NixOS installer used
-
-### Step 4 — Register the Host in flake.nix
-
-Add a new entry to `flake.nix`:
-
-```nix
-nixosConfigurations = {
-  home-desktop = mkHost {
-    hostModule = ./hosts/desktop/configuration.nix;
-  };
-  proasync-laptop = mkHost {            # <-- add this
-    hostModule = ./hosts/laptop/configuration.nix;
-  };
-};
-```
-
-### Step 5 — Stage and Apply
+### Updating packages
 
 ```bash
 cd ~/nixos-config
-git add hosts/laptop/
-sudo nixos-rebuild switch --flake ~/nixos-config#proasync-laptop
+nix flake update      # bump nixpkgs + home-manager pins
+nrd                   # dry-build first
+nrs                   # then switch; rollback via systemd-boot menu if needed
 ```
 
-> **Alias:** After the first successful build, `nrs` (defined in your shell) will do this automatically.
+The lock is pinned to `nixos-unstable`; update deliberately and test, don't let it drift
+for months and update in a panic.
 
----
+## Installing on a new machine
 
-## After Install — Manual Steps
+1. Install NixOS normally (EFI). Keep the generated `/etc/nixos/hardware-configuration.nix`.
+2. `nix --extra-experimental-features 'nix-command flakes' shell nixpkgs#git`, then clone this repo to `~/nixos-config`.
+3. Create `hosts/<newhost>/`, copy the machine's `hardware-configuration.nix` in, and write a `configuration.nix` with the hostname, GPU driver, and whatever is genuinely host-specific — everything else comes from `modules/common.nix`. Import `../../modules/dev-services.nix` if the machine should run dev databases.
+4. Register the host in `flake.nix` (`nixosConfigurations.<newhost> = mkHost { hostModule = ./hosts/<newhost>/configuration.nix; };`).
+5. `git add hosts/<newhost>/` (flakes only see tracked files), then `sudo nixos-rebuild switch --flake ~/nixos-config#<newhost>`.
 
-These cannot be automated and must be done by hand on each new machine.
+### Manual steps after install
 
-### Git Credentials
+- **SSH keys** — generate (`ssh-keygen -t ed25519`) or restore from backup; add to GitHub.
+- **Git identity** — declared in `home/home.nix` (`programs.git.settings.user.*`); do **not** use `git config --global` (the config file is a read-only symlink).
+- **Wallpaper** — run `waypaper` (Wayland) or nitrogen (X11) and pick one per session.
+- **App logins** — Chrome, VS Code, Signal, WhatsApp, Teams, Spotify, Obsidian.
+- **Dev repos** — see [docs/dev-environments.md](docs/dev-environments.md):
 
-Git identity is managed declaratively in `home/home.nix`. The config file is a read-only nix store symlink — do **not** run `git config --global`, it will fail. To change name or email, edit `home/home.nix`:
+  ```bash
+  mkdir -p ~/dev
+  git clone git@github.com:proasync/pagoda-monorepo.git ~/dev/pagoda-monorepo
+  git clone git@github.com:proasync/proasync-monorepo.git ~/dev/proasync-monorepo
+  git clone git@github.com:proasync/wisdom-woocommerce-plugin.git ~/dev/wisdom-woocommerce-plugin
+  ```
 
-```nix
-programs.git = {
-  settings.user.name = "your-name";
-  settings.user.email = "your@email.com";
-};
-```
-
-Then run `nrs` to apply.
-
-### SSH Keys
-
-Your SSH keys are **not** stored in this repo. After install:
-
-```bash
-# Option A: Generate a new key
-ssh-keygen -t ed25519 -C "your@email.com"
-# Then add ~/.ssh/id_ed25519.pub to GitHub
-
-# Option B: Restore from backup
-cp /path/to/backup/id_ed25519 ~/.ssh/
-cp /path/to/backup/id_ed25519.pub ~/.ssh/
-chmod 600 ~/.ssh/id_ed25519
-```
-
-### Wallpaper (Hyprland)
-
-Edit `~/.config/hypr/hyprpaper.conf` and set your preferred wallpaper:
-
-```conf
-preload = /home/proasync/.config/wallpapers/your-wallpaper.png
-wallpaper {
-    monitor =
-    path = /home/proasync/.config/wallpapers/your-wallpaper.png
-}
-```
-
-Then restart hyprpaper:
-
-```bash
-pkill hyprpaper && hyprpaper &
-```
-
-Wallpaper files are in `home/dotfiles/wallpapers/` (symlinked to `~/.config/wallpapers/`).
-
-### App Accounts (must log in manually)
-
-| App           | Notes                                               |
-| ------------- | --------------------------------------------------- |
-| Google Chrome | Sign in to sync bookmarks/extensions                |
-| VS Code       | Sign in for Settings Sync                           |
-| Signal        | Link as new device from phone                       |
-| WhatsApp      | Scan QR code from phone                             |
-| Teams         | Sign in with Microsoft account                      |
-| Spotify       | Sign in                                             |
-| Obsidian      | Point at your vault folder (`~/notes/` or wherever) |
-
-### WordPress Dev Setup (desktop only)
-
-If you need the WordPress/WooCommerce dev environment:
-
-```bash
-sudo bash ~/nixos-config/scripts/setup-wordpress.sh
-```
-
-You will be prompted for an admin password. Then clone your plugin repo:
-
-```bash
-mkdir -p ~/dev
-git clone git@github.com:proasync/wisdom-woocommerce-plugin.git ~/dev/wisdom-woocommerce-plugin
-```
-
-### Dev Repos
-
-```bash
-mkdir -p ~/dev
-git clone git@github.com:proasync/pagoda-monorepo.git ~/dev/pagoda-monorepo
-git clone git@github.com:proasync/wisdom-woocommerce-plugin.git ~/dev/wisdom-woocommerce-plugin
-```
-
----
-
-## Keyboard Remapping: Vim Arrows with CapsLock
-
-CapsLock → Nav layer, Nav+HJKL → arrow keys. Declared in `modules/common.nix` via `services.keyd` and applied automatically on every `nixos-rebuild`. No manual steps needed on a new machine.
-
-| Key combo       | Output     |
-| --------------- | ---------- |
-| `CapsLock + H`  | ← Left     |
-| `CapsLock + J`  | ↓ Down     |
-| `CapsLock + K`  | ↑ Up       |
-| `CapsLock + L`  | → Right    |
-| `CapsLock + 1`  | F1         |
-| `CapsLock + 2`  | F2         |
-| `CapsLock + 3`  | F3         |
-| `CapsLock + 4`  | F4         |
-| `CapsLock + 5`  | F5         |
-| `CapsLock + 6`  | F6         |
-| `CapsLock + 7`  | F7         |
-| `CapsLock + 8`  | F8         |
-| `CapsLock + 9`  | F9         |
-
-Works system-wide at the kernel input level — terminals, browsers, Hyprland, everything. For more customization, see [keyd documentation](https://github.com/rvaiya/keyd).
-
----
-
-## Day-to-Day Usage
-
-| Command                          | Action                                                                             |
-| -------------------------------- | ---------------------------------------------------------------------------------- |
-| `nrs`                            | Rebuild and switch (`sudo nixos-rebuild switch --flake ~/nixos-config#<hostname>`) |
-| `hyprctl reload`                 | Reload Hyprland (picks up sourced config files)                                    |
-| `pkill hyprpaper && hyprpaper &` | Reload wallpaper after changing hyprpaper.conf                                     |
-
-### Key Hyprland Shortcuts
-
-| Shortcut                          | Action                             |
-| --------------------------------- | ---------------------------------- |
-| `Super + Return`                  | Terminal (Alacritty)               |
-| `Super + R` / `Super + Shift + D` | App launcher (Rofi)                |
-| `Super + Q`                       | Close window                       |
-| `Super + P`                       | Screenshot → Satty annotation tool |
-| `Super + X`                       | Power menu                         |
-| `Super + H/J/K/L`                 | Focus window (vim keys)            |
-| `Super + Shift + H/J/K/L`         | Move window                        |
-| `Super + Alt + H/J/K/L`           | Resize window                      |
-| `Super + 1-9`                     | Switch workspace                   |
-| `Super + Tab` / `Alt + Tab`       | Cycle workspaces                   |
-| `Super + F`                       | Fullscreen                         |
-| `Super + Shift + Space`           | Toggle floating                    |
-| `Super + B`                       | Toggle Waybar                      |
-| `Super + V`                       | PulseAudio volume control          |
-| `Super + Escape`                  | Kill window (cursor mode)          |
-| `Ctrl + Shift + Escape`           | Task manager (htop)                |
-
----
-
-## Adding Packages
-
-- **User packages** (apps, CLI tools): `home/home.nix` → `home.packages`
-- **System packages** (system-wide, all users): `modules/common.nix` → `environment.systemPackages`
-- **Host-specific services**: `hosts/<hostname>/configuration.nix`
-
-After editing, run `nrs`.
+- **WordPress dev env** (optional): `sudo bash ~/nixos-config/scripts/setup-wordpress.sh`

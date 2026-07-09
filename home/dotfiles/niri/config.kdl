@@ -70,7 +70,8 @@ layout {
 
     tab-indicator {
         hide-when-single-tab
-        color "#cba6f7"
+        active-color "#cba6f7"
+        inactive-color "#313244"
     }
 }
 
@@ -152,7 +153,6 @@ window-rule {
 window-rule {
     match app-id=r#"^com\.gabm\.satty$"#
     open-floating true
-    default-floating-window-width { fixed 1600; }
 }
 
 window-rule {
@@ -174,7 +174,7 @@ binds {
     Mod+Q { close-window; }
     Mod+F { maximize-column; }
     Mod+Shift+F { fullscreen-window; }
-    Mod+Shift+Space { toggle-floating; }
+    Mod+Shift+Space { toggle-window-floating; }
 
     // ── Window focus (vim HJKL) ────────────────────────
     Mod+H { focus-column-left; }
@@ -200,9 +200,9 @@ binds {
     Mod+Ctrl+K { set-window-height "-5%"; }
     Mod+Ctrl+J { set-window-height "+5%"; }
 
-    // Preset widths (1/3, 1/2, 2/3)
-    Mod+R { switch-preset-column-width; }
-    Mod+Shift+R { switch-preset-window-height; }
+    // Preset widths (1/3, 1/2, 2/3) — Mod+R is taken by rofi, use Mod+Equal
+    Mod+Equal { switch-preset-column-width; }
+    Mod+Shift+Equal { switch-preset-window-height; }
 
     // ── Workspaces (1-9) ──────────────────────────────
     Mod+1 { focus-workspace 1; }
@@ -261,6 +261,13 @@ binds {
 
     // Volume shortcuts
     Ctrl+Shift+M { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "100%"; }
+    Ctrl+Shift+0 { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0%"; }
+    XF86TouchpadToggle allow-when-locked=true { spawn "sh" "-c" "/home/proasync/.config/hypr/scripts/touchpad-toggle.sh"; }
+
+    // Keybindings help (matches Hyprland Mod+W)
+    Mod+W { spawn "alacritty" "--title" "Keybindings" "-e" "bash" "-c" "/home/proasync/.config/hypr/scripts/keybinds-help.sh | less -R"; }
+
+    // Mouse drag: niri supports Super+drag natively, no bind needed
 
     // Task manager
     Ctrl+Shift+Escape { spawn "alacritty" "-e" "htop"; }
@@ -286,7 +293,12 @@ binds {
     Mod+BracketRight { consume-or-expel-window-right; }
 
     // ── Screenshot ─────────────────────────────────────
-    Mod+P { screenshot; }
     Print { screenshot-screen; }
     Mod+Print { screenshot-window; }
+}
+
+// ── Lid switch ─────────────────────────────────────────
+switch-events {
+    lid-close { spawn "niri" "msg" "output" "eDP-1" "off"; }
+    lid-open  { spawn "niri" "msg" "output" "eDP-1" "on"; }
 }

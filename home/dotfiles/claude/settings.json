@@ -15,5 +15,6 @@
       "TodoWrite",
       "NotebookEdit"
     ]
-  }
+  },
+  "effortLevel": "max"
 }

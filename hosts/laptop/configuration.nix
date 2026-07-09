@@ -1,53 +1,45 @@
 { config, pkgs, ... }:
 
+# proasync-laptop — ASUS Zenbook S 13 UX5304MA
+# (Intel Core Ultra 7 155U "Meteor Lake", Intel Arc iGPU, 2880x1800 OLED).
+# Everything shared lives in modules/common.nix (system) and
+# modules/dev-services.nix (databases/WordPress). Only genuinely
+# laptop-specific settings belong here.
+
 {
   imports = [
     ./hardware-configuration.nix
+    ../../modules/dev-services.nix
   ];
 
-  # Bootloader
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  networking.hostName = "proasync-laptop";
 
   # Enable full Magic SysRq for emergency recovery (Alt+SysRq+REISUB)
   boot.kernel.sysctl."kernel.sysrq" = 1;
-
-  # Networking
-  networking.hostName = "proasync-laptop";
-  networking.networkmanager.enable = true;
-
-  # Timezone & locale
-  time.timeZone = "Europe/Stockholm";
-  i18n.defaultLocale = "en_US.UTF-8";
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "sv_SE.UTF-8";
-    LC_IDENTIFICATION = "sv_SE.UTF-8";
-    LC_MEASUREMENT = "sv_SE.UTF-8";
-    LC_MONETARY = "sv_SE.UTF-8";
-    LC_NAME = "sv_SE.UTF-8";
-    LC_NUMERIC = "sv_SE.UTF-8";
-    LC_PAPER = "sv_SE.UTF-8";
-    LC_TELEPHONE = "sv_SE.UTF-8";
-    LC_TIME = "sv_SE.UTF-8";
-  };
-
-  # Keyboard
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-  };
-
-  # User account
-  users.users.proasync = {
-    isNormalUser = true;
-    description = "Proasync";
-    extraGroups = [ "networkmanager" "wheel" "docker" "lp" ];
-  };
 
   # ── USB root protection ────────────────────────────────
   # Root filesystem is on a USB SSD. Without this, USB power management
   # can suspend the drive during sleep, killing the root fs and freezing.
   boot.kernelParams = [ "usbcore.autosuspend=-1" ];
+
+  # ── Intel Integrated Sensor Hub (ISH) — disabled ──────
+  # ISHTP firmware times out every ~30s, wedging i915 IPC paths and
+  # causing UI lag (esp. in Chrome's gpu-process). Sensors aren't used.
+  boot.blacklistedKernelModules = [
+    "intel_ishtp_hid"
+    "intel_ishtp_loader"
+    "intel_ish_ipc"
+    "intel_ishtp"
+  ];
+
+  # ── WiFi: force iwlwifi to load at boot ────────────────
+  # The Meteor Lake CNVi wifi (Intel 8086:7e40) isn't always ready when
+  # udev coldplugs, so its modalias auto-load event can be missed and the
+  # interface never comes up (manual `modprobe iwlwifi` works fine — proof
+  # it's a load-timing race, not firmware/hardware). Loading it explicitly
+  # via systemd-modules-load makes it deterministic. Merges with kvm-intel
+  # from hardware-configuration.nix.
+  boot.kernelModules = [ "iwlwifi" ];
 
   # ── GPU / hardware acceleration (Intel Core Ultra / Xe) ─
   services.xserver.videoDrivers = [ "modesetting" ];
@@ -94,88 +86,11 @@
   systemd.services.display-manager.environment.QT_SCALE_FACTOR = "2";
 
   # ── X11 HiDPI (for Awesome WM on 2880x1800) ──────────
-  # 160 DPI ≈ 1.67× scale, matching Hyprland's monitor scale
-  # GTK/Qt apps pick up DPI from Xft.dpi automatically
+  # Xft.dpi 160 itself comes from home/home.nix xresources (merged by the
+  # xrdb call in modules/common.nix sessionCommands).
   services.xserver.displayManager.sessionCommands = ''
-    echo "Xft.dpi: 160" | ${pkgs.xrdb}/bin/xrdb -merge
     export QT_AUTO_SCREEN_SCALE_FACTOR=1
   '';
-
-  # ── Host-specific services ─────────────────────────────
-
-  # MariaDB for WordPress development
-  services.mysql = {
-    enable = true;
-    package = pkgs.mariadb;
-    ensureDatabases = [ "wordpress" ];
-    ensureUsers = [
-      {
-        name = "wordpress";
-        ensurePermissions = {
-          "wordpress.*" = "ALL PRIVILEGES";
-        };
-      }
-    ];
-  };
-
-  # Apache + PHP for WordPress
-  services.httpd = {
-    enable = true;
-    user = "wwwrun";
-    group = "wwwrun";
-    virtualHosts.localhost = {
-      documentRoot = "/srv/http";
-      extraConfig = ''
-        <Directory "/srv/http">
-          Options Indexes FollowSymLinks
-          AllowOverride All
-          Require all granted
-          DirectoryIndex index.php index.html
-        </Directory>
-      '';
-    };
-    enablePHP = true;
-    phpPackage = pkgs.php84.buildEnv {
-      extensions = { enabled, all }: enabled ++ (with all; [
-        mysqli
-        pdo_mysql
-        curl
-        gd
-        zip
-        mbstring
-        xml
-        imagick
-        intl
-        soap
-        bcmath
-      ]);
-      extraConfig = ''
-        upload_max_filesize = 64M
-        post_max_size = 64M
-        memory_limit = 256M
-        max_execution_time = 300
-      '';
-    };
-  };
-
-  # PostgreSQL local development database
-  services.postgresql = {
-    enable = true;
-    package = pkgs.postgresql_17;
-    ensureDatabases = [ "proasync" ];
-    ensureUsers = [
-      {
-        name = "proasync";
-        ensureClauses.superuser = true;
-        ensureClauses.login = true;
-      }
-    ];
-    authentication = ''
-      local all all trust
-      host all all 127.0.0.1/32 trust
-      host all all ::1/128 trust
-    '';
-  };
 
   system.stateVersion = "25.11";
 }

@@ -60,8 +60,32 @@ theme.titlebar_fg_focus                         = colors.mauve
 theme.menu_height                               = dpi(16)
 theme.menu_width                                = dpi(140)
 theme.menu_submenu_icon                         = theme.dir .. "/icons/submenu.png"
-theme.taglist_squares_sel                       = theme.dir .. "/icons/square_sel.png"
-theme.taglist_squares_unsel                     = theme.dir .. "/icons/square_unsel.png"
+-- Drop the square indicator images; rely on bg/fg state colors instead
+theme.taglist_squares_sel                       = nil
+theme.taglist_squares_unsel                     = nil
+theme.taglist_bg_focus                          = colors.mauve
+theme.taglist_fg_focus                          = colors.base
+theme.taglist_bg_occupied                       = colors.surface0
+theme.taglist_fg_occupied                       = colors.lavender
+theme.taglist_bg_empty                          = colors.base
+theme.taglist_fg_empty                          = colors.overlay0
+theme.taglist_bg_urgent                         = colors.red
+theme.taglist_fg_urgent                         = colors.base
+theme.taglist_spacing                           = dpi(2)
+
+-- Notifications (naughty)
+theme.notification_font         = "mononoki Nerd Font 11"
+theme.notification_bg           = colors.base
+theme.notification_fg           = colors.text
+theme.notification_border_color = colors.mauve
+theme.notification_border_width = dpi(2)
+theme.notification_margin       = dpi(12)
+theme.notification_shape        = function(cr, w, h)
+    require("gears").shape.rounded_rect(cr, w, h, dpi(8))
+end
+theme.notification_max_width    = dpi(420)
+theme.notification_icon_size    = dpi(48)
+theme.notification_opacity      = 0.97
 theme.layout_tile                               = theme.dir .. "/icons/tile.png"
 theme.layout_tileleft                           = theme.dir .. "/icons/tileleft.png"
 theme.layout_tilebottom                         = theme.dir .. "/icons/tilebottom.png"
@@ -89,7 +113,7 @@ theme.widget_vol_no                             = theme.dir .. "/icons/vol_no.pn
 theme.widget_vol_mute                           = theme.dir .. "/icons/vol_mute.png"
 theme.tasklist_plain_task_name                  = true
 theme.tasklist_disable_icon                     = true
-theme.useless_gap                               = dpi(4)
+theme.useless_gap                               = dpi(3)
 theme.titlebar_close_button_focus               = theme.dir .. "/icons/titlebar/close_focus.png"
 theme.titlebar_close_button_normal              = theme.dir .. "/icons/titlebar/close_normal.png"
 theme.titlebar_ontop_button_focus_active        = theme.dir .. "/icons/titlebar/ontop_focus_active.png"
@@ -112,7 +136,17 @@ theme.titlebar_maximized_button_normal_inactive = theme.dir .. "/icons/titlebar/
 local markup = lain.util.markup
 local separators = lain.util.separators
 
-local keyboardlayout = awful.widget.keyboardlayout:new()
+-- Big keyboard layout badge (driven by rc.lua kbdcfg)
+local kbd_textbox = wibox.widget.textbox()
+local function render_kbd(name)
+    local label = string.upper(name or "US")
+    local color = (label == "SE") and colors.yellow or colors.sapphire
+    kbd_textbox:set_markup(markup.font("mononoki Nerd Font Bold 12",
+        markup(colors.base, markup.bg(color, " " .. label .. " "))))
+end
+render_kbd("US")
+function theme.set_keyboard_layout(name) render_kbd(name) end
+local keyboardlayout = kbd_textbox
 
 -- Textclock
 local clockicon = wibox.widget.imagebox(theme.widget_clock)
@@ -135,8 +169,29 @@ theme.cal = lain.widget.cal({
     }
 })
 
+-- Nerd Font icon helper
+local icon_font = "mononoki Nerd Font 12"
+local function nf_icon(glyph, color)
+    local w = wibox.widget.textbox()
+    w:set_markup(markup.font(icon_font, markup(color, " " .. glyph .. " ")))
+    return w
+end
+
+-- Nerd Font glyphs as literal UTF-8 (Lua 5.2 has no \u{} escapes)
+local glyph_mem      = "󰍛"
+local glyph_cpu      = "󰻠"
+local glyph_temp     = "󰔏"
+local glyph_bat_full = "󰁹"
+local glyph_bat_low  = "󰁺"
+local glyph_bat_emp  = "󰂎"
+local glyph_bat_chg  = "󰂄"
+local glyph_vol_hi   = "󰕾"
+local glyph_vol_lo   = "󰕿"
+local glyph_vol_mut  = "󰝟"
+local glyph_net      = "󰈀"
+
 -- MEM
-local memicon = wibox.widget.imagebox(theme.widget_mem)
+local memicon = nf_icon(glyph_mem, colors.green)
 local mem = lain.widget.mem({
     settings = function()
         widget:set_markup(markup.font(theme.font, markup(colors.green, " " .. mem_now.used .. "MB ")))
@@ -144,7 +199,7 @@ local mem = lain.widget.mem({
 })
 
 -- CPU
-local cpuicon = wibox.widget.imagebox(theme.widget_cpu)
+local cpuicon = nf_icon(glyph_cpu, colors.blue)
 local cpu = lain.widget.cpu({
     settings = function()
         widget:set_markup(markup.font(theme.font, markup(colors.blue, " " .. cpu_now.usage .. "% ")))
@@ -152,49 +207,71 @@ local cpu = lain.widget.cpu({
 })
 
 -- Coretemp
-local tempicon = wibox.widget.imagebox(theme.widget_temp)
+-- Zone numbers vary per machine (and can change on kernel updates), so find
+-- the CPU package sensor by type instead of hardcoding a zone. On the laptop
+-- this resolves to thermal_zone9 (x86_pkg_temp); if no match, lain falls back
+-- to its default (thermal_zone0).
+-- NOTE: must return the /sys/devices/... form — lain matches tempfile
+-- against `find /sys/devices` output, so the /sys/class/... alias won't match.
+local function cpu_temp_file()
+    for i = 0, 20 do
+        local zone = "/sys/devices/virtual/thermal/thermal_zone" .. i
+        local f = io.open(zone .. "/type")
+        if f then
+            local t = f:read("*l")
+            f:close()
+            if t == "x86_pkg_temp" then
+                return zone .. "/temp"
+            end
+        end
+    end
+    return nil
+end
+local tempicon = nf_icon(glyph_temp, colors.peach)
 local temp = lain.widget.temp({
+    tempfile = cpu_temp_file(),
     settings = function()
         widget:set_markup(markup.font(theme.font, markup(colors.peach, " " .. coretemp_now .. "°C ")))
     end
 })
 
--- Battery
-local baticon = wibox.widget.imagebox(theme.widget_battery)
+-- Battery (icon glyph chosen by state inside settings)
+local baticon = wibox.widget.textbox()
+baticon:set_markup(markup.font(icon_font, markup(colors.lavender, " " .. glyph_bat_full .. " ")))
 local bat = lain.widget.bat({
     settings = function()
+        local glyph = glyph_bat_full
         if bat_now.status and bat_now.status ~= "N/A" then
             if bat_now.ac_status == 1 then
-                baticon:set_image(theme.widget_ac)
+                glyph = glyph_bat_chg
             elseif bat_now.perc and tonumber(bat_now.perc) <= 5 then
-                baticon:set_image(theme.widget_battery_empty)
+                glyph = glyph_bat_emp
             elseif bat_now.perc and tonumber(bat_now.perc) <= 15 then
-                baticon:set_image(theme.widget_battery_low)
-            else
-                baticon:set_image(theme.widget_battery)
+                glyph = glyph_bat_low
             end
             widget:set_markup(markup.font(theme.font, markup(colors.lavender, " " .. bat_now.perc .. "% ")))
         else
+            glyph = glyph_bat_chg
             widget:set_markup(markup.font(theme.font, markup(colors.lavender, " AC ")))
-            baticon:set_image(theme.widget_ac)
         end
+        baticon:set_markup(markup.font(icon_font, markup(colors.lavender, " " .. glyph .. " ")))
     end
 })
 
 -- ALSA volume
-local volicon = wibox.widget.imagebox(theme.widget_vol)
+local volicon = wibox.widget.textbox()
+volicon:set_markup(markup.font(icon_font, markup(colors.teal, " " .. glyph_vol_hi .. " ")))
 theme.volume = lain.widget.alsa({
     settings = function()
+        local glyph = glyph_vol_hi
         if volume_now.status == "off" then
-            volicon:set_image(theme.widget_vol_mute)
+            glyph = glyph_vol_mut
         elseif tonumber(volume_now.level) == 0 then
-            volicon:set_image(theme.widget_vol_no)
+            glyph = glyph_vol_mut
         elseif tonumber(volume_now.level) <= 50 then
-            volicon:set_image(theme.widget_vol_low)
-        else
-            volicon:set_image(theme.widget_vol)
+            glyph = glyph_vol_lo
         end
-
+        volicon:set_markup(markup.font(icon_font, markup(colors.teal, " " .. glyph .. " ")))
         widget:set_markup(markup.font(theme.font, markup(colors.teal, " " .. volume_now.level .. "% ")))
     end
 })
@@ -210,7 +287,7 @@ theme.volume.widget:buttons(awful.util.table.join(
 ))
 
 -- Net
-local neticon = wibox.widget.imagebox(theme.widget_net)
+local neticon = nf_icon(glyph_net, colors.pink)
 local net = lain.widget.net({
     settings = function()
         widget:set_markup(markup.font(theme.font,
@@ -246,8 +323,68 @@ function theme.at_screen_connect(s)
     -- Create a taglist widget
     s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.all, awful.util.taglist_buttons)
 
-    -- Create a tasklist widget
-    s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, awful.util.tasklist_buttons)
+    -- Create a tasklist widget (compact: icon + truncated title, fixed-width per entry)
+    s.mytasklist = awful.widget.tasklist {
+        screen  = s,
+        filter  = awful.widget.tasklist.filter.currenttags,
+        buttons = awful.util.tasklist_buttons,
+        style   = {
+            shape_border_width = 0,
+            shape  = gears.shape.rectangle,
+        },
+        layout  = {
+            spacing = dpi(2),
+            layout  = wibox.layout.fixed.horizontal,
+        },
+        widget_template = {
+            {
+                {
+                    {
+                        {
+                            id     = "icon_role",
+                            widget = wibox.widget.imagebox,
+                        },
+                        margins = dpi(2),
+                        widget  = wibox.container.margin,
+                    },
+                    {
+                        {
+                            id     = "text_role",
+                            widget = wibox.widget.textbox,
+                        },
+                        width  = dpi(140),
+                        strategy = "max",
+                        widget = wibox.container.constraint,
+                    },
+                    layout = wibox.layout.fixed.horizontal,
+                },
+                left  = dpi(4),
+                right = dpi(4),
+                widget = wibox.container.margin,
+            },
+            id     = "background_role",
+            widget = wibox.container.background,
+        },
+    }
+
+    -- Spotify / MPRIS now-playing widget (playerctl)
+    s.nowplaying = awful.widget.watch(
+        { "sh", "-c", "playerctl metadata --format '{{artist}} - {{title}}' 2>/dev/null | head -c 60" },
+        2,
+        function(widget, stdout)
+            local text = stdout:gsub("\n", "")
+            if text == "" then
+                widget:set_markup("")
+            else
+                widget:set_markup(markup.font(theme.font, markup(colors.mauve, " 󰎈 " .. text .. " ")))
+            end
+        end
+    )
+    s.nowplaying:buttons(my_table.join(
+        awful.button({}, 1, function() awful.spawn("playerctl play-pause") end),
+        awful.button({}, 4, function() awful.spawn("playerctl next") end),
+        awful.button({}, 5, function() awful.spawn("playerctl previous") end)
+    ))
 
     -- Create the wibox
     s.mywibox = awful.wibar({ position = "top", screen = s, height = dpi(20), bg = colors.base, fg = colors.text })
@@ -260,8 +397,14 @@ function theme.at_screen_connect(s)
             s.mytaglist,
             s.mypromptbox,
             spr,
+            s.mytasklist,
         },
-        s.mytasklist, -- Middle widget
+        { -- Middle widget: now-playing, forced centered
+            s.nowplaying,
+            halign = "center",
+            valign = "center",
+            widget = wibox.container.place,
+        },
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
             wibox.widget.systray(),
@@ -280,6 +423,7 @@ function theme.at_screen_connect(s)
             tempicon,
             temp.widget,
             arrl_ld,
+            wibox.container.background(baticon, colors.surface0),
             wibox.container.background(bat.widget, colors.surface0),
             arrl_dl,
             wibox.container.background(neticon, colors.surface0),

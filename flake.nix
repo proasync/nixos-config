@@ -35,8 +35,8 @@
         hostModule = ./hosts/desktop/configuration.nix;
       };
       proasync-laptop = mkHost {
-    hostModule = ./hosts/laptop/configuration.nix;
-  };
+        hostModule = ./hosts/laptop/configuration.nix;
+      };
     };
   };
 }
