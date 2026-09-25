@@ -41,7 +41,7 @@ nixos-config/
 │       ├── waybar/  rofi/  mako/    # bar, launcher, notifications
 │       ├── alacritty/  btop/  cava/ # terminal & TUI rice
 │       ├── claude/                  # Claude Code settings
-│       └── wallpapers/              # browsable by waypaper
+│       └── wallpapers/              # browsable by waypaper; stored via Git LFS (see below)
 └── scripts/
     └── setup-wordpress.sh     # One-time WordPress/WooCommerce dev setup
 ```
@@ -79,6 +79,10 @@ CapsLock is a nav layer via keyd (`modules/common.nix`): `CapsLock+HJKL` → arr
 - **Host-specific anything**: `hosts/<hostname>/configuration.nix`
 - **Fonts**: `modules/common.nix` → `fonts.packages`
 - **New dotfile dir**: put it in `home/dotfiles/` and add a `mkOutOfStoreSymlink` entry in `home/home.nix`
+- **New wallpaper**: drop it in `home/dotfiles/wallpapers/` and commit — `.gitattributes` routes it
+  through Git LFS. Wallpapers committed before 2026-09-25 are still plain blobs (history wasn't
+  rewritten). Never widen the LFS pattern to files Nix reads at build time (e.g.
+  `hosts/laptop/sddm-background.jpeg`): a clean-tree flake build would get the pointer, not the image.
 
 After editing nix files, run `nrs`. Dotfile edits under `home/dotfiles/` take effect
 immediately (live symlinks) — no rebuild needed unless you add/remove a symlink.
@@ -98,7 +102,7 @@ for months and update in a panic.
 ## Installing on a new machine
 
 1. Install NixOS normally (EFI). Keep the generated `/etc/nixos/hardware-configuration.nix`.
-2. `nix --extra-experimental-features 'nix-command flakes' shell nixpkgs#git`, then clone this repo to `~/nixos-config`.
+2. `nix --extra-experimental-features 'nix-command flakes' shell nixpkgs#git nixpkgs#git-lfs`, then clone this repo to `~/nixos-config`.
 3. Create `hosts/<newhost>/`, copy the machine's `hardware-configuration.nix` in, and write a `configuration.nix` with the hostname, GPU driver, and whatever is genuinely host-specific — everything else comes from `modules/common.nix`. Import `../../modules/dev-services.nix` if the machine should run dev databases.
 4. Register the host in `flake.nix` (`nixosConfigurations.<newhost> = mkHost { hostModule = ./hosts/<newhost>/configuration.nix; };`).
 5. `git add hosts/<newhost>/` (flakes only see tracked files), then `sudo nixos-rebuild switch --flake ~/nixos-config#<newhost>`.
@@ -107,6 +111,9 @@ for months and update in a panic.
 
 - **SSH keys** — generate (`ssh-keygen -t ed25519`) or restore from backup; add to GitHub.
 - **Git identity** — declared in `home/home.nix` (`programs.git.settings.user.*`); do **not** use `git config --global` (the config file is a read-only symlink).
+- **Git LFS hooks** — `cd ~/nixos-config && git lfs update && git lfs pull`. Home Manager
+  (`programs.git.lfs`) installs git-lfs and its filters, but the per-repo hooks (needed so
+  `git push` uploads LFS objects) and the wallpaper downloads are per-clone.
 - **Wallpaper** — run `waypaper` (Wayland) or nitrogen (X11) and pick one per session.
 - **App logins** — Chrome, VS Code, Signal, WhatsApp, Teams, Spotify, Obsidian.
 - **Dev repos** — see [docs/dev-environments.md](docs/dev-environments.md):

@@ -241,6 +241,8 @@ in
     enable = true;
     settings.user.name = "proasync";
     settings.user.email = "andreas@pagodalog.com";
+    # Wallpapers in this repo are stored via LFS (see .gitattributes).
+    lfs.enable = true;
   };
 
   # ── GTK theme ──────────────────────────────────────────
