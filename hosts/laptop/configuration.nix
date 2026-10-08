@@ -57,6 +57,9 @@
     "intel_ishtp_loader"
     "intel_ish_ipc"
     "intel_ishtp"
+    # xe: the other driver matching the GPU (8086:7d45). It refuses Meteor Lake
+    # anyway, and keeping it out removes the i915/xe load race (see initrd below).
+    "xe"
   ];
 
   # ── WiFi: force iwlwifi to load at boot ────────────────
@@ -67,6 +70,15 @@
   # via systemd-modules-load makes it deterministic. Merges with kvm-intel
   # from hardware-configuration.nix.
   boot.kernelModules = [ "iwlwifi" ];
+
+  # ── GPU: load i915 in the initrd ───────────────────────
+  # 2026-09-30: a boot came up with no i915 at all — same modalias-race class
+  # as iwlwifi above. The GPU's PCI id resolves to both i915 and xe; only xe
+  # (which refuses Meteor Lake without force_probe) got loaded. X then started
+  # on a dummy 800x600 "None-1" output with llvmpipe: unusable, hung-looking
+  # session. Loading i915 from the initrd makes it deterministic (+ early KMS).
+  # See docs/external-display.md for the symptoms.
+  boot.initrd.kernelModules = [ "i915" ];
 
   # ── GPU / hardware acceleration (Intel Core Ultra / Xe) ─
   services.xserver.videoDrivers = [ "modesetting" ];

@@ -23,7 +23,8 @@ nixos-config/
 ├── bootstrap.nix              # Minimal config for first boot before the flake is applied
 ├── assets/                    # Build-time static assets
 ├── docs/
-│   └── dev-environments.md    # pagoda/proasync monorepo dev setup on NixOS
+│   ├── dev-environments.md    # pagoda/proasync monorepo dev setup on NixOS
+│   └── external-display.md    # laptop → TV/projector runbook (read before touching xrandr)
 ├── hosts/
 │   ├── desktop/               # hostname, AMD GPU, SDDM theme
 │   └── laptop/                # hostname, Intel GPU/VA-API, HiDPI, power, hardware quirks
@@ -62,6 +63,7 @@ as symlinks into `/nix/store`, which breaks any other machine).
 | `hyprctl reload` | reload Hyprland config |
 | `waypaper` | pick a wallpaper for the current Wayland session (not auto-restored on reboot) |
 | `Super + W` | popup listing all current Hyprland keybindings |
+| `tv-mirror.sh on` / `off` | laptop → TV mirror on X11/Awesome — see [docs/external-display.md](docs/external-display.md) first |
 
 Frequently used binds: `Super+Return` terminal · `Super+R` launcher · `Super+Q` close ·
 `Super+P` screenshot→satty · `Super+X` powermenu · `Super+HJKL` focus ·
