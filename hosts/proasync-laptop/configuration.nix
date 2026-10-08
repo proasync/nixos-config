@@ -10,36 +10,9 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/dev-services.nix
+    ../../modules/remote-access.nix   # Tailscale + tailnet-only SSH
+    ../../modules/lan-dev-ports.nix   # Expo/Metro + training API for the phone
   ];
-
-  networking.hostName = "proasync-laptop";
-
-  # ── Tailscale — mesh VPN for remote dev ────────────────
-  # Joins the tailnet (work-desktop, phone). After `nrs`, one-time:
-  #   sudo tailscale up      (opens browser login — same account as work box)
-  # MagicDNS then gives stable names: `ssh proasync@work-desktop` from
-  # anywhere — no LAN, no DHCP-address roulette.
-  services.tailscale.enable = true;
-  networking.firewall = {
-    # Trust the tailnet interface (it's only ever our own devices)…
-    trustedInterfaces = [ "tailscale0" ];
-    # …and allow Tailscale's WireGuard port for direct (non-relayed) links.
-    allowedUDPPorts = [ config.services.tailscale.port ];
-  };
-
-  # ── SSH — reachable ONLY over the tailnet ──────────────
-  # openFirewall = false keeps port 22 closed on every real network
-  # (home/work/café); tailscale0 being trusted is the sole way in.
-  # Keys-only, no root, no passwords.
-  services.openssh = {
-    enable = true;
-    openFirewall = false;
-    settings = {
-      PasswordAuthentication = false;
-      KbdInteractiveAuthentication = false;
-      PermitRootLogin = "no";
-    };
-  };
 
   # Enable full Magic SysRq for emergency recovery (Alt+SysRq+REISUB)
   boot.kernel.sysctl."kernel.sysrq" = 1;
@@ -89,17 +62,10 @@
     ];
   };
   environment.variables.LIBVA_DRIVER_NAME = "iHD";
-  environment.systemPackages = with pkgs; [
-    libva-utils
-    # Override the SDDM theme to include our custom wallpaper
-    (catppuccin-sddm-corners.overrideAttrs (old: {
-      postInstall = (old.postInstall or "") + ''
-        cp ${./sddm-background.jpeg} $out/share/sddm/themes/catppuccin-sddm-corners/backgrounds/custom.jpeg
-        substituteInPlace $out/share/sddm/themes/catppuccin-sddm-corners/theme.conf \
-          --replace-fail 'Background="backgrounds/flatppuccin_macchiato.png"' 'Background="backgrounds/custom.jpeg"'
-      '';
-    }))
-  ];
+  environment.systemPackages = with pkgs; [ libva-utils ];
+
+  # Custom SDDM wallpaper (modules/sddm-theme.nix)
+  proasync.sddmBackground = ./sddm-background.jpeg;
 
   # ── Bluetooth ──────────────────────────────────────────
   hardware.bluetooth = {

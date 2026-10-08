@@ -1,18 +1,21 @@
 { config, pkgs, lib, osConfig, ... }:
 
 let
+  # Shared by every host. Anything host-specific goes in hosts/<host>/home.nix
+  # (imported by flake.nix) or hosts/<host>/hypr/ — never a hostname check here.
+  hostName = osConfig.networking.hostName;
   hyprDir = "/home/proasync/nixos-config/home/dotfiles/hypr";
-  hostName = osConfig.networking.hostName or "";
-  hyprMonitorsPath =
-    if hostName == "proasync-laptop"
-    then "/home/proasync/nixos-config/hosts/laptop/hypr/monitors.conf"
-    else "${hyprDir}/monitors.conf";
-  hyprHostExtrasPath =
-    if hostName == "proasync-laptop"
-    then "/home/proasync/nixos-config/hosts/laptop/hypr/hostextras.conf"
-    else "${hyprDir}/hostextras.conf";
+  hostHyprDir = "/home/proasync/nixos-config/hosts/${hostName}/hypr";
+  hostHasHyprExtras = builtins.pathExists (../hosts + "/${hostName}/hypr/hostextras.conf");
 in
 {
+  # monitors.conf is always per host: nwg-displays (Super+D) writes through the
+  # ~/.config/hypr symlink, so it must never point at a file other hosts share.
+  assertions = [{
+    assertion = builtins.pathExists (../hosts + "/${hostName}/hypr/monitors.conf");
+    message = "hosts/${hostName}/hypr/monitors.conf is missing: every host needs its own (copy one from another host).";
+  }];
+
   home.username = "proasync";
   home.homeDirectory = "/home/proasync";
   home.stateVersion = "25.11";
@@ -285,12 +288,11 @@ in
   xresources.properties = {
     "Xcursor.theme" = "Bibata-Modern-Ice";
     "Xcursor.size" = 24;
-  } // lib.optionalAttrs (hostName == "proasync-laptop") {
-    "Xft.dpi" = 160;  # 2880x1800 @ 1.67× scale (matches Hyprland)
   };
 
   # ── Dotfiles (symlinked to repo for live editing) ──────
-  # Keep Hyprland mostly shared, but bind monitors.conf per host.
+  # Hyprland is shared, except monitors.conf (always per host) and
+  # hostextras.conf (per host if hosts/<host>/hypr/hostextras.conf exists).
   home.file.".config/hypr/hyprland.conf".source =
     config.lib.file.mkOutOfStoreSymlink "${hyprDir}/hyprland.conf";
   home.file.".config/hypr/input.conf".source =
@@ -308,11 +310,12 @@ in
   home.file.".config/hypr/scripts".source =
     config.lib.file.mkOutOfStoreSymlink "${hyprDir}/scripts";
   home.file.".config/hypr/monitors.conf" = {
-    source = config.lib.file.mkOutOfStoreSymlink hyprMonitorsPath;
+    source = config.lib.file.mkOutOfStoreSymlink "${hostHyprDir}/monitors.conf";
     force = true;
   };
   home.file.".config/hypr/hostextras.conf" = {
-    source = config.lib.file.mkOutOfStoreSymlink hyprHostExtrasPath;
+    source = config.lib.file.mkOutOfStoreSymlink
+      (if hostHasHyprExtras then "${hostHyprDir}/hostextras.conf" else "${hyprDir}/hostextras.conf");
     force = true;
   };
 

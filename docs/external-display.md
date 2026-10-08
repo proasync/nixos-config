@@ -63,7 +63,7 @@ iteration, Chrome's GPU process failed, GL terminals could not start.
 
 The GPU's PCI id matches both `i915` and `xe`; only `xe` (which refuses Meteor
 Lake) was loaded — the same modalias-race class as the iwlwifi fix in
-`hosts/laptop/configuration.nix`. Fix: `boot.initrd.kernelModules = [ "i915" ]`
+`hosts/proasync-laptop/configuration.nix`. Fix: `boot.initrd.kernelModules = [ "i915" ]`
 plus `xe` blacklisted. If it still happens: `journalctl -k -b -1 | grep -E
 'i915|xe 0000'` and compare with a good boot.
 

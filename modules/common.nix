@@ -1,6 +1,8 @@
 { config, pkgs, lib, ... }:
 
 {
+  imports = [ ./sddm-theme.nix ];
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
@@ -18,9 +20,11 @@
   # ── Bootloader ─────────────────────────────────────────
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  # Cap boot entries so a small installer-made ESP can never fill up.
+  boot.loader.systemd-boot.configurationLimit = 20;
 
   # ── Networking ─────────────────────────────────────────
-  # (hostname is set per host in hosts/<host>/configuration.nix)
+  # (hostname = the host's name in flake.nix; mkHost sets it)
   networking.networkmanager.enable = true;
 
   # ── Timezone & locale ──────────────────────────────────
@@ -71,10 +75,6 @@
 
   # ── USB auto-mount ───────────────────────────────────
   services.udisks2.enable = true;
-
-  # ── Dev: phone ↔ laptop over LAN ──────────────────────
-  # 8081 = Expo/Metro (JS bundle); 4300 = training API (sign-in + sync).
-  networking.firewall.allowedTCPPorts = [ 8081 4300 ];
 
   # ── Audio (PipeWire) ──────────────────────────────────
   # Handles Bluetooth audio (A2DP hi-fi + HSP/HFP mic auto-switch) out of the box.

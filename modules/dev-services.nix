@@ -2,9 +2,9 @@
 
 # Local development services — databases + WordPress stack.
 #
-# Imported by every host that should run dev services (currently both
-# home-desktop and proasync-laptop). If a future machine shouldn't run
-# them, just drop this import from its hosts/<host>/configuration.nix.
+# Imported by every host that should run dev services (currently all three:
+# home-desktop, proasync-laptop, work-desktop). If a future machine shouldn't
+# run them, just drop this import from its hosts/<host>/configuration.nix.
 
 {
   # ── MariaDB — WordPress development ────────────────────

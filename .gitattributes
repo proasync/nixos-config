@@ -1,6 +1,6 @@
 # Wallpapers go through Git LFS. Only files added after 2026-09-25 are LFS
 # pointers — the older ones stay regular blobs (no history rewrite).
 # Keep this scoped to wallpapers: files Nix reads at build time (e.g.
-# hosts/laptop/sddm-background.jpeg) must NOT be LFS, or a clean-tree flake
+# hosts/proasync-laptop/sddm-background.jpeg) must NOT be LFS, or a clean-tree flake
 # build would copy the pointer text instead of the image.
 home/dotfiles/wallpapers/** filter=lfs diff=lfs merge=lfs -text

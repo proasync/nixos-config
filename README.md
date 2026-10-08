@@ -1,15 +1,18 @@
 # nixos-config
 
-Flake-based NixOS + Home Manager configuration for two machines:
+Flake-based NixOS + Home Manager configuration for three machines:
 
-| | `home-desktop` | `proasync-laptop` |
-| --- | --- | --- |
-| Hardware | i5-12400F + RX 7600 | ASUS Zenbook S 13 UX5304MA (Core Ultra 7 155U) |
-| GPU | AMD (`amdgpu`) | Intel Arc iGPU (`modesetting` + iHD VA-API) |
-| Display | standard DPI | 2880x1800 HiDPI (SDDM 2×, Xft.dpi 160, Hyprland 1.67×) |
-| Laptop-only quirks | — | USB-root autosuspend guard, Intel ISH blacklist, thermald, power-profiles-daemon, lid handling, Bluetooth |
-| SDDM theme | stock catppuccin-sddm-corners | same theme + custom wallpaper override |
-| Dev services | MariaDB, Apache+PHP, PostgreSQL | same (via `modules/dev-services.nix`) |
+| | `home-desktop` | `proasync-laptop` | `work-desktop` |
+| --- | --- | --- | --- |
+| Hardware | i5-12400F + RX 7600 | ASUS Zenbook S 13 UX5304MA (Core Ultra 7 155U) | Ryzen 5 5600X + RX 470, 32 GB |
+| GPU | AMD (`amdgpu`) | Intel Arc iGPU (`modesetting` + iHD VA-API) | AMD (`amdgpu`) |
+| Display | standard DPI | 2880x1800 HiDPI (SDDM 2×, Xft.dpi 160, Hyprland 1.67×) | 3 × 1920x1080/1200, standard DPI |
+| Host-only quirks | — | USB-root autosuspend guard, Intel ISH blacklist, i915 in initrd + `xe` blacklisted, iwlwifi force-load, thermald, power-profiles-daemon, lid handling, Bluetooth | — |
+| Remote access (Tailscale + tailnet-only SSH) | — | yes | yes |
+| Phone dev ports on LAN (8081, 4300) | yes | yes | — (phone uses Tailscale) |
+| SDDM theme | stock catppuccin-sddm-corners | same + custom wallpaper | stock |
+| Dev services | MariaDB, Apache+PHP, PostgreSQL | same | same |
+| Status | | | **not installed yet**: hardware config is a placeholder (see *Installing on a new machine*) |
 
 - **WMs (all hosts):** Hyprland (Wayland, primary), niri (Wayland), Awesome (Xorg fallback)
 - **Theme:** Catppuccin Mocha Mauve — SDDM, Hyprland, Waybar, Rofi, Alacritty, Mako, Hyprlock, GTK
@@ -19,20 +22,25 @@ Flake-based NixOS + Home Manager configuration for two machines:
 
 ```
 nixos-config/
-├── flake.nix                  # Entry point — one mkHost call per machine
-├── bootstrap.nix              # Minimal config for first boot before the flake is applied
+├── flake.nix                  # Entry point — host list; mkHost <name> wires hosts/<name>/
 ├── assets/                    # Build-time static assets
 ├── docs/
 │   ├── dev-environments.md    # pagoda/proasync monorepo dev setup on NixOS
 │   └── external-display.md    # laptop → TV/projector runbook (read before touching xrandr)
-├── hosts/
-│   ├── desktop/               # hostname, AMD GPU, SDDM theme
-│   └── laptop/                # hostname, Intel GPU/VA-API, HiDPI, power, hardware quirks
-│       └── hypr/              # laptop-only monitors.conf + hostextras.conf overrides
+├── hosts/                     # one folder per host, named exactly like the hostname
+│   ├── home-desktop/          # AMD GPU
+│   ├── proasync-laptop/       # Intel GPU/VA-API, HiDPI, power, hardware quirks
+│   │   └── home.nix           # per-host Home Manager overrides (Xft.dpi)
+│   └── work-desktop/          # AMD GPU, remote access (hardware config = placeholder)
+│       (each has configuration.nix, hardware-configuration.nix and hypr/monitors.conf;
+│        home.nix and hypr/hostextras.conf are optional)
 ├── modules/
 │   ├── common.nix             # Everything shared: boot, locale, user, WMs, SDDM, audio,
 │   │                          #   fonts, keyd, nix-ld (Electron libs), docker, printing, gc
-│   └── dev-services.nix       # MariaDB + Apache/PHP (WordPress) + PostgreSQL — imported per host
+│   ├── sddm-theme.nix         # SDDM theme package; `proasync.sddmBackground` per host
+│   ├── dev-services.nix       # MariaDB + Apache/PHP (WordPress) + PostgreSQL — imported per host
+│   ├── remote-access.nix      # Tailscale + tailnet-only SSH — imported per host
+│   └── lan-dev-ports.nix      # firewall ports for phone dev (Expo/Metro, training API) — per host
 ├── home/
 │   ├── home.nix               # Home Manager: packages, bash, git, GTK, dotfile symlinks
 │   ├── scripts/               # User scripts installed to ~/.local/bin
@@ -47,12 +55,23 @@ nixos-config/
     └── setup-wordpress.sh     # One-time WordPress/WooCommerce dev setup
 ```
 
-**Desktop vs laptop:** shared config lives in `modules/`; anything host-specific lives in
-`hosts/<host>/configuration.nix`. Hyprland's `monitors.conf` and `hostextras.conf` are the
-same pattern at the dotfile level — `home/home.nix` binds the laptop to
-`hosts/laptop/hypr/*` and every other host to the defaults in `home/dotfiles/hypr/`.
-Those two default files must stay **regular files** (they were once accidentally committed
-as symlinks into `/nix/store`, which breaks any other machine).
+**Per-host settings:** one name drives everything — the flake attribute, `networking.hostName`
+(set by `mkHost`) and the `hosts/<name>/` folder — so `nrs` (`#$(hostname)`) always finds the
+right host. Shared config lives in `modules/` and `home/`; anything host-specific lives in
+`hosts/<name>/`:
+
+- `configuration.nix` — system settings, plus which optional modules the host imports.
+- `home.nix` *(optional)* — Home Manager overrides, merged on top of `home/home.nix`.
+  Never add hostname checks to `home/home.nix`.
+- `hypr/monitors.conf` — **required** for every host (an assertion fails the build without
+  it). nwg-displays (Super+D) writes through the `~/.config/hypr` symlink, so this must
+  never be a file that hosts share.
+- `hypr/hostextras.conf` *(optional)* — falls back to the no-op `home/dotfiles/hypr/hostextras.conf`,
+  which must stay a **regular file** (it was once accidentally committed as a symlink into
+  `/nix/store`).
+- Awesome does the same at runtime: `home/dotfiles/awesome/configs/<hostname>/`, falling back
+  to `configs/default/`. Don't copy the `proasync-laptop` folder to a desktop; it runs the
+  laptop's xrandr/DPI setup.
 
 ## Day-to-day
 
@@ -78,13 +97,13 @@ CapsLock is a nav layer via keyd (`modules/common.nix`): `CapsLock+HJKL` → arr
 
 - **User packages** (apps, CLI tools): `home/home.nix` → `home.packages`
 - **System packages / services** (all hosts): `modules/common.nix`
-- **Host-specific anything**: `hosts/<hostname>/configuration.nix`
+- **Host-specific anything**: `hosts/<hostname>/` (see *Per-host settings* above)
 - **Fonts**: `modules/common.nix` → `fonts.packages`
 - **New dotfile dir**: put it in `home/dotfiles/` and add a `mkOutOfStoreSymlink` entry in `home/home.nix`
 - **New wallpaper**: drop it in `home/dotfiles/wallpapers/` and commit — `.gitattributes` routes it
   through Git LFS. Wallpapers committed before 2026-09-25 are still plain blobs (history wasn't
   rewritten). Never widen the LFS pattern to files Nix reads at build time (e.g.
-  `hosts/laptop/sddm-background.jpeg`): a clean-tree flake build would get the pointer, not the image.
+  `hosts/proasync-laptop/sddm-background.jpeg`): a clean-tree flake build would get the pointer, not the image.
 
 After editing nix files, run `nrs`. Dotfile edits under `home/dotfiles/` take effect
 immediately (live symlinks) — no rebuild needed unless you add/remove a symlink.
@@ -103,17 +122,42 @@ for months and update in a panic.
 
 ## Installing on a new machine
 
-1. Install NixOS normally (EFI). Keep the generated `/etc/nixos/hardware-configuration.nix`.
-2. `nix --extra-experimental-features 'nix-command flakes' shell nixpkgs#git nixpkgs#git-lfs`, then clone this repo to `~/nixos-config`.
-3. Create `hosts/<newhost>/`, copy the machine's `hardware-configuration.nix` in, and write a `configuration.nix` with the hostname, GPU driver, and whatever is genuinely host-specific — everything else comes from `modules/common.nix`. Import `../../modules/dev-services.nix` if the machine should run dev databases.
-4. Register the host in `flake.nix` (`nixosConfigurations.<newhost> = mkHost { hostModule = ./hosts/<newhost>/configuration.nix; };`).
-5. `git add hosts/<newhost>/` (flakes only see tracked files), then `sudo nixos-rebuild switch --flake ~/nixos-config#<newhost>`.
+Before you start, if the machine has other disks (e.g. an old install you keep as a
+backup): **unplug them for the install.** Otherwise the installer may put the NixOS
+bootloader on the other disk's EFI partition, and `hardware-configuration.nix` may pick up
+its partitions. Afterwards NixOS is the default boot entry; reach the old disk through the
+firmware boot menu (F8/F11/F12) — systemd-boot does not list OSes on other disks.
+
+1. Install NixOS normally (UEFI; Secure Boot off). Create the user `proasync` (the
+   dotfile links hardcode `/home/proasync`). Keep the generated
+   `/etc/nixos/hardware-configuration.nix` and note `system.stateVersion` in
+   `/etc/nixos/configuration.nix`.
+2. `nix --extra-experimental-features 'nix-command flakes' shell nixpkgs#git nixpkgs#git-lfs`,
+   then clone this repo to `~/nixos-config` (that exact path — dotfiles link into it).
+   Wallpapers arrive as small LFS pointer text files until the *Git LFS* step below.
+3. If the host isn't in the repo yet: create `hosts/<newhost>/` with a `configuration.nix`
+   (GPU driver, optional module imports, whatever is genuinely host-specific — copy the
+   closest existing host) and `hypr/monitors.conf`, and add `"<newhost>"` to the host list
+   in `flake.nix`. (`work-desktop` already exists.)
+4. Copy the generated `hardware-configuration.nix` over `hosts/<newhost>/hardware-configuration.nix`
+   (for `work-desktop` this replaces the placeholder) and set `system.stateVersion` to the
+   value from step 1.
+5. `git add hosts/<newhost>/` (flakes only see tracked files), then
+   `sudo nixos-rebuild switch --flake ~/nixos-config#<newhost>` — spelled out, because the
+   hostname is still `nixos` until this first switch, so `nrs` can't find the host yet.
+6. Reboot, then commit the hardware config.
 
 ### Manual steps after install
 
 - **SSH keys** — generate (`ssh-keygen -t ed25519`) or restore from backup; add to GitHub.
+  Keys allowed to SSH *in* are listed in `modules/remote-access.nix`.
+- **Tailscale** (hosts importing `modules/remote-access.nix`) — `sudo tailscale up`. If an older
+  install of the same machine is still registered under the same name (e.g. the Arch
+  `work-desktop`), remove it in the Tailscale admin console first, or the new node gets a
+  `-1` suffix and `ssh proasync@work-desktop` reaches the old one.
 - **Git identity** — declared in `home/home.nix` (`programs.git.settings.user.*`); do **not** use `git config --global` (the config file is a read-only symlink).
-- **Git LFS hooks** — `cd ~/nixos-config && git lfs update && git lfs pull`. Home Manager
+- **Git LFS** — `cd ~/nixos-config && git lfs update && git lfs pull`. Until this runs, the
+  wallpapers added since 2026-09-25 are small text pointer files, not images. Home Manager
   (`programs.git.lfs`) installs git-lfs and its filters, but the per-repo hooks (needed so
   `git push` uploads LFS objects) and the wallpaper downloads are per-clone.
 - **Wallpaper** — run `waypaper` (Wayland) or nitrogen (X11) and pick one per session.

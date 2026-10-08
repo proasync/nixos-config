@@ -9,15 +9,11 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/dev-services.nix
+    ../../modules/lan-dev-ports.nix   # Expo/Metro + training API for the phone
   ];
-
-  networking.hostName = "home-desktop";
 
   # GPU drivers (desktop = AMD)
   services.xserver.videoDrivers = [ "amdgpu" ];
-
-  # SDDM theme (unmodified — laptop overrides it with a custom wallpaper)
-  environment.systemPackages = [ pkgs.catppuccin-sddm-corners ];
 
   system.stateVersion = "25.11";
 }

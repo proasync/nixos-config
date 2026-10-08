@@ -59,9 +59,10 @@ per machine.
   glibc prebuilt that nix-ld lets run (`stdenv.cc.cc.lib`, `zlib` are in the nix-ld
   list); if it falls back to source-building, the global toolchain covers it.
 - **Expo / React Native (`apps/training-mobile`)**: Metro bundler on TCP **8081** and
-  the training API on **4300** are opened in the firewall (`modules/common.nix`) so a
-  phone on the LAN can connect via Expo Go. `watchman` is installed for fast file
-  watching.
+  the training API on **4300** are opened in the firewall (`modules/lan-dev-ports.nix`,
+  imported by home-desktop and proasync-laptop) so a phone on the LAN can connect via
+  Expo Go. work-desktop keeps them closed on the office LAN; there the phone connects
+  over Tailscale instead. `watchman` is installed for fast file watching.
 
 ## Global Node vs repo Node
 
