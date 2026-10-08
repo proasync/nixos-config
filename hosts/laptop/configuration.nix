@@ -14,6 +14,33 @@
 
   networking.hostName = "proasync-laptop";
 
+  # ── Tailscale — mesh VPN for remote dev ────────────────
+  # Joins the tailnet (work-desktop, phone). After `nrs`, one-time:
+  #   sudo tailscale up      (opens browser login — same account as work box)
+  # MagicDNS then gives stable names: `ssh proasync@work-desktop` from
+  # anywhere — no LAN, no DHCP-address roulette.
+  services.tailscale.enable = true;
+  networking.firewall = {
+    # Trust the tailnet interface (it's only ever our own devices)…
+    trustedInterfaces = [ "tailscale0" ];
+    # …and allow Tailscale's WireGuard port for direct (non-relayed) links.
+    allowedUDPPorts = [ config.services.tailscale.port ];
+  };
+
+  # ── SSH — reachable ONLY over the tailnet ──────────────
+  # openFirewall = false keeps port 22 closed on every real network
+  # (home/work/café); tailscale0 being trusted is the sole way in.
+  # Keys-only, no root, no passwords.
+  services.openssh = {
+    enable = true;
+    openFirewall = false;
+    settings = {
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = "no";
+    };
+  };
+
   # Enable full Magic SysRq for emergency recovery (Alt+SysRq+REISUB)
   boot.kernel.sysctl."kernel.sysrq" = 1;
 

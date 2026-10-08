@@ -103,6 +103,11 @@ in
 
     # Development
     claude-code
+    codex       # OpenAI Codex CLI — sign in with ChatGPT (Pro/Team sub, no API key)
+    # Multi-agent TUI: runs Claude Code + Codex etc. in parallel tmux+worktree
+    # sessions. Built from source (not in nixpkgs). Provides `cs`. Needs tmux
+    # (enabled below) + gh (present). See home/packages/claude-squad.nix.
+    (callPackage ./packages/claude-squad.nix { })
     nodejs_22   # general-purpose Node; repos pin their own via shell.nix + direnv
                 # (pagoda → Node 18, proasync → Node 20)
     yarn
@@ -234,6 +239,20 @@ in
     enable = true;
     nix-direnv.enable = true;
     enableBashIntegration = true;
+  };
+
+  # ── tmux ───────────────────────────────────────────────
+  # Required by claude-squad (spawns each agent in its own tmux session).
+  # Also the thing that keeps a long agent run alive across a disconnect —
+  # useful later for driving agents over SSH from another machine/phone.
+  # Kept minimal so it doesn't interfere with claude-squad's session mgmt.
+  programs.tmux = {
+    enable = true;
+    mouse = true;
+    baseIndex = 1;
+    historyLimit = 50000;
+    escapeTime = 10;      # snappier for TUIs (claude-squad, nvim)
+    terminal = "tmux-256color";
   };
 
   # ── Git ────────────────────────────────────────────────

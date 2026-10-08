@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "bypassPermissions",
     "allow": [
       "Edit",
       "MultiEdit",
@@ -14,7 +13,18 @@
       "Agent",
       "TodoWrite",
       "NotebookEdit"
-    ]
+    ],
+    "defaultMode": "bypassPermissions"
   },
-  "effortLevel": "max"
+  "model": "opus[1m]",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "xhigh"
+    },
+    "claude-fable-5-1": {
+      "effortLevel": "xhigh"
+    }
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "switchModelsOnFlag": false
 }
