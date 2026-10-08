@@ -20,7 +20,9 @@ code=$?
 case $code in
     10) systemctl poweroff ;;
     11) systemctl reboot ;;
-    12) hyprctl dispatch exit ;;
+    12) # Logout: this menu is shared by Hyprland and niri (Mod+X in both)
+        if [ -n "${NIRI_SOCKET:-}" ]; then niri msg action quit --skip-confirmation
+        else hyprctl dispatch exit; fi ;;
     13) hyprlock ;;
     14) systemctl suspend ;;
 esac

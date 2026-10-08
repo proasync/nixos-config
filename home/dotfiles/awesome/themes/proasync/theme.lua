@@ -225,6 +225,25 @@ local function cpu_temp_file()
             end
         end
     end
+    -- AMD Ryzen (work-desktop) has no x86_pkg_temp zone; its CPU sensor is
+    -- the k10temp hwmon (temp1_input = Tctl). /sys/class/hwmon/* are aliases,
+    -- so resolve to the /sys/devices/... path lain matches against.
+    for i = 0, 20 do
+        local hwmon = "/sys/class/hwmon/hwmon" .. i
+        local f = io.open(hwmon .. "/name")
+        if f then
+            local name = f:read("*l")
+            f:close()
+            if name == "k10temp" then
+                local p = io.popen("readlink -f " .. hwmon)
+                local real = p and p:read("*l")
+                if p then p:close() end
+                if real then
+                    return real .. "/temp1_input"
+                end
+            end
+        end
+    end
     return nil
 end
 local tempicon = nf_icon(glyph_temp, colors.peach)
