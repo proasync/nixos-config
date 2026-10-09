@@ -13,23 +13,27 @@ not the first.
 1. **Mod+Shift+P** — restart picom (`scripts/picom-restart.sh`). If the screen
    comes back, the compositor had stalled; its log is kept (see below).
 2. **Text console: Ctrl+Alt+F3.** The F-row on this ASUS may be in hotkey
-   (media) mode, so if nothing happens try **Fn+Ctrl+Alt+F3**, or
-   **Ctrl+Alt+CapsLock+3** (keyd maps CapsLock+3 → F3). Log in, then:
+   (media) mode, so if nothing happens try **Fn+Ctrl+Alt+F3**. On the POK3R
+   F3 is **Ctrl+Alt+Fn+3**. On either keyboard **Ctrl+Alt+CapsLock+3** works
+   too (keyd maps CapsLock+3 → F3). Log in, then:
    - `pkill -x picom`, back to the desktop with **Ctrl+Alt+F2** (or
      Fn/CapsLock+2). Desktop works again → it was picom.
    - Still stuck → `top` (anything at 100 % CPU? memory full?), then
      `kill -HUP $(pgrep -x awesome)` restarts Awesome and keeps the windows.
 3. **Magic SysRq** (enabled: `kernel.sysrq = 1` in
-   `hosts/proasync-laptop/configuration.nix`). Hold **Alt+PrtSc** (SysRq is
-   the Print Screen key) and tap a letter:
+   `hosts/proasync-laptop/configuration.nix`). SysRq is the Print Screen key
+   — **Fn+P** on the POK3R. Hold **Alt**, tap PrtSc (Fn+P) and let go of it,
+   then, still holding Alt, tap the letter. Let go of Fn before the letter:
+   the Fn layer can turn letters into other keys. Nothing appears on screen;
+   the effect itself (or a `sysrq:` line in `journalctl -k`) is the feedback.
    - **R** takes the keyboard back from X → retry step 2.
    - **W** dumps blocked tasks to the kernel log — tells us whether X or picom
      is stuck in the GPU driver. Wait ~10 s before rebooting so it is saved.
    - **F** runs the OOM killer once — the fix when memory is full.
-   - Last resort instead of holding power: **R E I S U B**, a few seconds
-     between letters (syncs and unmounts disks, then reboots).
-   Check it works while things are fine: Alt+PrtSc+H should log a
-   `sysrq: HELP` line in `journalctl -k`.
+   - Last resort instead of holding power: **R E I S U B**, Alt held the whole
+     time, a few seconds between letters (syncs and unmounts disks, then
+     reboots). If a letter does nothing, tap Fn+P again before it.
+   Verified 2026-10-09: Alt, Fn+P, H logs `sysrq: HELP` in `journalctl -k`.
 4. **Short press on power** — clean shutdown via logind (works as long as the
    kernel is alive). **Holding** power is a hard power-off.
 
