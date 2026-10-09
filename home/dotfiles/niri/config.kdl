@@ -15,7 +15,8 @@ input {
     touchpad {
         tap
         natural-scroll
-        disabled-on-external-mouse
+        // NOT disabled-on-external-mouse: keyd's "keyd virtual pointer" always
+        // counts as an external mouse, so the touchpad was switched off for good.
     }
 
     mouse {
