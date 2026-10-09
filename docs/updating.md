@@ -18,6 +18,7 @@ so everything changed at once. Nix caught the config-level breakage at build tim
 | Hyprland 0.56 removed `dwindle:pseudotile` | config error; Hyprland (UWSM) froze | option removed |
 | Flameshot 14 captures via xdg-desktop-portal | "Unable to capture screen" in Awesome | HM activation sets `useX11LegacyScreenshot=true` |
 | VS Code 1.140 draws its own frame (`_GTK_FRAME_EXTENTS`) | odd double border, no visible top gap | VS Code setting `window.titleBarStyle: native` (not in repo) |
+| catppuccin-gtk 1.0.3 renamed the theme dir (no `+default`) | GTK apps light, white VS Code menu | theme name updated in `gtk.theme` + all `GTK_THEME` exports |
 | VS Code 1.140 ships Copilot built in | slow startup, extension host stalls | VS Code setting `chat.disableAIFeatures: true` (not in repo) |
 
 ## How to avoid it
