@@ -264,6 +264,8 @@ globalkeys = my_table.join(
 
     -- super + shift + ...
     awful.key({ modkey, "Shift" }, "Return", function() awful.util.spawn(filemanager) end),
+    awful.key({ modkey, "Shift" }, "p", function() awful.util.spawn_with_shell("~/.config/awesome/scripts/picom-restart.sh") end,
+        { description = "restart picom (screen frozen, cursor moves)", group = "hotkeys" }),
     awful.key({ modkey, "Shift" }, "d",
         function()
             awful.spawn(string.format(
@@ -717,4 +719,4 @@ load_config("autostart.lua")
 
 -- Autostart applications
 
-awful.spawn.with_shell("pgrep -u $USER -x picom > /dev/null || picom -b --config $HOME/.config/awesome/picom.conf")
+awful.spawn.with_shell("pgrep -u $USER -x picom > /dev/null || $HOME/.config/awesome/scripts/picom-restart.sh")

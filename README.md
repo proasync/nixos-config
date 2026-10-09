@@ -25,6 +25,7 @@ nixos-config/
 ├── flake.nix                  # Entry point — host list; mkHost <name> wires hosts/<name>/
 ├── assets/                    # Build-time static assets
 ├── docs/
+│   ├── desktop-freeze.md      # laptop freeze runbook: escape hatches, logs, past incidents
 │   ├── dev-environments.md    # pagoda/proasync monorepo dev setup on NixOS
 │   └── external-display.md    # laptop → TV/projector runbook (read before touching xrandr)
 ├── hosts/                     # one folder per host, named exactly like the hostname
@@ -36,7 +37,8 @@ nixos-config/
 │        home.nix and hypr/hostextras.conf are optional)
 ├── modules/
 │   ├── common.nix             # Everything shared: boot, locale, user, WMs, SDDM, audio,
-│   │                          #   fonts, keyd, nix-ld (Electron libs), docker, printing, gc
+│   │                          #   fonts, keyd, nix-ld (Electron libs), docker, printing, gc,
+│   │                          #   zram swap + earlyoom
 │   ├── sddm-theme.nix         # SDDM theme package; `proasync.sddmBackground` per host
 │   ├── dev-services.nix       # MariaDB + Apache/PHP (WordPress) + PostgreSQL — imported per host
 │   ├── remote-access.nix      # Tailscale + tailnet-only SSH — imported per host
@@ -83,6 +85,7 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | `waypaper` | pick a wallpaper for the current Wayland session (not auto-restored on reboot) |
 | `Super + W` | popup listing all current Hyprland keybindings |
 | `tv-mirror.sh on` / `off` | laptop → TV mirror on X11/Awesome — see [docs/external-display.md](docs/external-display.md) first |
+| `Mod+Shift+P` (Awesome) | restart picom (logs to `~/.cache/picom/`) — screen frozen? see [docs/desktop-freeze.md](docs/desktop-freeze.md) |
 
 Frequently used binds: `Super+Return` terminal · `Super+R` launcher · `Super+Q` close ·
 `Super+P` screenshot→satty · `Super+X` powermenu · `Super+HJKL` focus ·

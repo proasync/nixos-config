@@ -28,7 +28,7 @@ INTERNAL=eDP-1
 RUN=${XDG_RUNTIME_DIR:-/tmp}
 STATE=$RUN/tv-mirror.state
 LOG=$RUN/tv-mirror.log
-PICOM_CONF=$HOME/.config/awesome/picom.conf
+PICOM_START=$HOME/.config/awesome/scripts/picom-restart.sh   # starts picom with logging
 
 log() { echo "$(date +%T) $*" | tee -a "$LOG"; }
 die() { log "ABORT: $*"; exit 1; }
@@ -106,7 +106,7 @@ case "${1:-}" in
     if [ -n "$ext" ]; then log "$ext off"; xrandr --output "$ext" --off; else log "no active external output"; fi
     set_padding 0
     if [ "$picom_was" = 1 ]; then
-      sleep 1; log "starting picom"; picom -b --config "$PICOM_CONF"
+      sleep 1; log "starting picom"; "$PICOM_START"
     fi
     rm -f "$STATE"
     status | tee -a "$LOG"

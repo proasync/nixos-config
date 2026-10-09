@@ -171,6 +171,27 @@
   # ── Docker ─────────────────────────────────────────────
   virtualisation.docker.enable = true;
 
+  # ── Memory: compressed swap in RAM + early OOM killer ──
+  # With no swap, running out of RAM froze the laptop solid (2026-10-08, see
+  # docs/desktop-freeze.md): the kernel thrashes long before its own OOM
+  # killer acts. zram = swap on a compressed RAM disk — no partition, nothing
+  # written to the SSD. Idle pages compress ~3:1, so 30 GB acts like ~40 GB.
+  zramSwap.enable = true;   # zstd, holds up to 50 % of RAM (uncompressed)
+  # When RAM *and* swap are both under 10 % free, earlyoom kills the worst
+  # offender — normally a Chrome tab or VS Code renderer (they carry
+  # oom_score_adj 300) — logs it (journalctl -u earlyoom) and shows a desktop
+  # notification. --avoid lowers the score of the desktop itself (names as in
+  # /proc/PID/comm; `.?` covers NixOS wrappers like ".awesome-wrappe"; no
+  # backslashes because the args pass through a systemd Environment= line).
+  services.earlyoom = {
+    enable = true;
+    enableNotifications = true;
+    extraArgs = [
+      "--avoid"
+      "^(X|Xorg|.?awesome.*|picom|.?[Hh]yprland.*|niri|sddm.*|systemd.*|keyd|pipewire.*|wireplumber|dbus-.*)$"
+    ];
+  };
+
   # ── Desktop services ───────────────────────────────────
   services.dbus.enable = true;
   services.gnome.gnome-keyring.enable = true;

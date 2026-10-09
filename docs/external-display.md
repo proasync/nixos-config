@@ -19,7 +19,7 @@ immediately — no `nrs` needed.
 
 - Save your work first. Nothing here is zero-risk.
 - Plug the cable in **after** you are logged in. Do not restart Awesome
-  (Mod+Ctrl+R) or log in with the TV attached: `monitor-setup.sh` runs at
+  (Mod+Shift+R) or log in with the TV attached: `monitor-setup.sh` runs at
   Awesome start and rearranges outputs into an extended layout at the TV's
   preferred mode (4K@60 on a 4K TV — see below).
 - Picture cut off at the TV edges = TV overscan. Fix on the TV: picture size
