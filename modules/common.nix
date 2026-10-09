@@ -91,7 +91,7 @@
   services.xserver.displayManager.sessionCommands = ''
     export GNOME_KEYRING_CONTROL=/run/user/$UID/keyring
     export SSH_AUTH_SOCK=/run/user/$UID/gcr/ssh
-    export GTK_THEME=catppuccin-mocha-mauve-standard+default
+    export GTK_THEME=catppuccin-mocha-mauve-standard
     export XCURSOR_THEME=Bibata-Modern-Ice
     export XCURSOR_SIZE=24
     systemctl --user import-environment GNOME_KEYRING_CONTROL SSH_AUTH_SOCK GTK_THEME XCURSOR_THEME XCURSOR_SIZE XCURSOR_PATH

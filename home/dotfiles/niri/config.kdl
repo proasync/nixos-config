@@ -117,7 +117,7 @@ environment {
     XDG_SESSION_TYPE "wayland"
     QT_QPA_PLATFORM "wayland"
     GDK_BACKEND "wayland"
-    GTK_THEME "catppuccin-mocha-mauve-standard+default"
+    GTK_THEME "catppuccin-mocha-mauve-standard"
 }
 
 // ── Startup ────────────────────────────────────────────

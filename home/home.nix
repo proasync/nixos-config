@@ -275,7 +275,7 @@ in
   # ── GTK theme ──────────────────────────────────────────
   gtk = {
     enable = true;
-    theme.name = "catppuccin-mocha-mauve-standard+default";
+    theme.name = "catppuccin-mocha-mauve-standard";
     iconTheme.name = "Papirus-Dark";
     cursorTheme = {
       name = "Bibata-Modern-Ice";
