@@ -16,7 +16,7 @@ Flake-based NixOS + Home Manager configuration for three machines:
 
 - **WMs (all hosts):** Hyprland (Wayland, primary), niri (Wayland), Awesome (Xorg fallback)
 - **Theme:** Catppuccin Mocha Mauve — SDDM, Hyprland, Waybar, Rofi, Alacritty, Mako, Hyprlock, GTK
-- **Wallpaper:** nitrogen (X11/current setup); `swww` daemon + `waypaper` picker available on Wayland — final approach TBD
+- **Wallpaper:** feh on X11 (`awesome/scripts/wallpaper-restore.sh` replays `~/.fehbg`); `awww` daemon (formerly swww) + `waypaper` picker available on Wayland — final approach TBD
 
 ## Repo structure
 
@@ -123,6 +123,17 @@ nrs                   # then switch; rollback via systemd-boot menu if needed
 The lock is pinned to `nixos-unstable`; update deliberately and test, don't let it drift
 for months and update in a panic.
 
+- One `flake.lock` serves every host: update and test on one machine, commit + push,
+  then `git pull && nrs` on the others when convenient — they get identical versions.
+- Fix *evaluation warnings* too (renamed packages/options); they become errors later.
+  Check all hosts: `nix eval --raw .#nixosConfigurations.<host>.config.system.build.toplevel.drvPath`.
+- Rollback restores programs, not data. Databases are pinned to a major version
+  (`postgresql_17`, `mariadb_114` in `modules/dev-services.nix`) — bump those on purpose.
+- Terminal `claude` (and everything else from nixpkgs) only moves when the lock does;
+  the VS Code extension updates itself.
+- Last update: 2026-10-09 (from 2026-02-13): nitrogen removed → feh, swww → awww,
+  libreoffice-fresh → libreoffice, Firefox `configPath`, `gtk.gtk4.theme`.
+
 ## Installing on a new machine
 
 Before you start, if the machine has other disks (e.g. an old install you keep as a
@@ -163,7 +174,8 @@ firmware boot menu (F8/F11/F12) — systemd-boot does not list OSes on other dis
   wallpapers added since 2026-09-25 are small text pointer files, not images. Home Manager
   (`programs.git.lfs`) installs git-lfs and its filters, but the per-repo hooks (needed so
   `git push` uploads LFS objects) and the wallpaper downloads are per-clone.
-- **Wallpaper** — run `waypaper` (Wayland) or nitrogen (X11) and pick one per session.
+- **Wallpaper** — run `waypaper` (Wayland), or on X11 `feh --bg-scale <laptop img> [<external img>]`
+  (feh remembers it in `~/.fehbg`).
 - **App logins** — Chrome, VS Code, Signal, WhatsApp, Teams, Spotify, Obsidian.
 - **Dev repos** — see [docs/dev-environments.md](docs/dev-environments.md):
 

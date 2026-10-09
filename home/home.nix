@@ -45,7 +45,7 @@ in
     unclutter
     dmenu
     rofi
-    nitrogen
+    feh            # X11 wallpaper (nitrogen was removed from nixpkgs)
     numlockx
     flameshot
     xrandr
@@ -57,7 +57,7 @@ in
     # Wayland / Hyprland tools
     waybar
     mako
-    swww
+    awww           # Wayland wallpaper daemon (was swww; binaries awww/awww-daemon)
     hyprlock
     hypridle
     wl-clipboard
@@ -97,7 +97,7 @@ in
     cava
     mpv
     waypaper
-    libreoffice-fresh
+    libreoffice
 
     # Terminal rice
     yazi
@@ -155,6 +155,8 @@ in
   # ── Firefox (prevent it from hijacking default browser) ──
   programs.firefox = {
     enable = true;
+    # Firefox already keeps its profile here (~/.mozilla/firefox doesn't exist).
+    configPath = "${config.xdg.configHome}/mozilla/firefox";
     policies = {
       DontCheckDefaultBrowser = true;
       DefaultDownloadDirectory = "\${home}/Downloads";
@@ -282,6 +284,8 @@ in
     gtk4.extraConfig = {
       gtk-application-prefer-dark-theme = true;
     };
+    # HM 26.05 stopped applying theme.name to GTK4 by default; keep the old look.
+    gtk4.theme = config.gtk.theme;
   };
 
   # ── Xresources ─────────────────────────────────────────
@@ -339,6 +343,16 @@ in
         run chmod 644 "$dst"
       fi
     done
+  '';
+
+  # waypaper's config.ini is its own state (last wallpaper), not managed here.
+  # swww was renamed to awww (nixpkgs 2026-03, binaries too), so point an old
+  # `backend = swww` at awww. Idempotent; a no-op once migrated or if absent.
+  home.activation.waypaperAwww = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    cfg="$HOME/.config/waypaper/config.ini"
+    if [ -f "$cfg" ] && grep -q '^backend = swww$' "$cfg"; then
+      run sed -i 's/^backend = swww$/backend = awww/' "$cfg"
+    fi
   '';
 
   home.file.".config/niri".source =

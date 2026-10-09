@@ -122,7 +122,7 @@ environment {
 // ── Startup ────────────────────────────────────────────
 spawn-at-startup "waybar" "-c" "/home/proasync/.config/niri/waybar/config.jsonc" "-s" "/home/proasync/.config/niri/waybar/style.css"
 spawn-at-startup "mako"
-spawn-at-startup "swww-daemon"
+spawn-at-startup "awww-daemon"
 spawn-at-startup "nm-applet" "--indicator"
 spawn-at-startup "blueman-applet"
 spawn-at-startup "udiskie" "--automount" "--notify" "--tray"

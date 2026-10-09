@@ -39,4 +39,4 @@ else
 fi
 
 # Restore wallpapers after monitor change
-nitrogen --restore &
+~/.config/awesome/scripts/wallpaper-restore.sh &
