@@ -81,6 +81,7 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | --- | --- |
 | `nrs` | rebuild + switch (`sudo nixos-rebuild switch --flake ~/nixos-config#$(hostname)`) |
 | `nrt` / `nrd` | rebuild test / dry-build |
+| `nrb` | rebuild for next boot, then reboot — when `nrs` refuses to switch live |
 | `hyprctl reload` | reload Hyprland config |
 | `waypaper` | pick a wallpaper for the current Wayland session (not auto-restored on reboot) |
 | `Super + W` | popup listing all current Hyprland keybindings |
@@ -131,8 +132,13 @@ for months and update in a panic.
   (`postgresql_17`, `mariadb_114` in `modules/dev-services.nix`) — bump those on purpose.
 - Terminal `claude` (and everything else from nixpkgs) only moves when the lock does;
   the VS Code extension updates itself.
+- If `nrs` stops right after building with a "switch inhibitor" message, a core
+  component changed and can't be swapped live: run `nrb` (or, before that alias exists,
+  `sudo nixos-rebuild boot --flake ~/nixos-config#$(hostname)`) and reboot. Until then
+  the boot menu does not contain the new generation.
 - Last update: 2026-10-09 (from 2026-02-13): nitrogen removed → feh, swww → awww,
-  libreoffice-fresh → libreoffice, Firefox `configPath`, `gtk.gtk4.theme`.
+  libreoffice-fresh → libreoffice, Firefox `configPath`, `gtk.gtk4.theme`. D-Bus
+  default changed to dbus-broker (switch inhibitor) → needs `nrb` + reboot on each host.
 
 ## Installing on a new machine
 

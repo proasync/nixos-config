@@ -184,6 +184,8 @@ in
       # NixOS rebuild shortcuts
       nrs = "sudo nixos-rebuild switch --flake ~/nixos-config#$(hostname)";
       nrt = "sudo nixos-rebuild test --flake ~/nixos-config#$(hostname)";
+      # for when switch refuses ("switch inhibitors", e.g. D-Bus change): then reboot
+      nrb = "sudo nixos-rebuild boot --flake ~/nixos-config#$(hostname)";
       nrd = "sudo nixos-rebuild dry-build --flake ~/nixos-config#$(hostname)";
     };
 
