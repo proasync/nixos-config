@@ -319,16 +319,27 @@ in
     force = true;
   };
 
-  home.file.".claude/settings.json" = {
-    source = config.lib.file.mkOutOfStoreSymlink
-      "/home/proasync/nixos-config/home/dotfiles/claude/settings.json";
-    force = true;
-  };
-  home.file.".claude/settings.local.json" = {
-    source = config.lib.file.mkOutOfStoreSymlink
-      "/home/proasync/nixos-config/home/dotfiles/claude/settings.local.json";
-    force = true;
-  };
+  # Claude Code settings: real files, NOT symlinks (decided 2026-10-09).
+  # Claude Code rewrites these itself (the /model picker, "always allow" permission
+  # answers) using a temp file + rename placed next to the *first* symlink hop. With
+  # mkOutOfStoreSymlink that first hop lives in /nix/store (read-only), so every such
+  # write failed with "Failed to set model: EROFS", and each `nrs` (force = true)
+  # re-created the broken link. Now: seed each file from the template once (when it is
+  # missing or still a symlink), then leave Claude Code's own copy alone. To push a
+  # template change to the live file, edit the live file too — or delete the live file
+  # and rebuild to re-seed. The template's "model" is only the first-run default.
+  # Runs after linkGeneration, i.e. after home-manager has removed the old symlinks.
+  home.activation.claudeSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    tpl=/home/proasync/nixos-config/home/dotfiles/claude
+    run mkdir -p "$HOME/.claude"
+    for f in settings.json settings.local.json; do
+      dst="$HOME/.claude/$f"
+      if [ -L "$dst" ] || [ ! -e "$dst" ]; then
+        run cp --remove-destination "$tpl/$f" "$dst"
+        run chmod 644 "$dst"
+      fi
+    done
+  '';
 
   home.file.".config/niri".source =
     config.lib.file.mkOutOfStoreSymlink
