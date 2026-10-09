@@ -26,6 +26,7 @@ nixos-config/
 ├── assets/                    # Build-time static assets
 ├── docs/
 │   ├── desktop-freeze.md      # laptop freeze runbook: escape hatches, logs, past incidents
+│   ├── updating.md            # how to update safely + post-update checklist
 │   ├── dev-environments.md    # pagoda/proasync monorepo dev setup on NixOS
 │   └── external-display.md    # laptop → TV/projector runbook (read before touching xrandr)
 ├── hosts/                     # one folder per host, named exactly like the hostname
@@ -121,24 +122,10 @@ nrd                   # dry-build first
 nrs                   # then switch; rollback via systemd-boot menu if needed
 ```
 
-The lock is pinned to `nixos-unstable`; update deliberately and test, don't let it drift
-for months and update in a panic.
-
-- One `flake.lock` serves every host: update and test on one machine, commit + push,
-  then `git pull && nrs` on the others when convenient — they get identical versions.
-- Fix *evaluation warnings* too (renamed packages/options); they become errors later.
-  Check all hosts: `nix eval --raw .#nixosConfigurations.<host>.config.system.build.toplevel.drvPath`.
-- Rollback restores programs, not data. Databases are pinned to a major version
-  (`postgresql_17`, `mariadb_114` in `modules/dev-services.nix`) — bump those on purpose.
-- Terminal `claude` (and everything else from nixpkgs) only moves when the lock does;
-  the VS Code extension updates itself.
-- If `nrs` stops right after building with a "switch inhibitor" message, a core
-  component changed and can't be swapped live: run `nrb` (or, before that alias exists,
-  `sudo nixos-rebuild boot --flake ~/nixos-config#$(hostname)`) and reboot. Until then
-  the boot menu does not contain the new generation.
-- Last update: 2026-10-09 (from 2026-02-13): nitrogen removed → feh, swww → awww,
-  libreoffice-fresh → libreoffice, Firefox `configPath`, `gtk.gtk4.theme`. D-Bus
-  default changed to dbus-broker (switch inhibitor) → needs `nrb` + reboot on each host.
+The lock is pinned to `nixos-unstable`; update little and often, on a branch, one machine
+first. **Read [docs/updating.md](docs/updating.md) before updating** — procedure, the
+`nrb` + reboot case (switch inhibitors), the post-reboot checklist, and what broke on the
+8-month jump of 2026-10-09.
 
 ## Installing on a new machine
 

@@ -58,6 +58,7 @@ in
     waybar
     mako
     awww           # Wayland wallpaper daemon (was swww; binaries awww/awww-daemon)
+    xwayland-satellite  # niri runs X11-only apps through this (it must be on PATH)
     hyprlock
     hypridle
     wl-clipboard
@@ -354,6 +355,25 @@ in
     cfg="$HOME/.config/waypaper/config.ini"
     if [ -f "$cfg" ] && grep -q '^backend = swww$' "$cfg"; then
       run sed -i 's/^backend = swww$/backend = awww/' "$cfg"
+    fi
+  '';
+
+  # Flameshot 14 captures through xdg-desktop-portal, which has no working
+  # backend under Awesome (X11) → "Unable to capture screen". Its own escape
+  # hatch is the X11 grabber (ignored on Wayland). flameshot.ini is Flameshot's
+  # state (it writes it), so only make sure this one key is set.
+  home.activation.flameshotX11Capture = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    cfg="$HOME/.config/flameshot/flameshot.ini"
+    if [ ! -f "$cfg" ]; then
+      run mkdir -p "$HOME/.config/flameshot"
+      run sh -c "printf '[General]\nuseX11LegacyScreenshot=true\n' > '$cfg'"
+    elif ! grep -q '^useX11LegacyScreenshot=true$' "$cfg"; then
+      run sed -i '/^useX11LegacyScreenshot=/d' "$cfg"
+      if grep -q '^\[General\]' "$cfg"; then
+        run sed -i '/^\[General\]/a useX11LegacyScreenshot=true' "$cfg"
+      else
+        run sh -c "printf '[General]\nuseX11LegacyScreenshot=true\n' >> '$cfg'"
+      fi
     fi
   '';
 

@@ -89,6 +89,10 @@
     Wayland.EnableHiDPI = true;
   };
   systemd.services.display-manager.environment.QT_SCALE_FACTOR = "2";
+  # Awesome is this laptop's desktop. SDDM remembers the last session by its
+  # /nix/store path, which changes on updates; then it fell back to another
+  # session (2026-10-09 it logged into niri). This makes the fallback Awesome.
+  services.displayManager.defaultSession = "none+awesome";
 
   # ── X11 HiDPI (for Awesome WM on 2880x1800) ──────────
   # Xft.dpi 160 itself comes from home/home.nix xresources (merged by the
