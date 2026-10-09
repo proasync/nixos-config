@@ -10,7 +10,9 @@
   # ── MariaDB — WordPress development ────────────────────
   services.mysql = {
     enable = true;
-    package = pkgs.mariadb;
+    # Pinned: `pkgs.mariadb` follows nixpkgs' default and a major bump upgrades
+    # the data dir in place (no way back on rollback). Bump deliberately.
+    package = pkgs.mariadb_114;
     ensureDatabases = [ "wordpress" ];
     ensureUsers = [
       {
