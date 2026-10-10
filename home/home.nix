@@ -118,6 +118,9 @@ in
     # sessions. Built from source (not in nixpkgs). Provides `cs`. Needs tmux
     # (enabled below) + gh (present). See home/packages/claude-squad.nix.
     (callPackage ./packages/claude-squad.nix { })
+    # pSwarm desktop app launcher (proasync-monorepo/apps/pswarm-desktop): runs the
+    # repo's release binary inside its nix-shell. See home/packages/pswarm.nix.
+    (callPackage ./packages/pswarm.nix { })
     nodejs_22   # general-purpose Node; repos pin their own via shell.nix + direnv
                 # (pagoda → Node 18, proasync → Node 20)
     yarn
@@ -431,6 +434,8 @@ in
   };
 
   # Desktop entries
+  home.file.".local/share/applications/pswarm.desktop".source =
+    ./applications/pswarm.desktop;
   home.file.".local/share/applications/imv-dir.desktop".source =
     ./applications/imv-dir.desktop;
   home.file.".local/share/applications/cava.desktop".source =
