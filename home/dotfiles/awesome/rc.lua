@@ -38,6 +38,21 @@ local my_table = awful.util.table or gears.table -- 4.{0,1} compatibility
 local dpi      = require("beautiful.xresources").apply_dpi
 local hostname = io.popen("uname -n"):read("*l")
 
+-- SomeWM (Wayland, modules/somewm.nix) runs this same file: it falls back to
+-- ~/.config/awesome/rc.lua. Under it, X11-only parts are skipped and the
+-- Wayland replacement sits next to each one. Awesome 4.3 reports its codename.
+local is_somewm = awesome.release == "somewm"
+if is_somewm then
+    -- X11 gets these from Nix (services.xserver.xkb, services.libinput).
+    awful.input.xkb_layout = "us"   -- Mod+space switches, like setxkbmap below
+    awful.input.tap_to_click = 1
+    -- SomeWM reads ~/.Xresources too, where the laptop's Xft.dpi 160 is for X11.
+    -- Here the output scale (configs/<host>/somewm.lua) already enlarges
+    -- everything, so Lua-side sizes stay at 96 or they would be scaled twice.
+    require("beautiful.xresources").set_dpi(96)
+    awful.screen.connect_for_each_screen(function(s) s.dpi = 96 end)
+end
+
 
 
 -- {{{ Error handling
@@ -75,7 +90,8 @@ local function run_once(cmd_arr)
     end
 end
 
-run_once({ "unclutter -root", "blueman-applet" }) -- entries must be comma-separated
+-- entries must be comma-separated; unclutter is X11-only (SomeWM: skipped)
+run_once(is_somewm and { "blueman-applet" } or { "unclutter -root", "blueman-applet" })
 
 -- Load external configuration files
 local home_dir = os.getenv("HOME")
@@ -240,7 +256,11 @@ kbdcfg.current = 1 -- us is our default layout
 kbdcfg.switch = function()
     kbdcfg.current = kbdcfg.current % #(kbdcfg.layout) + 1
     local t = kbdcfg.layout[kbdcfg.current]
-    os.execute(kbdcfg.cmd .. " " .. t[1] .. " " .. t[2])
+    if is_somewm then
+        awful.input.xkb_layout = t[1]   -- setxkbmap only reaches X11
+    else
+        os.execute(kbdcfg.cmd .. " " .. t[1] .. " " .. t[2])
+    end
     if beautiful.set_keyboard_layout then beautiful.set_keyboard_layout(t[1]) end
 end
 
@@ -255,16 +275,35 @@ globalkeys = my_table.join(
         { description = "rofi launcher", group = "super" }),
     awful.key({ modkey }, "v", function() awful.util.spawn("pavucontrol") end,
         { description = "pulseaudio control", group = "super" }),
-    awful.key({ modkey }, "p", function() awful.util.spawn("flameshot gui") end,
-        { description = "flameshot", group = "super" }),
+    awful.key({ modkey }, "p", function()
+            if is_somewm then   -- flameshot is X11-only here; same pipeline Hyprland used
+                awful.spawn.with_shell('grim -g "$(slurp)" - | satty --filename - --copy-command wl-copy')
+            else
+                awful.util.spawn("flameshot gui")
+            end
+        end,
+        { description = "screenshot", group = "super" }),
     awful.key({ modkey }, "x", function() awful.util.spawn_with_shell("~/.config/awesome/scripts/powermenu.sh") end,
         { description = "power menu", group = "hotkeys" }),
-    awful.key({ modkey }, "Escape", function() awful.util.spawn("xkill") end,
+    awful.key({ modkey }, "Escape", function()
+            if is_somewm then   -- no xkill on Wayland: click a window to kill it
+                mousegrabber.run(function(m)
+                    if not m.buttons[1] then return true end
+                    local c = mouse.current_client
+                    if c then c:kill() end
+                    return false
+                end, "pirate")
+            else
+                awful.util.spawn("xkill")
+            end
+        end,
         { description = "Kill proces", group = "hotkeys" }),
 
     -- super + shift + ...
     awful.key({ modkey, "Shift" }, "Return", function() awful.util.spawn(filemanager) end),
-    awful.key({ modkey, "Shift" }, "p", function() awful.util.spawn_with_shell("~/.config/awesome/scripts/picom-restart.sh") end,
+    awful.key({ modkey, "Shift" }, "p", function()
+            if not is_somewm then awful.util.spawn_with_shell("~/.config/awesome/scripts/picom-restart.sh") end
+        end,
         { description = "restart picom (screen frozen, cursor moves)", group = "hotkeys" }),
     awful.key({ modkey, "Shift" }, "d",
         function()
@@ -716,7 +755,21 @@ end
 
 load_config("rules.lua")
 load_config("autostart.lua")
+if is_somewm then load_config("somewm.lua") end   -- Wayland output layout
 
 -- Autostart applications
 
-awful.spawn.with_shell("pgrep -u $USER -x picom > /dev/null || $HOME/.config/awesome/scripts/picom-restart.sh")
+if not is_somewm then
+    -- picom is the X11 compositor; SomeWM composites itself
+    awful.spawn.with_shell("pgrep -u $USER -x picom > /dev/null || $HOME/.config/awesome/scripts/picom-restart.sh")
+else
+    -- Wayland counterparts of numlockx and the feh wallpaper; scripts shared with niri
+    awesome._set_keyboard_setting("numlock", true)
+    awful.spawn.with_shell("$HOME/.config/wm-scripts/wallpaper-restore.sh")
+    -- Idle, as in niri: lock after 10 min, screens off 30 s later (back on at
+    -- input); also lock before suspend and on `loginctl lock-session`.
+    awful.spawn.with_shell("pgrep -u $USER -x swayidle > /dev/null || swayidle -w"
+        .. " timeout 600 $HOME/.config/wm-scripts/lock.sh"
+        .. [[ timeout 630 "wlopm --off '*'" resume "wlopm --on '*'"]]
+        .. " before-sleep $HOME/.config/wm-scripts/lock.sh lock $HOME/.config/wm-scripts/lock.sh")
+end

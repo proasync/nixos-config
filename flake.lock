@@ -39,7 +39,29 @@
     "root": {
       "inputs": {
         "home-manager": "home-manager",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "somewm": "somewm"
+      }
+    },
+    "somewm": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790266717,
+        "narHash": "sha256-yyjebUW4MkqglCg7zPZSM85KwsU/EKQIKRzCang1sqg=",
+        "owner": "trip-zip",
+        "repo": "somewm",
+        "rev": "12573137bd7a61e8a7a777346253a5323a29b012",
+        "type": "github"
+      },
+      "original": {
+        "owner": "trip-zip",
+        "ref": "release/1.4",
+        "repo": "somewm",
+        "type": "github"
       }
     }
   },

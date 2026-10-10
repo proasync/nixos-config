@@ -8,9 +8,17 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # SomeWM (AwesomeWM's Lua API on Wayland), on trial; see modules/somewm.nix.
+    # release/1.4 is upstream's stable branch with AwesomeWM 4.4 parity
+    # (main is 2.0-dev). Built against our nixpkgs.
+    somewm = {
+      url = "github:trip-zip/somewm/release/1.4";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }:
+  outputs = inputs@{ self, nixpkgs, home-manager, ... }:
   let
     system = "x86_64-linux";
     lib = nixpkgs.lib;
@@ -20,6 +28,7 @@
     # A host may add hosts/<name>/home.nix for per-host Home Manager overrides.
     mkHost = name: lib.nixosSystem {
       inherit system;
+      specialArgs = { inherit inputs; };   # modules/somewm.nix takes its package from inputs
       modules = [
         ./hosts/${name}/configuration.nix
         ./modules/common.nix

@@ -19,11 +19,19 @@ gears.timer.start_new(2, function()
   return false -- don't repeat
 end)
 
--- Monitor setup (detect external monitors, set DPI accordingly)
-awful.spawn.with_shell("~/.config/awesome/scripts/monitor-setup.sh")
+-- Monitor setup (detect external monitors, set DPI accordingly). X11 only:
+-- xrandr/xrdb/feh. SomeWM's layout is in configs/proasync-laptop/somewm.lua.
+if awesome.release ~= "somewm" then
+  awful.spawn.with_shell("~/.config/awesome/scripts/monitor-setup.sh")
+end
 
--- Autostart other applications
-local startup_apps = {
+-- Autostart other applications. SomeWM (Wayland) shares this file: its tray
+-- speaks StatusNotifier rather than XEmbed (hence --indicator), numlockx and
+-- flameshot are X11-only, and rc.lua starts the Wayland counterparts.
+local is_somewm = awesome.release == "somewm"
+local startup_apps = is_somewm and {
+  "nm-applet --indicator",
+} or {
   "nm-applet",         -- Network manager applet
   "numlockx on",       -- Enable numlock
   "flameshot",         -- Screenshot daemon (needed for clipboard)

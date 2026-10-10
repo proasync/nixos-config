@@ -1,0 +1,5 @@
+-- Output layout under SomeWM (Wayland), loaded by rc.lua only there. X11
+-- Awesome never reads this file; niri has its own (hosts/<host>/niri/).
+-- Default: nothing. Every output gets its preferred mode at scale 1, and
+-- SomeWM places them itself. A host that needs more gets
+-- configs/<hostname>/somewm.lua (see proasync-laptop's).

@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 
 {
-  imports = [ ./sddm-theme.nix ];
+  imports = [ ./sddm-theme.nix ./somewm.nix ];
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;

@@ -63,6 +63,18 @@ update never migrates their data; bump those deliberately.
   from the system nixpkgs break when nixpkgs drops an EOL Node; pin it in their `shell.nix`.
 - `systemctl --failed` shows nothing new (`app-picom@autostart` always fails — harmless).
 - `nixos-version` shows the new date; `claude --version` moved.
+- Login was not stalled by desktop portals: `journalctl -b | grep -c "Timeout was reached"`
+  should be 0. Before the 2026-10-09 update every Awesome login hit four 25 s D-Bus
+  timeouts, three of them xdg-desktop-portal trying Hyprland's portal backend, which
+  cannot run in X11. That was most of the "30 s until usable" after login. A new portal
+  backend (e.g. xdg-desktop-portal-wlr for SomeWM) can bring this back, so check this
+  after adding one.
+- PostgreSQL warns "collation version mismatch" after a glibc bump (2.42 → 2.44 in that
+  update). Rebuild the indexes, then record the new version:
+  `sudo -u postgres psql -d <db> -c 'REINDEX DATABASE "<db>";' -c 'ALTER DATABASE "<db>" REFRESH COLLATION VERSION;'`
+  for each database (`psql -l`), including `template1`.
+- `nix flake update` also moves `somewm` (its `release/1.4` branch). To update only
+  nixpkgs, `nix flake update nixpkgs home-manager`.
 
 If something is badly off: reboot and pick the previous generation in the boot
 menu, then `git switch master` and investigate calmly.

@@ -14,7 +14,8 @@ Flake-based NixOS + Home Manager configuration for three machines:
 | Dev services | MariaDB, Apache+PHP, PostgreSQL | same | same |
 | Status | | | **not installed yet**: hardware config is a placeholder (see *Installing on a new machine*) |
 
-- **WMs (all hosts):** Awesome (Xorg, the daily driver) and niri (Wayland, scrolling columns).
+- **WMs (all hosts):** Awesome (Xorg, the daily driver) and niri (Wayland, scrolling columns),
+  plus SomeWM on trial (Wayland, runs Awesome's own config: see *SomeWM (trial)* below).
   Hyprland is retired but its config is kept: see *Hyprland (retired)* below.
 - **Theme:** Catppuccin Mocha Mauve — SDDM, Awesome, niri, Waybar, Rofi, Alacritty, Mako, swaylock, GTK
 - **Wallpaper:** feh on X11 (`awesome/scripts/wallpaper-restore.sh` replays `~/.fehbg`); on niri, `waypaper`
@@ -45,6 +46,7 @@ nixos-config/
 │   ├── sddm-theme.nix         # SDDM theme package; `proasync.sddmBackground` per host
 │   ├── dev-services.nix       # MariaDB + Apache/PHP (WordPress) + PostgreSQL — imported per host
 │   ├── hyprland.nix           # Hyprland (retired) — imported by no host; see *Hyprland (retired)*
+│   ├── somewm.nix             # SomeWM session (trial), from the `somewm` flake input
 │   ├── remote-access.nix      # Tailscale + tailnet-only SSH — imported per host
 │   └── lan-dev-ports.nix      # firewall ports for phone dev (Expo/Metro, training API) — per host
 ├── home/
@@ -87,7 +89,8 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
   which must stay a **regular file** (it was once accidentally committed as a symlink into
   `/nix/store`).
 - Awesome does the same at runtime: `home/dotfiles/awesome/configs/<hostname>/`, falling back
-  to `configs/default/`. Don't copy the `proasync-laptop` folder to a desktop; it runs the
+  to `configs/default/`. Under SomeWM it also loads `somewm.lua` from there (Wayland output
+  scale and position; the laptop's mirrors its niri `monitor.kdl`). Don't copy the `proasync-laptop` folder to a desktop; it runs the
   laptop's xrandr/DPI setup.
 
 ## Day-to-day
@@ -127,6 +130,31 @@ To bring it back on a host:
 Its power menu, Chrome launcher and touchpad toggle live in `home/dotfiles/wm-scripts/`
 (shared with niri). Under Hyprland the power menu locks with hyprlock; elsewhere with swaylock.
 
+### SomeWM (trial)
+
+[SomeWM](https://github.com/trip-zip/somewm) is AwesomeWM's Lua API on Wayland, added
+2026-10-10 as a possible way off X11 that keeps Awesome's per-screen tags. It is a third
+SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input in
+`flake.nix`; module `modules/somewm.nix`).
+
+- **One config for both.** SomeWM reads `~/.config/awesome/rc.lua`, so it runs the same
+  files as Awesome. `rc.lua` sets `is_somewm = awesome.release == "somewm"`; anything
+  X11-only (picom, xrandr, xrdb, flameshot, setxkbmap, xkill, numlockx, unclutter) must sit
+  behind it, with the Wayland replacement next to it. Under SomeWM: layouts via
+  `awful.input`, screenshots `grim | slurp | satty`, wallpaper and idle lock through the
+  niri scripts in `wm-scripts/`, tray icons via `nm-applet --indicator`.
+- **DPI.** SomeWM also reads `~/.Xresources`, so `rc.lua` pins its Lua-side DPI to 96 there.
+  The laptop's 1.67× comes from the output scale in `configs/proasync-laptop/somewm.lua`.
+- **Check a change** with `somewm --check ~/.config/awesome/rc.lua` and `awesome -k`.
+  SomeWM's check flags X11 tools by pattern, even inside the guarded X11 branch.
+- **Not there yet:** screen sharing (needs xdg-desktop-portal-wlr, not added; see the portal
+  note in `docs/updating.md`). X11 apps (Chrome, VS Code, Teams) run through XWayland and
+  look soft on the laptop's 1.67× panel.
+- **Splitting the configs later:** link `~/.config/somewm` to its own folder in
+  `home/home.nix`; SomeWM prefers that over `~/.config/awesome`.
+- **Removing it:** drop `./somewm.nix` from the imports in `modules/common.nix` and the
+  `somewm` input from `flake.nix`.
+
 ## Adding things
 
 - **User packages** (apps, CLI tools): `home/home.nix` → `home.packages`
@@ -146,7 +174,7 @@ immediately (live symlinks) — no rebuild needed unless you add/remove a symlin
 
 ```bash
 cd ~/nixos-config
-nix flake update      # bump nixpkgs + home-manager pins
+nix flake update      # bump nixpkgs + home-manager (and somewm) pins
 nrd                   # dry-build first
 nrs                   # then switch; rollback via systemd-boot menu if needed
 ```
