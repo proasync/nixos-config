@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Rofi power menu for Hyprland
+# Rofi power menu for the Wayland compositors (niri; Hyprland if it comes back)
 # Single keypress: s=Shutdown, r=Reboot, l=Logout, k=Lock, u=Suspend
 # Or use arrow keys + Enter to select
 
@@ -23,6 +23,8 @@ case $code in
     12) # Logout: this menu is shared by Hyprland and niri (Mod+X in both)
         if [ -n "${NIRI_SOCKET:-}" ]; then niri msg action quit --skip-confirmation
         else hyprctl dispatch exit; fi ;;
-    13) hyprlock ;;
+    13) # Lock: hyprlock under Hyprland (theme in ~/.config/hypr/hyprlock.conf), swaylock elsewhere
+        if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then hyprlock
+        else ~/.config/wm-scripts/lock.sh; fi ;;
     14) systemctl suspend ;;
 esac

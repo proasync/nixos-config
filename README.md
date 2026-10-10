@@ -14,8 +14,9 @@ Flake-based NixOS + Home Manager configuration for three machines:
 | Dev services | MariaDB, Apache+PHP, PostgreSQL | same | same |
 | Status | | | **not installed yet**: hardware config is a placeholder (see *Installing on a new machine*) |
 
-- **WMs (all hosts):** Hyprland (Wayland, primary), niri (Wayland), Awesome (Xorg fallback)
-- **Theme:** Catppuccin Mocha Mauve — SDDM, Hyprland, Waybar, Rofi, Alacritty, Mako, Hyprlock, GTK
+- **WMs (all hosts):** Awesome (Xorg, the daily driver) and niri (Wayland, scrolling columns).
+  Hyprland is retired but its config is kept: see *Hyprland (retired)* below.
+- **Theme:** Catppuccin Mocha Mauve — SDDM, Awesome, niri, Waybar, Rofi, Alacritty, Mako, swaylock, GTK
 - **Wallpaper:** feh on X11 (`awesome/scripts/wallpaper-restore.sh` replays `~/.fehbg`); `awww` daemon (formerly swww) + `waypaper` picker available on Wayland — final approach TBD
 
 ## Repo structure
@@ -42,15 +43,19 @@ nixos-config/
 │   │                          #   zram swap + earlyoom
 │   ├── sddm-theme.nix         # SDDM theme package; `proasync.sddmBackground` per host
 │   ├── dev-services.nix       # MariaDB + Apache/PHP (WordPress) + PostgreSQL — imported per host
+│   ├── hyprland.nix           # Hyprland (retired) — imported by no host; see *Hyprland (retired)*
 │   ├── remote-access.nix      # Tailscale + tailnet-only SSH — imported per host
 │   └── lan-dev-ports.nix      # firewall ports for phone dev (Expo/Metro, training API) — per host
 ├── home/
 │   ├── home.nix               # Home Manager: packages, bash, git, GTK, dotfile symlinks
+│   ├── hyprland.nix           # Hyprland's links + packages, active only with modules/hyprland.nix
 │   ├── scripts/               # User scripts installed to ~/.local/bin
 │   ├── applications/          # Custom .desktop entries
 │   └── dotfiles/              # Live-symlinked into ~/.config/ (edit → takes effect, no rebuild)
-│       ├── hypr/  niri/  awesome/   # window managers
-│       ├── waybar/  rofi/  mako/    # bar, launcher, notifications
+│       ├── awesome/  niri/  hypr/   # window managers (hypr = retired Hyprland)
+│       ├── wm-scripts/              # power menu, lock, Chrome, touchpad: shared by niri + Hyprland
+│       ├── swaylock/                # lock screen theme (niri)
+│       ├── waybar/  rofi/  mako/    # bar (waybar/ = Hyprland's; niri's is niri/waybar/), launcher, notifications
 │       ├── alacritty/  btop/  cava/ # terminal & TUI rice
 │       ├── claude/                  # Claude Code settings
 │       └── wallpapers/              # browsable by waypaper; stored via Git LFS (see below)
@@ -66,9 +71,10 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 - `configuration.nix` — system settings, plus which optional modules the host imports.
 - `home.nix` *(optional)* — Home Manager overrides, merged on top of `home/home.nix`.
   Never add hostname checks to `home/home.nix`.
-- `hypr/monitors.conf` — **required** for every host (an assertion fails the build without
-  it). nwg-displays (Super+D) writes through the `~/.config/hypr` symlink, so this must
-  never be a file that hosts share.
+- `hypr/monitors.conf` — **required** on every host that runs Hyprland (an assertion fails
+  the build without it). nwg-displays (Super+D) writes through the `~/.config/hypr` symlink,
+  so this must never be a file that hosts share. Keep the existing ones: they are what a
+  Hyprland comeback starts from.
 - `hypr/hostextras.conf` *(optional)* — falls back to the no-op `home/dotfiles/hypr/hostextras.conf`,
   which must stay a **regular file** (it was once accidentally committed as a symlink into
   `/nix/store`).
@@ -83,20 +89,35 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | `nrs` | rebuild + switch (`sudo nixos-rebuild switch --flake ~/nixos-config#$(hostname)`) |
 | `nrt` / `nrd` | rebuild test / dry-build |
 | `nrb` | rebuild for next boot, then reboot — when `nrs` refuses to switch live |
-| `hyprctl reload` | reload Hyprland config |
+| `niri validate` | check niri's config after editing it (niri reloads it on save; a broken file keeps the old one) |
 | `waypaper` | pick a wallpaper for the current Wayland session (not auto-restored on reboot) |
-| `Super + W` | popup listing all current Hyprland keybindings |
+| `Super + W` | popup listing the keybindings (niri's sheet in niri; Hyprland's in Hyprland) |
 | `tv-mirror.sh on` / `off` | laptop → TV mirror on X11/Awesome — see [docs/external-display.md](docs/external-display.md) first |
 | `Mod+Shift+P` (Awesome) | restart picom (logs to `~/.cache/picom/`) — screen frozen? see [docs/desktop-freeze.md](docs/desktop-freeze.md) |
 
-Frequently used binds: `Super+Return` terminal · `Super+R` launcher · `Super+Q` close ·
-`Super+P` screenshot→satty · `Super+X` powermenu · `Super+HJKL` focus ·
-`Super+1-9` workspaces · `Super+Tab`/`Alt+Tab` cycle · `Super+O` scratchpad ·
-`Super+F1-F6` app launchers. The full, always-current list is in
-[keybindings.conf](home/dotfiles/hypr/keybindings.conf) or via `Super+W`.
+Frequently used niri binds: `Super+Return` terminal · `Super+R` launcher · `Super+Q` close ·
+`Super+P` screenshot · `Super+X` powermenu (`k` locks) · `Super+HJKL` focus ·
+`Super+1-9` workspaces · `Super+Tab` next workspace · `Super+O` overview ·
+`Super+F1-F6` app launchers. The full list is the `binds` block in
+[niri/config.kdl](home/dotfiles/niri/config.kdl); the `Super+W` sheet
+(`niri/scripts/keybinds-help.sh`) is written by hand, so update it with the binds.
 
 CapsLock is a nav layer via keyd (`modules/common.nix`): `CapsLock+HJKL` → arrows,
 `CapsLock+1-9` → F1-F9. Works system-wide at the kernel level on every host.
+
+### Hyprland (retired)
+
+Retired 2026-10-10 because updates kept breaking it. Nothing was deleted:
+`home/dotfiles/hypr/`, `hosts/<host>/hypr/` and `home/dotfiles/waybar/` (its bar) are all kept.
+To bring it back on a host:
+
+1. Add `../../modules/hyprland.nix` to `imports` in `hosts/<host>/configuration.nix`.
+2. `nrs`. `home/hyprland.nix` sees `programs.hyprland.enable` and restores the
+   `~/.config/hypr` and `~/.config/waybar` links, hyprlock and hypridle. Hyprland then
+   appears in SDDM's session list.
+
+Its power menu, Chrome launcher and touchpad toggle live in `home/dotfiles/wm-scripts/`
+(shared with niri). Under Hyprland the power menu locks with hyprlock; elsewhere with swaylock.
 
 ## Adding things
 

@@ -78,7 +78,9 @@
   services.thermald.enable = true;          # Intel thermal daemon — prevents throttling/overheating
   services.power-profiles-daemon.enable = true;  # Balanced/performance/power-save switching
 
-  # ── Lid switch — let Hyprland handle it ───────────────
+  # ── Lid switch — logind ignores it ────────────────────
+  # niri turns eDP-1 off/on itself (switch-events in niri/config.kdl);
+  # Awesome does nothing on lid close. Neither suspends.
   services.logind.settings.Login.HandleLidSwitch = "ignore";
   services.logind.settings.Login.HandleLidSwitchExternalPower = "ignore";
   services.logind.settings.Login.HandleLidSwitchDocked = "ignore";

@@ -239,14 +239,14 @@ binds {
 
     // ── App launchers ──────────────────────────────────
     Mod+R { spawn "rofi" "-show" "drun" "-theme" "/home/proasync/.config/rofi/launcher.rasi"; }
-    Mod+X { spawn "sh" "-c" "/home/proasync/.config/hypr/scripts/powermenu.sh"; }
+    Mod+X { spawn "sh" "-c" "/home/proasync/.config/wm-scripts/powermenu.sh"; }
     Mod+D { spawn "nwg-displays"; }
     Mod+V { spawn "pavucontrol"; }
     Mod+P { screenshot; }
     Mod+Escape { quit; }
 
     // Function key launchers
-    Mod+F1 { spawn "sh" "-c" "/home/proasync/.config/hypr/scripts/chrome.sh"; }
+    Mod+F1 { spawn "sh" "-c" "/home/proasync/.config/wm-scripts/chrome.sh"; }
     Mod+F2 { spawn "code"; }
     Mod+F3 { spawn "teams-for-linux"; }
     Mod+F4 { spawn "dbeaver"; }
@@ -263,10 +263,10 @@ binds {
     // Volume shortcuts
     Ctrl+Shift+M { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "100%"; }
     Ctrl+Shift+0 { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0%"; }
-    XF86TouchpadToggle allow-when-locked=true { spawn "sh" "-c" "/home/proasync/.config/hypr/scripts/touchpad-toggle.sh"; }
+    XF86TouchpadToggle allow-when-locked=true { spawn "sh" "-c" "/home/proasync/.config/wm-scripts/touchpad-toggle.sh"; }
 
-    // Keybindings help (matches Hyprland Mod+W)
-    Mod+W { spawn "alacritty" "--title" "Keybindings" "-e" "bash" "-c" "/home/proasync/.config/hypr/scripts/keybinds-help.sh | less -R"; }
+    // Keybindings help (niri's own sheet: keep it in step with this block)
+    Mod+W { spawn "alacritty" "--title" "Keybindings" "-e" "bash" "-c" "/home/proasync/.config/niri/scripts/keybinds-help.sh | less -R"; }
 
     // Mouse drag: niri supports Super+drag natively, no bind needed
 
@@ -277,14 +277,14 @@ binds {
     Mod+WheelScrollDown { focus-workspace-down; }
     Mod+WheelScrollUp { focus-workspace-up; }
 
-    // ── Scratchpad ─────────────────────────────────────
+    // ── Overview (niri has no scratchpad; Hyprland used Mod+O for one) ──
     Mod+O { toggle-overview; }
 
     // ── Bar toggle ─────────────────────────────────────
     Mod+B { spawn "sh" "-c" "pkill waybar || waybar -c /home/proasync/.config/niri/waybar/config.jsonc -s /home/proasync/.config/niri/waybar/style.css"; }
 
     // ── Touchpad toggle ────────────────────────────────
-    Mod+T { spawn "sh" "-c" "/home/proasync/.config/hypr/scripts/touchpad-toggle.sh"; }
+    Mod+T { spawn "sh" "-c" "/home/proasync/.config/wm-scripts/touchpad-toggle.sh"; }
 
     // ── Emergency TTY escape ───────────────────────────
     Mod+Ctrl+Escape { spawn "loginctl" "terminate-session" "self"; }

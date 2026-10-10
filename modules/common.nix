@@ -58,8 +58,8 @@
   # ── Display / Window Managers ──────────────────────────
   services.xserver.enable = true;
   services.xserver.windowManager.awesome.enable = true;
-  programs.hyprland.enable = true;
   programs.niri.enable = true;
+  # Hyprland is retired but kept: modules/hyprland.nix, imported by no host.
 
   # ── SDDM ──────────────────────────────────────────────
   services.displayManager.sddm.enable = true;

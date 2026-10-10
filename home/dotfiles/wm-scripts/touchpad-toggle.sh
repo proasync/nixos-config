@@ -3,6 +3,7 @@
 # than hardcoded, so on desktops (no touchpad) this says so instead of
 # pretending to toggle. niri has no runtime input toggle (set `touchpad { off }`
 # in niri/config.kdl instead), but binds this script too, so handle that.
+# Lives in wm-scripts/ because both compositors bind it.
 if [ -n "${NIRI_SOCKET:-}" ]; then
     notify-send -t 2000 "Touchpad" "Toggle not supported under niri"
     exit 1

@@ -1,20 +1,12 @@
 { config, pkgs, lib, osConfig, ... }:
 
-let
-  # Shared by every host. Anything host-specific goes in hosts/<host>/home.nix
-  # (imported by flake.nix) or hosts/<host>/hypr/ — never a hostname check here.
-  hostName = osConfig.networking.hostName;
-  hyprDir = "/home/proasync/nixos-config/home/dotfiles/hypr";
-  hostHyprDir = "/home/proasync/nixos-config/hosts/${hostName}/hypr";
-  hostHasHyprExtras = builtins.pathExists (../hosts + "/${hostName}/hypr/hostextras.conf");
-in
+# Shared by every host. Anything host-specific goes in hosts/<host>/home.nix
+# (imported by flake.nix) or a per-host file under hosts/<host>/ — never a
+# hostname check here.
 {
-  # monitors.conf is always per host: nwg-displays (Super+D) writes through the
-  # ~/.config/hypr symlink, so it must never point at a file other hosts share.
-  assertions = [{
-    assertion = builtins.pathExists (../hosts + "/${hostName}/hypr/monitors.conf");
-    message = "hosts/${hostName}/hypr/monitors.conf is missing: every host needs its own (copy one from another host).";
-  }];
+  # Hyprland is retired; its Home Manager side only activates on hosts that
+  # import modules/hyprland.nix.
+  imports = [ ./hyprland.nix ];
 
   home.username = "proasync";
   home.homeDirectory = "/home/proasync";
@@ -54,13 +46,12 @@ in
     xclip
     alsa-utils  # amixer — needed by Awesome WM volume widget/keys
 
-    # Wayland / Hyprland tools
+    # Wayland tools (niri). Hyprland-only ones are in home/hyprland.nix.
     waybar
     mako
     awww           # Wayland wallpaper daemon (was swww; binaries awww/awww-daemon)
     xwayland-satellite  # niri runs X11-only apps through this (it must be on PATH)
-    hyprlock
-    hypridle
+    swaylock    # screen locker: wm-scripts/lock.sh, theme in dotfiles/swaylock/
     wl-clipboard
     cliphist    # clipboard history — autostarted by Hyprland and niri
     grim
@@ -298,33 +289,15 @@ in
   };
 
   # ── Dotfiles (symlinked to repo for live editing) ──────
-  # Hyprland is shared, except monitors.conf (always per host) and
-  # hostextras.conf (per host if hosts/<host>/hypr/hostextras.conf exists).
-  home.file.".config/hypr/hyprland.conf".source =
-    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/hyprland.conf";
-  home.file.".config/hypr/input.conf".source =
-    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/input.conf";
-  home.file.".config/hypr/appearance.conf".source =
-    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/appearance.conf";
-  home.file.".config/hypr/keybindings.conf".source =
-    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/keybindings.conf";
-  home.file.".config/hypr/windowrules.conf".source =
-    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/windowrules.conf";
-  home.file.".config/hypr/autostart.conf".source =
-    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/autostart.conf";
-  home.file.".config/hypr/hyprlock.conf".source =
-    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/hyprlock.conf";
-  home.file.".config/hypr/scripts".source =
-    config.lib.file.mkOutOfStoreSymlink "${hyprDir}/scripts";
-  home.file.".config/hypr/monitors.conf" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${hostHyprDir}/monitors.conf";
-    force = true;
-  };
-  home.file.".config/hypr/hostextras.conf" = {
-    source = config.lib.file.mkOutOfStoreSymlink
-      (if hostHasHyprExtras then "${hostHyprDir}/hostextras.conf" else "${hyprDir}/hostextras.conf");
-    force = true;
-  };
+  # Scripts shared by the Wayland compositors (niri, and Hyprland if it comes
+  # back): power menu, lock, Chrome launcher, touchpad toggle.
+  home.file.".config/wm-scripts".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "/home/proasync/nixos-config/home/dotfiles/wm-scripts";
+
+  home.file.".config/swaylock".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "/home/proasync/nixos-config/home/dotfiles/swaylock";
 
   # Claude Code settings: real files, NOT symlinks (decided 2026-10-09).
   # Claude Code rewrites these itself (the /model picker, "always allow" permission
@@ -384,10 +357,6 @@ in
   home.file.".config/awesome".source =
     config.lib.file.mkOutOfStoreSymlink
       "/home/proasync/nixos-config/home/dotfiles/awesome";
-
-  home.file.".config/waybar".source =
-    config.lib.file.mkOutOfStoreSymlink
-      "/home/proasync/nixos-config/home/dotfiles/waybar";
 
   home.file.".config/mako".source =
     config.lib.file.mkOutOfStoreSymlink
