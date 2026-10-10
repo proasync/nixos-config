@@ -146,10 +146,20 @@ SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input
 - **DPI.** SomeWM also reads `~/.Xresources`, so `rc.lua` pins its Lua-side DPI to 96 there.
   The laptop's 1.67× comes from the output scale in `configs/proasync-laptop/somewm.lua`.
 - **Check a change** with `somewm --check ~/.config/awesome/rc.lua` and `awesome -k`.
+  Electron apps started from a VS Code terminal inherit `ELECTRON_RUN_AS_NODE=1` and fail
+  with "Cannot find module 'electron'"; unset it when testing from there.
   SomeWM's check flags X11 tools by pattern, even inside the guarded X11 branch.
-- **Not there yet:** screen sharing (needs xdg-desktop-portal-wlr, not added; see the portal
-  note in `docs/updating.md`). X11 apps (Chrome, VS Code, Teams) run through XWayland and
-  look soft on the laptop's 1.67× panel.
+- **Session script:** SDDM runs a small wrapper (`modules/somewm.nix`) that sets
+  `NIXOS_OZONE_WL=1` and, when SomeWM exits, removes the variables `rc.lua` exported to the
+  systemd user manager and stops the portals.
+- **Screen sharing** goes through xdg-desktop-portal-wlr: whole monitors only (SomeWM 1.4
+  has no per-window capture), so pick "entire screen" in Teams/Chrome; with two monitors,
+  click the one to share. It cannot stall Awesome logins: see the comment in
+  `modules/somewm.nix` and the portal check in `docs/updating.md`.
+- **Sharpness on the laptop's 1.67× panel:** Chrome, VS Code, Teams, Obsidian and Signal run
+  as native Wayland windows and are sharp; Spotify too, through `NIXOS_OZONE_WL`. DBeaver
+  stays on XWayland and looks soft (`GDK_BACKEND=wayland dbeaver` runs it natively, with
+  SWT's Wayland quirks).
 - **Splitting the configs later:** link `~/.config/somewm` to its own folder in
   `home/home.nix`; SomeWM prefers that over `~/.config/awesome`.
 - **Removing it:** drop `./somewm.nix` from the imports in `modules/common.nix` and the

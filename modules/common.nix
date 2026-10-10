@@ -95,6 +95,12 @@
     export XCURSOR_THEME=Bibata-Modern-Ice
     export XCURSOR_SIZE=24
     systemctl --user import-environment GNOME_KEYRING_CONTROL SSH_AUTH_SOCK GTK_THEME XCURSOR_THEME XCURSOR_SIZE XCURSOR_PATH
+    # A Wayland session (SomeWM, niri) that ended without cleaning up leaves its
+    # variables in the systemd user manager if that outlived it (SSH, tmux).
+    # Portals would then pick that desktop's backends in this X11 session. An X11
+    # login normally has none of these there, so this changes nothing otherwise.
+    systemctl --user unset-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE NIXOS_OZONE_WL
+    systemctl --user try-restart xdg-desktop-portal.service
     ${pkgs.xrdb}/bin/xrdb -merge $HOME/.Xresources
     ${pkgs.xsetroot}/bin/xsetroot -cursor_name left_ptr
   '';

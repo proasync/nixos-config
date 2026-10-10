@@ -66,9 +66,11 @@ update never migrates their data; bump those deliberately.
 - Login was not stalled by desktop portals: `journalctl -b | grep -c "Timeout was reached"`
   should be 0. Before the 2026-10-09 update every Awesome login hit four 25 s D-Bus
   timeouts, three of them xdg-desktop-portal trying Hyprland's portal backend, which
-  cannot run in X11. That was most of the "30 s until usable" after login. A new portal
-  backend (e.g. xdg-desktop-portal-wlr for SomeWM) can bring this back, so check this
-  after adding one.
+  cannot run in X11. That was most of the "30 s until usable" after login.
+  xdg-desktop-portal 1.22 no longer falls back to arbitrary backends: with no
+  `XDG_CURRENT_DESKTOP` (an Awesome login) it uses gtk only, so xdg-desktop-portal-wlr
+  (added for SomeWM) is never started there. Still check this after a portal change or
+  an xdg-desktop-portal update.
 - PostgreSQL warns "collation version mismatch" after a glibc bump (2.42 → 2.44 in that
   update). Rebuild the indexes, then record the new version:
   `sudo -u postgres psql -d <db> -c 'REINDEX DATABASE "<db>";' -c 'ALTER DATABASE "<db>" REFRESH COLLATION VERSION;'`

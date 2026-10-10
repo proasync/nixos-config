@@ -763,6 +763,15 @@ if not is_somewm then
     -- picom is the X11 compositor; SomeWM composites itself
     awful.spawn.with_shell("pgrep -u $USER -x picom > /dev/null || $HOME/.config/awesome/scripts/picom-restart.sh")
 else
+    -- Portals (screen sharing, file pickers) are D-Bus/systemd services, not
+    -- children of this process: hand them this session's variables, then
+    -- restart the portal frontend so it reads them (it may still be running
+    -- from an X11 session) and drop backends started with the old ones. The
+    -- session script in modules/somewm.nix takes the variables back on exit.
+    awful.spawn.with_shell("dbus-update-activation-environment --systemd"
+        .. " WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE NIXOS_OZONE_WL;"
+        .. " systemctl --user stop xdg-desktop-portal-gtk.service xdg-desktop-portal-wlr.service;"
+        .. " systemctl --user restart xdg-desktop-portal.service")
     -- Wayland counterparts of numlockx and the feh wallpaper; scripts shared with niri
     awesome._set_keyboard_setting("numlock", true)
     awful.spawn.with_shell("$HOME/.config/wm-scripts/wallpaper-restore.sh")
