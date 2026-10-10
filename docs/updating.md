@@ -19,6 +19,7 @@ so everything changed at once. Nix caught the config-level breakage at build tim
 | Flameshot 14 captures via xdg-desktop-portal | "Unable to capture screen" in Awesome | HM activation sets `useX11LegacyScreenshot=true` |
 | VS Code 1.140 draws its own frame (`_GTK_FRAME_EXTENTS`) | odd double border, no visible top gap | VS Code setting `window.titleBarStyle: native` (not in repo) |
 | catppuccin-gtk 1.0.3 renamed the theme dir (no `+default`) | GTK apps light, white VS Code menu | theme name updated in `gtk.theme` + all `GTK_THEME` exports |
+| nixpkgs dropped `nodejs_20` (upstream EOL) | `cd ~/dev/proasync-monorepo` → direnv "Node.js 20 support was removed" | that repo's `shell.nix` pins Node 20 from an older nixpkgs (like pagoda does for Node 18) |
 | VS Code 1.140 ships Copilot built in | slow startup, extension host stalls | VS Code setting `chat.disableAIFeatures: true` (not in repo) |
 
 ## How to avoid it
@@ -57,6 +58,9 @@ update never migrates their data; bump those deliberately.
 - Wallpaper is set (feh, `~/.fehbg`); picom runs and logs to `~/.cache/picom/`.
 - **Super+P** screenshot works (Flameshot).
 - VS Code and the Claude panel open normally.
+- Dev shells still evaluate: `cd` into `~/dev/pagoda-monorepo` and `~/dev/proasync-monorepo`
+  (direnv must not print "Falling back to previous environment"). Repos that take Node
+  from the system nixpkgs break when nixpkgs drops an EOL Node; pin it in their `shell.nix`.
 - `systemctl --failed` shows nothing new (`app-picom@autostart` always fails — harmless).
 - `nixos-version` shows the new date; `claude --version` moved.
 
