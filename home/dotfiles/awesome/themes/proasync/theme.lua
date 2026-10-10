@@ -282,16 +282,20 @@ local volicon = wibox.widget.textbox()
 volicon:set_markup(markup.font(icon_font, markup(colors.teal, " " .. glyph_vol_hi .. " ")))
 theme.volume = lain.widget.alsa({
     settings = function()
+        -- `amixer get Master` can come back empty (it can't reach PipeWire for
+        -- a moment), leaving level nil. Keep showing the last value; the next
+        -- 5 s poll fills it in. Comparing nil raised "attempt to compare nil
+        -- with number" here (2026-10-10).
+        local level = tonumber(volume_now.level)
+        if not level then return end
         local glyph = glyph_vol_hi
-        if volume_now.status == "off" then
+        if volume_now.status == "off" or level == 0 then
             glyph = glyph_vol_mut
-        elseif tonumber(volume_now.level) == 0 then
-            glyph = glyph_vol_mut
-        elseif tonumber(volume_now.level) <= 50 then
+        elseif level <= 50 then
             glyph = glyph_vol_lo
         end
         volicon:set_markup(markup.font(icon_font, markup(colors.teal, " " .. glyph .. " ")))
-        widget:set_markup(markup.font(theme.font, markup(colors.teal, " " .. volume_now.level .. "% ")))
+        widget:set_markup(markup.font(theme.font, markup(colors.teal, " " .. level .. "% ")))
     end
 })
 theme.volume.widget:buttons(awful.util.table.join(
