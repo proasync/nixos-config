@@ -26,8 +26,12 @@ input {
     focus-follows-mouse max-scroll-amount="0%"
 }
 
-// ── Output / Monitor defaults ──────────────────────────
-// Per-host monitor config can override these
+// ── Outputs (per host) ─────────────────────────────────
+// ~/.config/niri/monitor.kdl links to hosts/<host>/niri/monitor.kdl, which
+// nwg-displays (Mod+D) rewrites. Includes resolve next to the link, not in the
+// repo folder. A missing file is a config error, hence the build assertion in
+// home/home.nix.
+include "monitor.kdl"
 
 // ── Layout ─────────────────────────────────────────────
 layout {
@@ -123,11 +127,15 @@ environment {
 // ── Startup ────────────────────────────────────────────
 spawn-at-startup "waybar" "-c" "/home/proasync/.config/niri/waybar/config.jsonc" "-s" "/home/proasync/.config/niri/waybar/style.css"
 spawn-at-startup "mako"
-spawn-at-startup "awww-daemon"
+spawn-at-startup "/home/proasync/.config/wm-scripts/wallpaper-restore.sh"
 spawn-at-startup "nm-applet" "--indicator"
 spawn-at-startup "blueman-applet"
 spawn-at-startup "udiskie" "--automount" "--notify" "--tray"
 spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
+
+// Idle: lock after 10 min, screens off 30 s later (any input wakes them).
+// Also lock before suspend and on `loginctl lock-session`.
+spawn-at-startup "swayidle" "-w" "timeout" "600" "/home/proasync/.config/wm-scripts/lock.sh" "timeout" "630" "niri msg action power-off-monitors" "before-sleep" "/home/proasync/.config/wm-scripts/lock.sh" "lock" "/home/proasync/.config/wm-scripts/lock.sh"
 
 // ── Window rules ───────────────────────────────────────
 window-rule {
@@ -303,3 +311,8 @@ switch-events {
     lid-close { spawn "niri" "msg" "output" "eDP-1" "off"; }
     lid-open  { spawn "niri" "msg" "output" "eDP-1" "on"; }
 }
+
+// ── Host extras ────────────────────────────────────────
+// hosts/<host>/niri/hostextras.kdl if it exists, else the empty shared
+// hostextras.kdl. Included last, after everything shared.
+include "hostextras.kdl"

@@ -6,7 +6,7 @@ Flake-based NixOS + Home Manager configuration for three machines:
 | --- | --- | --- | --- |
 | Hardware | i5-12400F + RX 7600 | ASUS Zenbook S 13 UX5304MA (Core Ultra 7 155U) | Ryzen 5 5600X + RX 470, 32 GB |
 | GPU | AMD (`amdgpu`) | Intel Arc iGPU (`modesetting` + iHD VA-API) | AMD (`amdgpu`) |
-| Display | standard DPI | 2880x1800 HiDPI (SDDM 2×, Xft.dpi 160, Hyprland 1.67×) | 3 × 1920x1080/1200, standard DPI |
+| Display | standard DPI | 2880x1800 HiDPI (SDDM 2×, Xft.dpi 160, niri 1.67×) | 3 × 1920x1080/1200, standard DPI |
 | Host-only quirks | — | USB-root autosuspend guard, Intel ISH blacklist, i915 in initrd + `xe` blacklisted, iwlwifi force-load, thermald, power-profiles-daemon, lid handling, Bluetooth | — |
 | Remote access (Tailscale + tailnet-only SSH) | — | yes | yes |
 | Phone dev ports on LAN (8081, 4300) | yes | yes | — (phone uses Tailscale) |
@@ -17,7 +17,8 @@ Flake-based NixOS + Home Manager configuration for three machines:
 - **WMs (all hosts):** Awesome (Xorg, the daily driver) and niri (Wayland, scrolling columns).
   Hyprland is retired but its config is kept: see *Hyprland (retired)* below.
 - **Theme:** Catppuccin Mocha Mauve — SDDM, Awesome, niri, Waybar, Rofi, Alacritty, Mako, swaylock, GTK
-- **Wallpaper:** feh on X11 (`awesome/scripts/wallpaper-restore.sh` replays `~/.fehbg`); `awww` daemon (formerly swww) + `waypaper` picker available on Wayland — final approach TBD
+- **Wallpaper:** feh on X11 (`awesome/scripts/wallpaper-restore.sh` replays `~/.fehbg`); on niri, `waypaper`
+  picks it and `wm-scripts/wallpaper-restore.sh` re-applies it at login through the `awww` daemon
 
 ## Repo structure
 
@@ -35,8 +36,8 @@ nixos-config/
 │   ├── proasync-laptop/       # Intel GPU/VA-API, HiDPI, power, hardware quirks
 │   │   └── home.nix           # per-host Home Manager overrides (Xft.dpi)
 │   └── work-desktop/          # AMD GPU, remote access (hardware config = placeholder)
-│       (each has configuration.nix, hardware-configuration.nix and hypr/monitors.conf;
-│        home.nix and hypr/hostextras.conf are optional)
+│       (each has configuration.nix, hardware-configuration.nix, niri/monitor.kdl and
+│        hypr/monitors.conf; home.nix, niri/hostextras.kdl and hypr/hostextras.conf are optional)
 ├── modules/
 │   ├── common.nix             # Everything shared: boot, locale, user, WMs, SDDM, audio,
 │   │                          #   fonts, keyd, nix-ld (Electron libs), docker, printing, gc,
@@ -71,6 +72,13 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 - `configuration.nix` — system settings, plus which optional modules the host imports.
 - `home.nix` *(optional)* — Home Manager overrides, merged on top of `home/home.nix`.
   Never add hostname checks to `home/home.nix`.
+- `niri/monitor.kdl` — **required** for every host (an assertion fails the build without it;
+  niri itself rejects a config whose `include` is missing). nwg-displays (Super+D in niri)
+  writes through the `~/.config/niri/monitor.kdl` link, so this must never be a file that
+  hosts share. Commit what it writes.
+- `niri/hostextras.kdl` *(optional)* — included last by `niri/config.kdl`; falls back to the
+  no-op `home/dotfiles/niri/hostextras.kdl`, which must stay a **regular file**. The laptop's
+  disables direct scanout (i915 freezes), like its `hypr/hostextras.conf`.
 - `hypr/monitors.conf` — **required** on every host that runs Hyprland (an assertion fails
   the build without it). nwg-displays (Super+D) writes through the `~/.config/hypr` symlink,
   so this must never be a file that hosts share. Keep the existing ones: they are what a
@@ -90,7 +98,7 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | `nrt` / `nrd` | rebuild test / dry-build |
 | `nrb` | rebuild for next boot, then reboot — when `nrs` refuses to switch live |
 | `niri validate` | check niri's config after editing it (niri reloads it on save; a broken file keeps the old one) |
-| `waypaper` | pick a wallpaper for the current Wayland session (not auto-restored on reboot) |
+| `waypaper` | pick the niri wallpaper; it is re-applied at every niri login |
 | `Super + W` | popup listing the keybindings (niri's sheet in niri; Hyprland's in Hyprland) |
 | `tv-mirror.sh on` / `off` | laptop → TV mirror on X11/Awesome — see [docs/external-display.md](docs/external-display.md) first |
 | `Mod+Shift+P` (Awesome) | restart picom (logs to `~/.cache/picom/`) — screen frozen? see [docs/desktop-freeze.md](docs/desktop-freeze.md) |
@@ -165,8 +173,9 @@ firmware boot menu (F8/F11/F12) — systemd-boot does not list OSes on other dis
    Wallpapers arrive as small LFS pointer text files until the *Git LFS* step below.
 3. If the host isn't in the repo yet: create `hosts/<newhost>/` with a `configuration.nix`
    (GPU driver, optional module imports, whatever is genuinely host-specific — copy the
-   closest existing host) and `hypr/monitors.conf`, and add `"<newhost>"` to the host list
-   in `flake.nix`. (`work-desktop` already exists.)
+   closest existing host) and `niri/monitor.kdl` (copy `home-desktop`'s empty one), and add
+   `"<newhost>"` to the host list in `flake.nix`. (`work-desktop` already exists.) Add
+   `hypr/monitors.conf` only if the host will run Hyprland.
 4. Copy the generated `hardware-configuration.nix` over `hosts/<newhost>/hardware-configuration.nix`
    (for `work-desktop` this replaces the placeholder) and set `system.stateVersion` to the
    value from step 1.

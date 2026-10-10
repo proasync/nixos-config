@@ -1,12 +1,26 @@
 { config, pkgs, lib, osConfig, ... }:
 
-# Shared by every host. Anything host-specific goes in hosts/<host>/home.nix
-# (imported by flake.nix) or a per-host file under hosts/<host>/ — never a
-# hostname check here.
+let
+  # Shared by every host. Anything host-specific goes in hosts/<host>/home.nix
+  # (imported by flake.nix) or a per-host file under hosts/<host>/ — never a
+  # hostname check here.
+  hostName = osConfig.networking.hostName;
+  niriDir = "/home/proasync/nixos-config/home/dotfiles/niri";
+  hostNiriDir = "/home/proasync/nixos-config/hosts/${hostName}/niri";
+  hostHasNiriExtras = builtins.pathExists (../hosts + "/${hostName}/niri/hostextras.kdl");
+in
 {
   # Hyprland is retired; its Home Manager side only activates on hosts that
   # import modules/hyprland.nix.
   imports = [ ./hyprland.nix ];
+
+  # niri's monitor.kdl is always per host: nwg-displays (Mod+D) writes through
+  # the ~/.config/niri/monitor.kdl link, so it must never point at a file other
+  # hosts share. niri rejects the whole config if an included file is missing.
+  assertions = [{
+    assertion = builtins.pathExists (../hosts + "/${hostName}/niri/monitor.kdl");
+    message = "hosts/${hostName}/niri/monitor.kdl is missing: every host needs its own (copy one from another host).";
+  }];
 
   home.username = "proasync";
   home.homeDirectory = "/home/proasync";
@@ -52,6 +66,7 @@
     awww           # Wayland wallpaper daemon (was swww; binaries awww/awww-daemon)
     xwayland-satellite  # niri runs X11-only apps through this (it must be on PATH)
     swaylock    # screen locker: wm-scripts/lock.sh, theme in dotfiles/swaylock/
+    swayidle    # idle → lock / screens off; started by niri/config.kdl
     wl-clipboard
     cliphist    # clipboard history — autostarted by Hyprland and niri
     grim
@@ -350,9 +365,32 @@
     fi
   '';
 
-  home.file.".config/niri".source =
+  # niri is shared, except monitor.kdl (always per host) and hostextras.kdl
+  # (per host if hosts/<host>/niri/hostextras.kdl exists). config.kdl pulls
+  # both in with `include`, resolved next to these links.
+  home.file.".config/niri/config.kdl".source =
+    config.lib.file.mkOutOfStoreSymlink "${niriDir}/config.kdl";
+  home.file.".config/niri/waybar".source =
+    config.lib.file.mkOutOfStoreSymlink "${niriDir}/waybar";
+  home.file.".config/niri/scripts".source =
+    config.lib.file.mkOutOfStoreSymlink "${niriDir}/scripts";
+  home.file.".config/niri/monitor.kdl".source =
+    config.lib.file.mkOutOfStoreSymlink "${hostNiriDir}/monitor.kdl";
+  home.file.".config/niri/hostextras.kdl".source =
     config.lib.file.mkOutOfStoreSymlink
-      "/home/proasync/nixos-config/home/dotfiles/niri";
+      (if hostHasNiriExtras then "${hostNiriDir}/hostextras.kdl" else "${niriDir}/hostextras.kdl");
+
+  # Until 2026-10-10 ~/.config/niri was one link to the whole repo folder. Home
+  # Manager checks new link targets before it removes old links, so through
+  # that folder link it finds the repo's own files in the way, and aborts where
+  # they differ (the laptop's hostextras.kdl vs the shared one; rehearsed
+  # 2026-10-10). So remove the old link first, and only if it is Home Manager's
+  # own. A no-op once every host has switched; then it can go.
+  home.activation.niriFolderLink = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+    if [[ -L "$HOME/.config/niri" && "$(readlink "$HOME/.config/niri")" == /nix/store/*-home-manager-files/* ]]; then
+      run rm $VERBOSE_ARG "$HOME/.config/niri"
+    fi
+  '';
 
   home.file.".config/awesome".source =
     config.lib.file.mkOutOfStoreSymlink

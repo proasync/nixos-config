@@ -1,0 +1,3 @@
+// Host-specific niri settings (default: none).
+// A host that needs some gets hosts/<host>/niri/hostextras.kdl, which
+// home/home.nix links here instead of this file. Keep this a regular file.

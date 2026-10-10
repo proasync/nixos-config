@@ -1,0 +1,18 @@
+// proasync-laptop outputs for niri (included by niri/config.kdl).
+// nwg-displays (Mod+D in niri) rewrites this file through the
+// ~/.config/niri/monitor.kdl link: commit the result.
+// Same layout as hypr/monitors.conf: the 3840x1080 desk monitor on the left,
+// the panel to its right at 1.67× (X11 uses Xft.dpi 160 = 1.67× too).
+// No `mode` lines: niri takes each output's preferred mode. A TV on HDMI gets
+// its preferred mode too, which on a 4K TV is the 4K@60 that froze this
+// laptop under X11 (docs/external-display.md). For demos, use Awesome.
+
+output "eDP-1" {
+    scale 1.67
+    position x=3840 y=0
+}
+
+output "DP-1" {
+    scale 1.0
+    position x=0 y=0
+}

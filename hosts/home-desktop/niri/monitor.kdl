@@ -1,0 +1,4 @@
+// home-desktop outputs for niri (included by niri/config.kdl).
+// Empty: every output runs at its preferred mode and scale, placed left to
+// right. Arrange them with nwg-displays (Mod+D in niri): it rewrites this file
+// through the ~/.config/niri/monitor.kdl link, and you commit the result.

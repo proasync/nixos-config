@@ -1,0 +1,5 @@
+// work-desktop outputs for niri (included by niri/config.kdl): three
+// 1920x1080/1200 monitors at 1×.
+// Empty: until arranged, niri places every output at its preferred mode, left
+// to right. Arrange them with nwg-displays (Mod+D in niri): it rewrites this
+// file through the ~/.config/niri/monitor.kdl link, and you commit the result.

@@ -4,6 +4,10 @@ Runbook for TVs, projectors and monitors on the laptop. Read before touching
 xrandr on this machine: it has bitten twice (2026-09-25: black screens, hard
 reboots, lost work).
 
+None of this applies under niri: there is no xrandr and no `tv-mirror.sh`, and
+niri gives a newly plugged TV its preferred mode, which on a 4K TV is the
+4K@60 that went black here. For a demo, log in to Awesome.
+
 ## TL;DR for a demo
 
 ```sh

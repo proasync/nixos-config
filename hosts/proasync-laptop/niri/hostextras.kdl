@@ -1,0 +1,9 @@
+// proasync-laptop extras for niri (included last by niri/config.kdl).
+
+// Same workaround as hypr/hostextras.conf (direct_scanout = false): direct
+// scanout has frozen the i915 GPU on Meteor Lake. Costs a little power in
+// fullscreen video. `debug` options are not a stable niri API: if a niri
+// update rejects this, `niri validate` names the line.
+debug {
+    disable-direct-scanout
+}
