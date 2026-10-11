@@ -97,6 +97,9 @@ theme.layout_dwindle                            = theme.dir .. "/icons/dwindle.p
 theme.layout_max                                = theme.dir .. "/icons/max.png"
 theme.layout_magnifier                          = theme.dir .. "/icons/magnifier.png"
 theme.layout_floating                           = theme.dir .. "/icons/floating.png"
+theme.layout_carousel                           = theme.dir .. "/icons/carousel.png"   -- SomeWM only
+-- Carousel (SomeWM): new columns take half the screen, like niri's default.
+theme.carousel_default_column_width             = 0.5
 theme.tasklist_plain_task_name                  = true
 theme.tasklist_disable_icon                     = true
 theme.useless_gap                               = dpi(3)

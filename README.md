@@ -108,6 +108,7 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | `Super + Shift + T` | show/hide the focused window's titlebar (Awesome, SomeWM; off by default) |
 | `Super + C` | drop-down terminal from the top of the screen; same key hides it, and it keeps running (Awesome, SomeWM) |
 | click the layout icon (top right) | dropdown of all layouts, current one highlighted; scroll on the icon cycles (Awesome, SomeWM) |
+| `Super + Shift + H / L` | swap the window with its left/right neighbour (carousel: move the column) |
 | `tv-mirror.sh on` / `off` | laptop → TV mirror on X11/Awesome — see [docs/external-display.md](docs/external-display.md) first |
 | `Mod+Shift+P` (Awesome) | restart picom (logs to `~/.cache/picom/`) — screen frozen? see [docs/desktop-freeze.md](docs/desktop-freeze.md) |
 
@@ -169,6 +170,16 @@ SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input
   SWT's Wayland quirks).
 - **Splitting the configs later:** link `~/.config/somewm` to its own folder in
   `home/home.nix`; SomeWM prefers that over `~/.config/awesome`.
+- **Carousel layout** (SomeWM only, last in the layout list): niri-style scrolling columns.
+  New windows open as a new column at half the screen width; the view scrolls to keep the
+  focused column visible. `Super+H/L` focus left/right · `Super+Shift+H/L` move the column ·
+  `Super+Ctrl+H/L` narrower/wider (5 %) · `Super+=` width presets 1/3 → 1/2 → 2/3 → full ·
+  `Super+[` / `Super+]` put the window into the left/right column, or, if it is stacked, back
+  into its own column · `Super+Home/End` first/last column · three-finger swipe pans the view.
+  `=`, `[`, `]` are bound by key position, so they are the same keys on the se layout.
+- **Window animation** (SomeWM only): windows glide to their new place in 0.1 s when the
+  tiling changes. `layout_anim.duration` in `rc.lua` sets the speed; 0 turns it off. Not used
+  in carousel, which animates its own scrolling.
 - **Removing it:** drop `./somewm.nix` from the imports in `modules/common.nix` and the
   `somewm` input from `flake.nix`.
 

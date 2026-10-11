@@ -51,6 +51,22 @@ if is_somewm then
     -- everything, so Lua-side sizes stay at 96 or they would be scaled twice.
     require("beautiful.xresources").set_dpi(96)
     awful.screen.connect_for_each_screen(function(s) s.dpi = 96 end)
+
+    -- Windows glide to their new place when the tiling changes (layout
+    -- switch, window opened or closed, resize). Short on purpose; set
+    -- duration = 0 (or enabled = false) to go back to instant.
+    -- Not in carousel: it animates its own scrolling, and both would move the
+    -- same windows. This handler is connected before layout_animation's own
+    -- "arrange" handler, so it decides per screen just before that one runs.
+    local layout_anim
+    screen.connect_signal("arrange", function(s)
+        if not layout_anim then return end
+        local l = awful.layout.get(s)
+        layout_anim.enabled = l ~= awful.layout.suit.carousel and l ~= awful.layout.suit.carousel.vertical
+    end)
+    layout_anim = require("somewm.layout_animation")
+    layout_anim.duration = 0.1
+    layout_anim.easing   = "ease-out-cubic"
 end
 
 
@@ -133,6 +149,28 @@ awful.layout.layouts               = {
     awful.layout.suit.spiral,
     awful.layout.suit.spiral.dwindle,
 }
+-- SomeWM's carousel: niri-style scrolling columns. Keys: see "Carousel" below.
+-- Awesome 4.3 has no carousel, so the list there stays as above.
+local carousel = awful.layout.suit.carousel
+if carousel then table.insert(awful.layout.layouts, carousel) end
+-- Three-finger touchpad swipe pans the carousel view (does nothing in other layouts).
+if carousel then carousel.make_gesture_binding() end
+local function in_carousel()
+    return carousel ~= nil and awful.layout.get(awful.screen.focused()) == carousel
+end
+-- niri's consume-or-expel: a window alone in its column joins the column on
+-- that side; a window stacked with others gets a column of its own. Windows in
+-- one column share x and width.
+local function carousel_consume_or_expel(dir)
+    local c = client.focus
+    if not c or not in_carousel() then return end
+    local g, n = c:geometry(), 0
+    for _, o in ipairs(c.screen.tiled_clients) do
+        local og = o:geometry()
+        if og.x == g.x and og.width == g.width then n = n + 1 end
+    end
+    if n > 1 then carousel.expel_window() else carousel.push_window(dir) end
+end
 
 awful.util.tagnames                = { "➊", "➋", "➌", "➍", "➎", "➏", "➐", "➑", "➒" }
 awful.layout.suit.tile.left.mirror = true
@@ -472,10 +510,34 @@ globalkeys = my_table.join(
     awful.key({ modkey }, "F6", function() awful.util.spawn("inkscape") end,
         { description = "inkscape", group = "function keys" }),
     -- Layout resize (Super+Ctrl+HJKL — matching Hyprland)
-    awful.key({ modkey, "Control" }, "h", function() awful.tag.incmwfact(-0.05) end,
-        { description = "decrease master width", group = "layout" }),
-    awful.key({ modkey, "Control" }, "l", function() awful.tag.incmwfact(0.05) end,
-        { description = "increase master width", group = "layout" }),
+    awful.key({ modkey, "Control" }, "h", function()
+            if in_carousel() then carousel.adjust_column_width(-0.05) else awful.tag.incmwfact(-0.05) end
+        end,
+        { description = "narrower: master width (carousel: column)", group = "layout" }),
+    awful.key({ modkey, "Control" }, "l", function()
+            if in_carousel() then carousel.adjust_column_width(0.05) else awful.tag.incmwfact(0.05) end
+        end,
+        { description = "wider: master width (carousel: column)", group = "layout" }),
+    -- Carousel (SomeWM): niri's keys where free. Keycodes for =, [ and ] so
+    -- they are the same keys on the us and se layouts (se puts ´, å, ¨ there).
+    awful.key({ modkey, "Shift" }, "h", function()
+            if in_carousel() then carousel.move_column(-1) else awful.client.swap.global_bydirection("left") end
+        end,
+        { description = "move left (carousel: column)", group = "layout" }),
+    awful.key({ modkey, "Shift" }, "l", function()
+            if in_carousel() then carousel.move_column(1) else awful.client.swap.global_bydirection("right") end
+        end,
+        { description = "move right (carousel: column)", group = "layout" }),
+    awful.key({ modkey }, "#21", function() if in_carousel() then carousel.cycle_column_width() end end,
+        { description = "carousel: column width 1/3, 1/2, 2/3, full", group = "layout" }),
+    awful.key({ modkey }, "#34", function() carousel_consume_or_expel(-1) end,
+        { description = "carousel: into left column / own column", group = "layout" }),
+    awful.key({ modkey }, "#35", function() carousel_consume_or_expel(1) end,
+        { description = "carousel: into right column / own column", group = "layout" }),
+    awful.key({ modkey }, "Home", function() if in_carousel() then carousel.focus_first_column() end end,
+        { description = "carousel: first column", group = "layout" }),
+    awful.key({ modkey }, "End", function() if in_carousel() then carousel.focus_last_column() end end,
+        { description = "carousel: last column", group = "layout" }),
     awful.key({ modkey, "Control" }, "k", function() awful.tag.incnmaster(1, nil, true) end,
         { description = "increase master clients", group = "layout" }),
     awful.key({ modkey, "Control" }, "j", function() awful.tag.incnmaster(-1, nil, true) end,
