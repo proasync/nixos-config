@@ -17,7 +17,8 @@ Flake-based NixOS + Home Manager configuration for three machines:
 - **WMs (all hosts):** Awesome (Xorg, the daily driver) and niri (Wayland, scrolling columns),
   plus SomeWM on trial (Wayland, runs Awesome's own config: see *SomeWM (trial)* below).
   Hyprland is retired but its config is kept: see *Hyprland (retired)* below.
-- **Theme:** Catppuccin Mocha Mauve — SDDM, Awesome, niri, Waybar, Rofi, Alacritty, Mako, swaylock, GTK
+- **Theme:** Catppuccin Mocha Mauve — SDDM, Awesome, niri, Waybar, Rofi, Alacritty, Mako, GTK, and the lock
+  screens (swaylock on Wayland, i3lock-color on X11)
 - **Wallpaper:** feh on X11 (`awesome/scripts/wallpaper-restore.sh` replays `~/.fehbg`); on niri, `waypaper`
   picks it and `wm-scripts/wallpaper-restore.sh` re-applies it at login through the `awww` daemon
 
@@ -103,6 +104,8 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | `niri validate` | check niri's config after editing it (niri reloads it on save; a broken file keeps the old one) |
 | `waypaper` | pick the niri wallpaper; it is re-applied at every niri login |
 | `Super + W` | popup listing the keybindings (niri's sheet in niri; Hyprland's in Hyprland) |
+| `Super + X`, then `k` | lock the screen: i3lock-color on X11 (via xss-lock), swaylock on Wayland. Also locks after 10 min idle and before suspend |
+| `Super + Shift + T` | show/hide the focused window's titlebar (Awesome, SomeWM; off by default) |
 | `tv-mirror.sh on` / `off` | laptop → TV mirror on X11/Awesome — see [docs/external-display.md](docs/external-display.md) first |
 | `Mod+Shift+P` (Awesome) | restart picom (logs to `~/.cache/picom/`) — screen frozen? see [docs/desktop-freeze.md](docs/desktop-freeze.md) |
 

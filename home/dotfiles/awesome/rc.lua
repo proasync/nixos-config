@@ -547,6 +547,10 @@ clientkeys = my_table.join(
             c:raise()
         end,
         { description = "toggle fullscreen", group = "client" }),
+    -- Titlebars are off by default (rules: titlebars_enabled = false). toggle
+    -- builds this window's titlebar on first use (request::titlebars below).
+    awful.key({ modkey, "Shift" }, "t", function(c) awful.titlebar.toggle(c) end,
+        { description = "toggle titlebar", group = "client" }),
     awful.key({ modkey, }, "q", function(c) c:kill() end,
         { description = "close", group = "super" }),
     awful.key({ modkey, }, "m", function(c)
@@ -750,6 +754,12 @@ if is_somewm then load_config("somewm.lua") end   -- Wayland output layout
 if not is_somewm then
     -- picom is the X11 compositor; SomeWM composites itself
     awful.spawn.with_shell("pgrep -u $USER -x picom > /dev/null || $HOME/.config/awesome/scripts/picom-restart.sh")
+    -- Screen lock (X11), like swayidle in Wayland: X's screensaver timer fires
+    -- after 10 min idle and xss-lock runs scripts/lock.sh (i3lock-color);
+    -- screens off 30 s later. xss-lock also locks before suspend (holding the
+    -- sleep until i3lock is up) and on `loginctl lock-session` (power menu, k).
+    awful.spawn.with_shell("xset s 600 600; xset dpms 630 630 630;"
+        .. " pgrep -u $USER -x xss-lock > /dev/null || xss-lock --transfer-sleep-lock -- $HOME/.config/awesome/scripts/lock.sh")
 else
     -- Portals (screen sharing, file pickers) are D-Bus/systemd services, not
     -- children of this process: hand them this session's variables, then

@@ -57,6 +57,7 @@ update never migrates their data; bump those deliberately.
 - Login screen preselects **Awesome**; touchpad and keyboard work.
 - Wallpaper is set (feh, `~/.fehbg`); picom runs and logs to `~/.cache/picom/`.
 - **Super+P** screenshot works (Flameshot).
+- **Super+X, k** locks the screen (i3lock-color via xss-lock) and the password unlocks it.
 - VS Code and the Claude panel open normally.
 - Dev shells still evaluate: `cd` into `~/dev/pagoda-monorepo` and `~/dev/proasync-monorepo`
   (direnv must not print "Falling back to previous environment"). Repos that take Node

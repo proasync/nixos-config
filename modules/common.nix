@@ -61,6 +61,18 @@
   programs.niri.enable = true;
   # Hyprland is retired but kept: modules/hyprland.nix, imported by no host.
 
+  # ── Screen lock for Awesome (X11) ─────────────────────
+  # i3lock-color (themed in home/dotfiles/awesome/scripts/lock.sh) plus its PAM
+  # service. xss-lock is started by Awesome's rc.lua, not by
+  # programs.xss-lock: that one is a graphical-session.target service, and
+  # SomeWM and niri start that target too, so it would run there as well.
+  # Wayland sessions lock with swaylock (wm-scripts/lock.sh).
+  programs.i3lock = {
+    enable = true;
+    package = pkgs.i3lock-color;
+  };
+  # (xss-lock itself is in environment.systemPackages below)
+
   # ── SDDM ──────────────────────────────────────────────
   services.displayManager.sddm.enable = true;
   services.displayManager.sddm.theme = "catppuccin-sddm-corners";
@@ -116,6 +128,7 @@
     bibata-cursors
     libsecret
     usbutils
+    xss-lock   # X11 lock trigger, started by Awesome's rc.lua (see "Screen lock" above)
   ];
 
   # ── Fonts (registered with fontconfig for all users + SDDM) ──

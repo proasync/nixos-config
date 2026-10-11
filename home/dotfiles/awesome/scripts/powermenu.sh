@@ -23,8 +23,8 @@ case $code in
     12) # Logout. SomeWM (Wayland) shares this config; it has its own IPC client.
         if [ "${XDG_CURRENT_DESKTOP:-}" = somewm ]; then somewm-client eval 'awesome.quit()'
         else awesome-client 'awesome.quit()'; fi ;;
-    13) # Lock: SomeWM runs swaylock directly. On X11 this asks logind, and
-        # nothing in the X11 session answers that yet, so it does not lock.
+    13) # Lock: SomeWM runs swaylock directly. On X11 logind asks xss-lock,
+        # which runs scripts/lock.sh (i3lock-color); started by rc.lua.
         if [ "${XDG_CURRENT_DESKTOP:-}" = somewm ]; then ~/.config/wm-scripts/lock.sh
         else loginctl lock-session; fi ;;
     14) systemctl suspend ;;
