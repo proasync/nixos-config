@@ -195,7 +195,6 @@ beautiful.init(theme_path)
 -- {{{ Menu
 local myawesomemenu = {
     { "hotkeys", function() return false, hotkeys_popup.show_help end },
-    { "arandr",  "arandr" },
 }
 
 awful.util.mymainmenu = freedesktop.menu.build({
@@ -390,7 +389,6 @@ globalkeys = my_table.join(
         { description = "swap with next client by index", group = "client" }),
     awful.key({ modkey, "Shift" }, "k", function() awful.client.swap.byidx(-1) end,
         { description = "swap with previous client by index", group = "client" }),
-    -- Screen focus via Super+A/D instead (matching Hyprland)
     awful.key({ modkey, }, "u", awful.client.urgent.jumpto,
         { description = "jump to urgent client", group = "client" }),
     awful.key({ ctrlKey, }, "Tab",
