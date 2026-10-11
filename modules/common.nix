@@ -61,7 +61,7 @@
   programs.niri.enable = true;
   # Hyprland is retired but kept: modules/hyprland.nix, imported by no host.
 
-  # ── Screen lock for Awesome (X11) ─────────────────────
+  # ── Screen lock for Awesome (X11), on request only ────
   # i3lock-color (themed in home/dotfiles/awesome/scripts/lock.sh) plus its PAM
   # service. xss-lock is started by Awesome's rc.lua, not by
   # programs.xss-lock: that one is a graphical-session.target service, and

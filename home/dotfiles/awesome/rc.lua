@@ -53,8 +53,9 @@ if is_somewm then
     awful.screen.connect_for_each_screen(function(s) s.dpi = 96 end)
 
     -- Windows glide to their new place when the tiling changes (layout
-    -- switch, window opened or closed, resize). Short on purpose; set
-    -- duration = 0 (or enabled = false) to go back to instant.
+    -- switch, window opened or closed, resize, swap). 0.25 s, about what
+    -- Raven2cz uses (0.1 s was so short it read as a flicker). Set
+    -- duration = 0 to go back to instant. Workspace switches stay instant.
     -- Not in carousel: it animates its own scrolling, and both would move the
     -- same windows. This handler is connected before layout_animation's own
     -- "arrange" handler, so it decides per screen just before that one runs.
@@ -65,7 +66,7 @@ if is_somewm then
         layout_anim.enabled = l ~= awful.layout.suit.carousel and l ~= awful.layout.suit.carousel.vertical
     end)
     layout_anim = require("somewm.layout_animation")
-    layout_anim.duration = 0.1
+    layout_anim.duration = 0.25
     layout_anim.easing   = "ease-out-cubic"
 end
 
@@ -822,12 +823,14 @@ if is_somewm then load_config("somewm.lua") end   -- Wayland output layout
 if not is_somewm then
     -- picom is the X11 compositor; SomeWM composites itself
     awful.spawn.with_shell("pgrep -u $USER -x picom > /dev/null || $HOME/.config/awesome/scripts/picom-restart.sh")
-    -- Screen lock (X11), like swayidle in Wayland: X's screensaver timer fires
-    -- after 10 min idle and xss-lock runs scripts/lock.sh (i3lock-color);
-    -- screens off 30 s later. xss-lock also locks before suspend (holding the
-    -- sleep until i3lock is up) and on `loginctl lock-session` (power menu, k).
-    awful.spawn.with_shell("xset s 600 600; xset dpms 630 630 630;"
-        .. " pgrep -u $USER -x xss-lock > /dev/null || xss-lock --transfer-sleep-lock -- $HOME/.config/awesome/scripts/lock.sh")
+    -- Lock only on request (power menu, k: `loginctl lock-session`, which
+    -- xss-lock answers with scripts/lock.sh). No automatic lock, by choice:
+    -- `xset s off` stops X's idle screensaver, the trigger xss-lock would lock
+    -- on, and --ignore-sleep skips the lock before suspend. Screens still turn
+    -- off after 10 min idle (DPMS), without locking. Restarted on every
+    -- (re)load so changed options take effect.
+    awful.spawn.with_shell("xset s off; xset dpms 600 600 600;"
+        .. " pkill -u $USER -x xss-lock; xss-lock --ignore-sleep -- $HOME/.config/awesome/scripts/lock.sh")
 else
     -- Portals (screen sharing, file pickers) are D-Bus/systemd services, not
     -- children of this process: hand them this session's variables, then
@@ -844,10 +847,11 @@ else
     -- Wayland counterparts of numlockx and the feh wallpaper; scripts shared with niri
     awesome._set_keyboard_setting("numlock", true)
     awful.spawn.with_shell("$HOME/.config/wm-scripts/wallpaper-restore.sh")
-    -- Idle, as in niri: lock after 10 min, screens off 30 s later (back on at
-    -- input); also lock before suspend and on `loginctl lock-session`.
-    awful.spawn.with_shell("pgrep -u $USER -x swayidle > /dev/null || swayidle -w"
-        .. " timeout 600 $HOME/.config/wm-scripts/lock.sh"
-        .. [[ timeout 630 "wlopm --off '*'" resume "wlopm --on '*'"]]
-        .. " before-sleep $HOME/.config/wm-scripts/lock.sh lock $HOME/.config/wm-scripts/lock.sh")
+    -- Idle: screens off after 10 min, back on at input. No automatic lock, by
+    -- choice; `loginctl lock-session` still locks (the power menu calls
+    -- wm-scripts/lock.sh directly). Restarted on every (re)load so changed
+    -- options take effect.
+    awful.spawn.with_shell("pkill -u $USER -x swayidle; swayidle -w"
+        .. [[ timeout 600 "wlopm --off '*'" resume "wlopm --on '*'"]]
+        .. " lock $HOME/.config/wm-scripts/lock.sh")
 end

@@ -104,7 +104,7 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | `niri validate` | check niri's config after editing it (niri reloads it on save; a broken file keeps the old one) |
 | `waypaper` | pick the niri wallpaper; it is re-applied at every niri login |
 | `Super + W` | popup listing the keybindings (niri's sheet in niri; Hyprland's in Hyprland) |
-| `Super + X`, then `k` | lock the screen: i3lock-color on X11 (via xss-lock), swaylock on Wayland. Also locks after 10 min idle and before suspend |
+| `Super + X`, then `k` | lock the screen: i3lock-color on X11 (via xss-lock), swaylock on Wayland. Never automatic in Awesome or SomeWM; screens just turn off after 10 min idle |
 | `Super + Shift + T` | show/hide the focused window's titlebar (Awesome, SomeWM; off by default) |
 | `Super + C` | drop-down terminal from the top of the screen; same key hides it, and it keeps running (Awesome, SomeWM) |
 | click the layout icon (top right) | dropdown of all layouts, current one highlighted; scroll on the icon cycles (Awesome, SomeWM) |
@@ -148,7 +148,7 @@ SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input
   X11-only (picom, xrandr, xrdb, flameshot, setxkbmap, xkill, numlockx, unclutter) must sit
   behind it, with the Wayland replacement next to it. Under SomeWM: layouts via
   `awful.input`, screenshots `grim | slurp | satty`, wallpaper and idle lock through the
-  niri scripts in `wm-scripts/`, tray icons via `nm-applet --indicator`.
+  niri scripts in `wm-scripts/` (but no idle lock), tray icons via `nm-applet --indicator`.
 - **DPI.** SomeWM also reads `~/.Xresources`, so `rc.lua` pins its Lua-side DPI to 96 there.
   The laptop's 1.67× comes from the output scale in `configs/proasync-laptop/somewm.lua`.
 - **Check a change** with `somewm --check ~/.config/awesome/rc.lua` and `awesome -k`.
@@ -177,8 +177,8 @@ SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input
   `Super+[` / `Super+]` put the window into the left/right column, or, if it is stacked, back
   into its own column · `Super+Home/End` first/last column · three-finger swipe pans the view.
   `=`, `[`, `]` are bound by key position, so they are the same keys on the se layout.
-- **Window animation** (SomeWM only): windows glide to their new place in 0.1 s when the
-  tiling changes. `layout_anim.duration` in `rc.lua` sets the speed; 0 turns it off. Not used
+- **Window animation** (SomeWM only): windows glide to their new place in 0.25 s when the
+  tiling changes (not when switching workspaces). `layout_anim.duration` in `rc.lua` sets the speed; 0 turns it off. Not used
   in carousel, which animates its own scrolling.
 - **Removing it:** drop `./somewm.nix` from the imports in `modules/common.nix` and the
   `somewm` input from `flake.nix`.

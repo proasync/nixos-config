@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # X11 lock screen for Awesome: i3lock-color, Catppuccin Mocha with the Mauve
 # accent, matching swaylock (home/dotfiles/swaylock/config) used on Wayland.
-# Run by xss-lock (rc.lua) on idle, before suspend and on `loginctl
-# lock-session`. -n keeps i3lock in the foreground, which xss-lock needs to
-# hold the sleep lock until the screen is locked.
+# Run by xss-lock (rc.lua) on `loginctl lock-session` only (power menu, k);
+# there is no automatic lock. -n keeps i3lock in the foreground, as xss-lock
+# expects.
 # Sizes follow Xft.dpi (160 on the laptop = 1.67x), as the rest of X11 does.
 
 dpi=$(xrdb -query 2>/dev/null | awk '/^Xft.dpi:/ {print $2; exit}')
