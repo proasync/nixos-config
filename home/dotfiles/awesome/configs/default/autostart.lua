@@ -20,11 +20,13 @@ gears.timer.start_new(2, function()
 end)
 
 -- Autostart other applications. SomeWM (Wayland) shares this file: its tray
--- speaks StatusNotifier rather than XEmbed (hence --indicator), numlockx and
--- flameshot are X11-only, and rc.lua starts the Wayland counterparts.
+-- speaks StatusNotifier rather than XEmbed (hence --indicator), numlockx is
+-- X11-only (rc.lua sets numlock there), and Flameshot's daemon is needed in
+-- both: on Wayland the app that copied must stay alive to serve the clipboard.
 local is_somewm = awesome.release == "somewm"
 local startup_apps = is_somewm and {
   "nm-applet --indicator",
+  "flameshot",
 } or {
   "nm-applet",         -- Network manager applet
   "numlockx on",       -- Enable numlock

@@ -257,7 +257,9 @@ awful.util.mymainmenu = freedesktop.menu.build({
 screen.connect_signal("arrange", function(s)
     local only_one = #s.tiled_clients == 1
     for _, c in pairs(s.clients) do
-        if only_one and not c.floating or c.maximized then
+        if c._no_border then   -- e.g. Flameshot's overlay (configs/default/rules.lua)
+            c.border_width = 0
+        elseif only_one and not c.floating or c.maximized then
             c.border_width = dpi(2)
         else
             c.border_width = beautiful.border_width
@@ -309,14 +311,12 @@ globalkeys = my_table.join(
         { description = "rofi launcher", group = "super" }),
     awful.key({ modkey }, "v", function() awful.util.spawn("pavucontrol") end,
         { description = "pulseaudio control", group = "super" }),
-    awful.key({ modkey }, "p", function()
-            if is_somewm then   -- flameshot is X11-only here; same pipeline Hyprland used
-                awful.spawn.with_shell('grim -g "$(slurp)" - | satty --filename - --copy-command wl-copy')
-            else
-                awful.util.spawn("flameshot gui")
-            end
-        end,
-        { description = "screenshot", group = "super" }),
+    -- Flameshot in both. X11: its legacy X11 grabber (home.nix sets
+    -- useX11LegacyScreenshot). SomeWM: the Screenshot portal, i.e.
+    -- xdg-desktop-portal-wlr running grim; its overlay is placed by a rule in
+    -- configs/default/rules.lua.
+    awful.key({ modkey }, "p", function() awful.util.spawn("flameshot gui") end,
+        { description = "screenshot (flameshot)", group = "super" }),
     awful.key({ modkey }, "x", function() awful.util.spawn_with_shell("~/.config/awesome/scripts/powermenu.sh") end,
         { description = "power menu", group = "hotkeys" }),
     awful.key({ modkey }, "Escape", function()

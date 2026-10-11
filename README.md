@@ -147,7 +147,8 @@ SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input
   files as Awesome. `rc.lua` sets `is_somewm = awesome.release == "somewm"`; anything
   X11-only (picom, xrandr, xrdb, flameshot, setxkbmap, xkill, numlockx, unclutter) must sit
   behind it, with the Wayland replacement next to it. Under SomeWM: layouts via
-  `awful.input`, screenshots `grim | slurp | satty`, wallpaper and idle lock through the
+  `awful.input`, screenshots with Flameshot through the Screenshot portal (xdg-desktop-portal-wlr runs grim; a rule in
+  `configs/default/rules.lua` pins its overlay over the whole screen), wallpaper and idle lock through the
   niri scripts in `wm-scripts/` (but no idle lock), tray icons via `nm-applet --indicator`.
 - **DPI.** SomeWM also reads `~/.Xresources`, so `rc.lua` pins its Lua-side DPI to 96 there.
   The laptop's 1.67× comes from the output scale in `configs/proasync-laptop/somewm.lua`.

@@ -135,3 +135,19 @@ awful.rules.rules = {
     end
   }
 }
+
+-- SomeWM (Wayland): Flameshot's capture overlay has no app_id, only the title
+-- "flameshot". It asks to be fullscreen, but SomeWM put it below the bar
+-- (y = bar height) with a border and not on top, which offsets the selection
+-- from what you see. Pin it over the whole screen instead. Awesome on X11
+-- places it right by itself.
+if awesome.release == "somewm" then
+  table.insert(awful.rules.rules, {
+    rule = { name = "flameshot" },
+    properties = { floating = true, ontop = true, border_width = 0, titlebars_enabled = false },
+    callback = function(c)
+      c._no_border = true   -- rc.lua's "arrange" handler would reset it to 2 px
+      c:geometry(c.screen.geometry)
+    end,
+  })
+end
