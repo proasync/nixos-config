@@ -21,6 +21,13 @@ local quake = {}
 -- ensure you use an exception for QuakeDD. Otherwise, you may
 -- run into problems with focus.
 
+-- proasync patch (2026-10-11): match the class too. Under SomeWM (Wayland) a
+-- native client has a class (its app_id) but no instance, so the X11-only
+-- instance match never found the terminal and every toggle spawned a new one.
+local function is_dropdown(c, name)
+    return c.instance == name or c.class == name
+end
+
 function quake:display()
     if self.followtag then self.screen = awful.screen.focused() end
 
@@ -29,7 +36,7 @@ function quake:display()
     local i = 0
     for c in awful.client.iterate(function (c)
         -- c.name may be changed!
-        return c.instance == self.name
+        return is_dropdown(c, self.name)
     end)
     do
         i = i + 1
@@ -163,12 +170,12 @@ function quake.new(conf)
     local dropdown = setmetatable(conf, { __index = quake })
 
     capi.client.connect_signal("manage", function(c)
-        if c.instance == dropdown.name and c.screen == dropdown.screen then
+        if is_dropdown(c, dropdown.name) and c.screen == dropdown.screen then
             dropdown:display()
         end
     end)
     capi.client.connect_signal("unmanage", function(c)
-        if c.instance == dropdown.name and c.screen == dropdown.screen then
+        if is_dropdown(c, dropdown.name) and c.screen == dropdown.screen then
             dropdown.visible = false
         end
      end)

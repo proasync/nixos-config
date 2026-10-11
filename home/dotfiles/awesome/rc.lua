@@ -260,6 +260,8 @@ globalkeys = my_table.join(
 
 -- super + ...
     awful.key({ modkey }, "space", function() kbdcfg.switch() end),
+    awful.key({ modkey }, "c", function() awful.screen.focused().quake:toggle() end,
+        { description = "drop-down terminal", group = "launcher" }),
     awful.key({ modkey }, "r", function() awful.util.spawn("rofi -show drun -theme ~/.config/rofi/launcher.rasi") end,
         { description = "rofi launcher", group = "super" }),
     awful.key({ modkey }, "v", function() awful.util.spawn("pavucontrol") end,

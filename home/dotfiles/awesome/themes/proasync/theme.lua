@@ -308,7 +308,9 @@ local arrl_ld = separators.arrow_left("alpha", colors.surface0)
 
 function theme.at_screen_connect(s)
     -- Quake application
-    s.quake = lain.util.quake({ app = awful.util.terminal })
+    -- Drop-down terminal (Super+C, rc.lua). lain finds its window by instance
+    -- name; its default "-name %s" is xterm's flag, alacritty's is --class.
+    s.quake = lain.util.quake({ app = awful.util.terminal, argname = "--class %s" })
 
     -- Tags
     awful.tag(awful.util.tagnames, s, awful.layout.layouts[1])
