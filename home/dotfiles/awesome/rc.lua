@@ -128,6 +128,10 @@ awful.layout.layouts               = {
     awful.layout.suit.tile.top,
     awful.layout.suit.max,
     awful.layout.suit.magnifier,
+    awful.layout.suit.fair,             -- equal-size grid (4 windows = 2x2)
+    awful.layout.suit.fair.horizontal,
+    awful.layout.suit.spiral,
+    awful.layout.suit.spiral.dwindle,
 }
 
 awful.util.tagnames                = { "➊", "➋", "➌", "➍", "➎", "➏", "➐", "➑", "➒" }

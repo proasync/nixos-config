@@ -90,6 +90,10 @@ theme.layout_tile                               = theme.dir .. "/icons/tile.png"
 theme.layout_tileleft                           = theme.dir .. "/icons/tileleft.png"
 theme.layout_tilebottom                         = theme.dir .. "/icons/tilebottom.png"
 theme.layout_tiletop                            = theme.dir .. "/icons/tiletop.png"
+theme.layout_fairv                              = theme.dir .. "/icons/fairv.png"
+theme.layout_fairh                              = theme.dir .. "/icons/fairh.png"
+theme.layout_spiral                             = theme.dir .. "/icons/spiral.png"
+theme.layout_dwindle                            = theme.dir .. "/icons/dwindle.png"
 theme.layout_max                                = theme.dir .. "/icons/max.png"
 theme.layout_magnifier                          = theme.dir .. "/icons/magnifier.png"
 theme.layout_floating                           = theme.dir .. "/icons/floating.png"
@@ -320,8 +324,62 @@ function theme.at_screen_connect(s)
     -- Create an imagebox widget which will contains an icon indicating which layout we're using.
     -- We need one layoutbox per screen.
     s.mylayoutbox = awful.widget.layoutbox(s)
+
+    -- Layout dropdown: left click on the layout icon lists every layout in
+    -- awful.layout.layouts (icon + name, current one highlighted); click one
+    -- to switch. Closes on pick or when the mouse leaves. Scroll and right
+    -- click still cycle. Works in Awesome 4.3 and SomeWM (stock widgets).
+    s.layoutpopup = awful.popup {
+        screen       = s,
+        ontop        = true,
+        visible      = false,
+        bg           = colors.base,
+        border_width = dpi(2),
+        border_color = colors.mauve,
+        shape        = function(cr, w, h) gears.shape.rounded_rect(cr, w, h, dpi(8)) end,
+        placement    = function(d)   -- top right, just under the bar
+            local wa = s.workarea
+            d.x = wa.x + wa.width - d.width - dpi(4)
+            d.y = wa.y + dpi(4)
+        end,
+        widget = {
+            awful.widget.layoutlist {
+                screen      = s,
+                base_layout = wibox.layout.fixed.vertical,
+                style       = { fg_normal = colors.text, bg_normal = colors.base,
+                                fg_selected = colors.base, bg_selected = colors.mauve },
+                widget_template = {
+                    {
+                        {
+                            { id = "icon_role", forced_width = dpi(18), forced_height = dpi(18),
+                              widget = wibox.widget.imagebox },
+                            { id = "text_role", widget = wibox.widget.textbox },
+                            spacing = dpi(10),
+                            layout  = wibox.layout.fixed.horizontal,
+                        },
+                        left = dpi(8), right = dpi(12), top = dpi(4), bottom = dpi(4),
+                        widget = wibox.container.margin,
+                    },
+                    id     = "background_role",
+                    -- Fixed row size: without it a row takes all the room the
+                    -- popup offers (up to 9999x9999) and covers the screen.
+                    forced_width  = dpi(160),
+                    forced_height = dpi(28),
+                    shape  = function(cr, w, h) gears.shape.rounded_rect(cr, w, h, dpi(4)) end,
+                    widget = wibox.container.background,
+                },
+            },
+            margins = dpi(6),
+            widget  = wibox.container.margin,
+        },
+    }
+    s.layoutpopup:connect_signal("mouse::leave", function() s.layoutpopup.visible = false end)
+    tag.connect_signal("property::layout", function(t)
+        if t.screen == s then s.layoutpopup.visible = false end
+    end)
+
     s.mylayoutbox:buttons(my_table.join(
-                           awful.button({}, 1, function () awful.layout.inc( 1) end),
+                           awful.button({}, 1, function () s.layoutpopup.visible = not s.layoutpopup.visible end),
                            awful.button({}, 2, function () awful.layout.set( awful.layout.layouts[1] ) end),
                            awful.button({}, 3, function () awful.layout.inc(-1) end),
                            awful.button({}, 4, function () awful.layout.inc( 1) end),

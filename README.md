@@ -107,6 +107,7 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | `Super + X`, then `k` | lock the screen: i3lock-color on X11 (via xss-lock), swaylock on Wayland. Also locks after 10 min idle and before suspend |
 | `Super + Shift + T` | show/hide the focused window's titlebar (Awesome, SomeWM; off by default) |
 | `Super + C` | drop-down terminal from the top of the screen; same key hides it, and it keeps running (Awesome, SomeWM) |
+| click the layout icon (top right) | dropdown of all layouts, current one highlighted; scroll on the icon cycles (Awesome, SomeWM) |
 | `tv-mirror.sh on` / `off` | laptop → TV mirror on X11/Awesome — see [docs/external-display.md](docs/external-display.md) first |
 | `Mod+Shift+P` (Awesome) | restart picom (logs to `~/.cache/picom/`) — screen frozen? see [docs/desktop-freeze.md](docs/desktop-freeze.md) |
 
