@@ -9,8 +9,8 @@
 --]]
 
 -- {{{ Required libraries
-local awesome, client, mouse, screen, tag                 = awesome, client, mouse, screen, tag
-local ipairs, string, os, table, tostring, tonumber, type = ipairs, string, os, table, tostring, tonumber, type
+local awesome, client, mouse, screen = awesome, client, mouse, screen
+local ipairs, string, os, tostring    = ipairs, string, os, tostring
 
 --https://awesomewm.org/doc/api/documentation/05-awesomerc.md.html
 -- Standard awesome library
@@ -105,7 +105,6 @@ local themes = {
 local chosen_theme = themes[1]
 
 local theme_path = string.format("%s/.config/awesome/themes/%s/theme.lua", os.getenv("HOME"), chosen_theme)
-beautiful.init(theme_path)
 
 -- modkey or mod4 = super key
 local modkey                       = "Mod4"
@@ -114,7 +113,6 @@ local ctrlKey                      = "Control"
 
 -- Personal variables
 local browser1                     = "google-chrome-stable -no-default-browser-check"
-local editor                       = os.getenv("EDITOR") or "nano"
 local editorgui                    = "code"
 local filemanager                  = "thunar"
 local terminal                     = "alacritty"
@@ -186,17 +184,9 @@ awful.util.tasklist_buttons            = my_table.join(
     awful.button({}, 5, function() awful.client.focus.byidx(-1) end)
 )
 
-lain.layout.termfair.nmaster           = 3
-lain.layout.termfair.ncol              = 1
-lain.layout.termfair.center.nmaster    = 3
-lain.layout.termfair.center.ncol       = 1
-lain.layout.cascade.tile.offset_x      = dpi(2)
-lain.layout.cascade.tile.offset_y      = dpi(32)
-lain.layout.cascade.tile.extra_padding = dpi(5)
-lain.layout.cascade.tile.nmaster       = 5
-lain.layout.cascade.tile.ncol          = 2
-
--- Re-init theme after lain settings are configured (theme depends on lain)
+-- Load the theme once, here: its screen setup uses the tag names and the
+-- taglist/tasklist buttons above. (It used to load twice; lain attaches each
+-- widget's poll to a shared timer on every load, so every widget polled twice.)
 beautiful.init(theme_path)
 -- }}}
 

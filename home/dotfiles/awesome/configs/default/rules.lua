@@ -28,10 +28,6 @@ awful.rules.rules = {
     properties = { titlebars_enabled = false }
   },
 
-  -- Used as reference: Set applications to always map on the tag 5 on screen 1.
-  --{ rule = { class = "Meld" },
-  --properties = { screen = 1, tag = awful.util.tagnames[5] , switchtotag = true  } },
-
 
   -- Set applications to be maximized at startup.
   -- find class or role via xprop command
