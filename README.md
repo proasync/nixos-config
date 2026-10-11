@@ -150,8 +150,10 @@ SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input
   with "Cannot find module 'electron'"; unset it when testing from there.
   SomeWM's check flags X11 tools by pattern, even inside the guarded X11 branch.
 - **Session script:** SDDM runs a small wrapper (`modules/somewm.nix`) that sets
-  `NIXOS_OZONE_WL=1` and, when SomeWM exits, removes the variables `rc.lua` exported to the
-  systemd user manager and stops the portals.
+  `NIXOS_OZONE_WL=1`. At startup `rc.lua` exports the session's variables to the systemd
+  user manager and starts `nixos-fake-graphical-session.target` (xdg-desktop-portal refuses
+  to run without `graphical-session.target`; NixOS's X11 login starts the same target).
+  When SomeWM exits, the wrapper removes the variables and stops the portals and the target.
 - **Screen sharing** goes through xdg-desktop-portal-wlr: whole monitors only (SomeWM 1.4
   has no per-window capture), so pick "entire screen" in Teams/Chrome; with two monitors,
   click the one to share. It cannot stall Awesome logins: see the comment in

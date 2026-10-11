@@ -39,7 +39,8 @@ let
       timeout 5 systemctl --user unset-environment \
         WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE NIXOS_OZONE_WL
       timeout 5 systemctl --user stop \
-        xdg-desktop-portal.service xdg-desktop-portal-wlr.service xdg-desktop-portal-gtk.service
+        xdg-desktop-portal.service xdg-desktop-portal-wlr.service xdg-desktop-portal-gtk.service \
+        nixos-fake-graphical-session.target graphical-session.target
     }
     trap cleanup EXIT
     trap 'exit 143' TERM HUP INT
