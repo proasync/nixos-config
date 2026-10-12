@@ -10,7 +10,7 @@ Flake-based NixOS + Home Manager configuration for three machines:
 | Host-only quirks | — | USB-root autosuspend guard, Intel ISH blacklist, i915 in initrd + `xe` blacklisted, iwlwifi force-load, thermald, power-profiles-daemon, lid handling, Bluetooth | — |
 | Remote access (Tailscale + tailnet-only SSH) | — | yes | yes |
 | Phone dev ports on LAN (8081, 4300) | yes | yes | — (phone uses Tailscale) |
-| SDDM theme | stock catppuccin-sddm-corners | same + custom wallpaper | stock |
+| SDDM theme | catppuccin-sddm-corners (Mononoki, larger text), penguin avatar | same + nixos-lightdark2 wallpaper, greeter at 2× on the panel | same as home-desktop |
 | Dev services | MariaDB, Apache+PHP, PostgreSQL | same | same |
 | Status | | | **not installed yet**: hardware config is a placeholder (see *Installing on a new machine*) |
 

@@ -64,8 +64,10 @@
   environment.variables.LIBVA_DRIVER_NAME = "iHD";
   environment.systemPackages = with pkgs; [ libva-utils ];
 
-  # Custom SDDM wallpaper (modules/sddm-theme.nix)
-  proasync.sddmBackground = ./sddm-background.jpeg;
+  # SDDM wallpaper (modules/sddm-theme.nix): nixos-lightdark2. A plain copy of
+  # home/dotfiles/wallpapers/nixos-lightdark2.png, because files there are Git
+  # LFS and Nix must not read LFS pointers at build time.
+  proasync.sddmBackground = ./sddm-background.png;
 
   # ── Bluetooth ──────────────────────────────────────────
   hardware.bluetooth = {
@@ -86,11 +88,17 @@
   services.logind.settings.Login.HandleLidSwitchDocked = "ignore";
 
   # ── SDDM HiDPI (2880x1800 display) ────────────────────
+  # The greeter does not inherit display-manager's environment: SDDM builds it
+  # from scratch (locale, library/QML paths, XDG_DATA_DIRS; Greeter.cpp) plus
+  # General.GreeterEnvironment. A QT_SCALE_FACTOR on the service, as used
+  # until 2026-10-12, never reached it, so the greeter ran at 1x on the 254-dpi
+  # panel (9 pt = 12 px, unreadable). Scale only the panel; an external
+  # monitor keeps 1x, where 1x is right.
   services.displayManager.sddm.settings = {
     General.EnableHiDPI = true;
+    General.GreeterEnvironment = "QT_SCREEN_SCALE_FACTORS=eDP-1=2";
     Wayland.EnableHiDPI = true;
   };
-  systemd.services.display-manager.environment.QT_SCALE_FACTOR = "2";
   # Awesome is this laptop's desktop. SDDM remembers the last session by its
   # /nix/store path, which changes on updates; then it fell back to another
   # session (2026-10-09 it logged into niri). This makes the fallback Awesome.
