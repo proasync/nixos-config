@@ -11,7 +11,8 @@
 
     # SomeWM (AwesomeWM's Lua API on Wayland), on trial; see modules/somewm.nix.
     # release/1.4 is upstream's stable branch with AwesomeWM 4.4 parity
-    # (main is 2.0-dev). Built against our nixpkgs.
+    # (main is 2.1-dev). Built against our nixpkgs. Moving to 2.x needs a config
+    # migration first: see docs/somewm-2.1.md.
     somewm = {
       url = "github:trip-zip/somewm/release/1.4";
       inputs.nixpkgs.follows = "nixpkgs";

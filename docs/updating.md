@@ -77,7 +77,8 @@ update never migrates their data; bump those deliberately.
   `sudo -u postgres psql -d <db> -c 'REINDEX DATABASE "<db>";' -c 'ALTER DATABASE "<db>" REFRESH COLLATION VERSION;'`
   for each database (`psql -l`), including `template1`.
 - `nix flake update` also moves `somewm` (its `release/1.4` branch). To update only
-  nixpkgs, `nix flake update nixpkgs home-manager`.
+  nixpkgs, `nix flake update nixpkgs home-manager`. Moving SomeWM to 2.x is not a plain
+  update: follow [somewm-2.1.md](somewm-2.1.md).
 
 If something is badly off: reboot and pick the previous generation in the boot
 menu, then `git switch master` and investigate calmly.
