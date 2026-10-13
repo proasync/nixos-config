@@ -252,6 +252,19 @@ in
     '';
   };
 
+  # ── USB auto-mount (udiskie) ───────────────────────────
+  # A user service, so every session mounts sticks — it used to be started only
+  # by the niri/Hyprland autostart, so Awesome and SomeWM never auto-mounted.
+  # Mounts land in /run/media/proasync/<label>; unmount with `udiskie-umount`
+  # or Thunar's eject. tray = "never": the tray icon needs a tray.target
+  # provider, which only some of the sessions have.
+  services.udiskie = {
+    enable = true;
+    automount = true;
+    notify = true;
+    tray = "never";
+  };
+
   # ── Direnv ─────────────────────────────────────────────
   programs.direnv = {
     enable = true;

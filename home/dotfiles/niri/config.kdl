@@ -130,7 +130,6 @@ spawn-at-startup "mako"
 spawn-at-startup "/home/proasync/.config/wm-scripts/wallpaper-restore.sh"
 spawn-at-startup "nm-applet" "--indicator"
 spawn-at-startup "blueman-applet"
-spawn-at-startup "udiskie" "--automount" "--notify" "--tray"
 spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
 
 // Idle: lock after 10 min, screens off 30 s later (any input wakes them).

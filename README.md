@@ -114,6 +114,7 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | `wdisplays` | arrange monitors on Wayland (SomeWM, niri): arandr's equivalent. Applies live and saves nothing; the WM's own file wins again on hot-plug, so copy a layout you keep into `configs/<host>/somewm.lua` (SomeWM) or let nwg-displays write `monitor.kdl` (niri) |
 | `tv-mirror.sh on` / `off` | laptop → TV mirror on X11/Awesome — see [docs/external-display.md](docs/external-display.md) first |
 | `Mod+Shift+P` (Awesome) | restart picom (logs to `~/.cache/picom/`) — screen frozen? see [docs/desktop-freeze.md](docs/desktop-freeze.md) |
+| USB stick | auto-mounts to `/run/media/proasync/<label>` in every session (udiskie user service); eject: `udiskie-umount -a` or Thunar |
 
 Frequently used niri binds: `Super+Return` terminal · `Super+R` launcher · `Super+Q` close ·
 `Super+P` screenshot · `Super+X` powermenu (`k` locks) · `Super+HJKL` focus ·
