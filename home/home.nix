@@ -427,6 +427,10 @@ in
     config.lib.file.mkOutOfStoreSymlink
       "/home/proasync/nixos-config/home/dotfiles/btop";
 
+  home.file.".config/fastfetch".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "/home/proasync/nixos-config/home/dotfiles/fastfetch";
+
   # User scripts
   home.file.".local/bin/imv-dir" = {
     source = ./scripts/imv-dir;

@@ -1,0 +1,48 @@
+// fastfetch: the system banner every new shell prints (home/home.nix, bashrc).
+// Live-symlinked to ~/.config/fastfetch; edits take effect in the next shell.
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
+  "logo": {
+    // NixOS2: the outlined snowflake, 32 columns wide. nixos_old (58) and
+    // NixOS (43) leave too little room next to them in a half-screen
+    // terminal on the laptop (~100 columns), so every long line wraps under
+    // the logo.
+    "source": "NixOS2"
+  },
+  "modules": [
+    "title",
+    "separator",
+    "os",
+    "host",
+    "kernel",
+    "uptime",
+    "packages",
+    "shell",
+    {
+      "type": "display",
+      // default adds the diagonal (in 14") and makes the line 61 characters:
+      // one too many next to the logo at 100 columns
+      "format": "{width}x{height} @ {scale-factor}x, {refresh-rate} Hz [{type}]"
+    },
+    "de",
+    "wm",
+    "wmtheme",
+    "theme",
+    "icons",
+    "font",
+    "cursor",
+    "terminal",
+    "terminalfont",
+    "cpu",
+    "gpu",
+    "memory",
+    "swap",
+    "disk",
+    "localip",
+    "battery",
+    "poweradapter",
+    "locale",
+    "break",
+    "colors"
+  ]
+}
