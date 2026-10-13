@@ -198,6 +198,15 @@ SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input
   [docs/somewm-2.1.md](docs/somewm-2.1.md).
 - **Notifications under SomeWM** use naughty's box layout (`request::display` in
   `rc.lua`). Awesome keeps its built-in popups.
+- **Floating rules under SomeWM.**
+  - **Class rules need the Wayland name.** A native Wayland app reports its app id as
+    its class, sometimes spelled differently from X11. For example, Arandr is `arandr`
+    there; the match is case-sensitive.
+  - **Rules on role or instance only match X11 windows.** Wayland windows have neither.
+  - **Chrome popups** (Outlook's message window, sign-in popups) carry no popup marker on
+    Wayland. A SomeWM-only rule floats a Chrome window that appears as `about:blank`,
+    which is how pages open popups (`configs/default/rules.lua`). A popup a page opens
+    straight on its URL still tiles.
 - **Removing it:** drop `./somewm.nix` from the imports in `modules/common.nix` and the
   `somewm` input from `flake.nix`.
 

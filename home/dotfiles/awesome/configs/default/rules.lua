@@ -153,4 +153,18 @@ if awesome.release == "somewm" then
       c:geometry(c.screen.geometry)
     end,
   })
+
+  -- SomeWM: Chrome's popups, windows a page opens (Outlook's message window,
+  -- sign-in popups). On X11 Chrome marks them with the role "pop-up" (the
+  -- floating rule above), but a native Wayland window has no role, and
+  -- Chrome sends nothing else that sets a popup apart: same class, no
+  -- parent, no size hints. What does: a page opens it on about:blank and
+  -- loads into it a moment later, while a window you open yourself starts
+  -- on "New Tab" or a page. Rules run when the window appears, so they see
+  -- that first title. Measured on Outlook's message window 2026-10-13.
+  -- A popup that a page opens straight on its URL is not caught.
+  table.insert(client_rules.rules, {
+    rule = { class = "google-chrome", name = "^about:blank" },
+    properties = { floating = true, placement = awful.placement.centered },
+  })
 end
