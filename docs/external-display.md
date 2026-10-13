@@ -1,4 +1,4 @@
-# External display on proasync-laptop (X11 / Awesome)
+# External display on proasync-laptop (Awesome on X11, SomeWM)
 
 Runbook for TVs, projectors and monitors on the laptop. Read before touching
 xrandr on this machine: it has bitten twice (2026-09-25: black screens, hard
@@ -6,9 +6,32 @@ reboots, lost work).
 
 None of this applies under niri: there is no xrandr and no `tv-mirror.sh`, and
 niri gives a newly plugged TV its preferred mode, which on a 4K TV is the
-4K@60 that went black here. For a demo, log in to Awesome.
+4K@60 that went black here. For a demo, log in to Awesome or SomeWM.
 
-## TL;DR for a demo
+## Under SomeWM (Wayland)
+
+- **A plugged-in TV becomes its own screen,** to the right of the panel, at
+  1920x1080, the refresh rate nearest 60 Hz, and scale 1. It gets its own tags.
+  `configs/proasync-laptop/somewm.lua` does this for every screen that is not
+  the panel (eDP-1) or the desk monitor (DP-1); a screen without a 1080p mode
+  keeps its own.
+  - Unlike X11, every screen has its own scale, so the TV is not stuck with
+    the panel's 1.67×.
+  - SomeWM first turns the TV on at its preferred mode, 4K@60 on a 4K TV, and
+    the switch to 1080p follows a moment later. On X11 4K@60 went black only
+    after a while, but save your work first anyway.
+  - `wdisplays` changes the TV live, until the next plug or unplug.
+- **Mirror:** `~/.config/wm-scripts/mirror.sh on`, then `off` / `status`.
+  - SomeWM cannot mirror screens itself. The script runs `wl-mirror`, which
+    shows a live copy of the panel fullscreen on the TV; the TV's own screen
+    stays underneath.
+  - The copy is scaled to fit, so the 16:10 panel shows with thin bars at the
+    sides of a 16:9 TV.
+  - `mirror.sh on HDMI-A-1 eDP-1` names the screens; `wlr-randr` lists them.
+- **Tested (2026-10-13) only headless,** with two virtual screens: the copy
+  was pixel-identical and followed changes live. Not yet with a real TV.
+
+## TL;DR for a demo (Awesome, X11)
 
 ```sh
 ~/.config/awesome/scripts/tv-mirror.sh on        # mirror, correct aspect

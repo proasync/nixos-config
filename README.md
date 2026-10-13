@@ -32,7 +32,7 @@ nixos-config/
 │   ├── desktop-freeze.md      # laptop freeze runbook: escape hatches, logs, past incidents
 │   ├── updating.md            # how to update safely + post-update checklist
 │   ├── dev-environments.md    # pagoda/proasync monorepo dev setup on NixOS
-│   ├── external-display.md    # laptop → TV/projector runbook (read before touching xrandr)
+│   ├── external-display.md    # laptop → TV/projector runbook, Awesome and SomeWM (read before touching xrandr)
 │   └── somewm-2.1.md          # SomeWM 2.x: config migration, rounded corners, upgrade checklist
 ├── hosts/                     # one folder per host, named exactly like the hostname
 │   ├── home-desktop/          # AMD GPU
@@ -58,7 +58,7 @@ nixos-config/
 │   ├── applications/          # Custom .desktop entries
 │   └── dotfiles/              # Live-symlinked into ~/.config/ (edit → takes effect, no rebuild)
 │       ├── awesome/  niri/  hypr/   # window managers (hypr = retired Hyprland)
-│       ├── wm-scripts/              # power menu, lock, Chrome, touchpad: shared by niri + Hyprland
+│       ├── wm-scripts/              # power menu, lock, Chrome, touchpad, TV mirror: shared by niri, SomeWM + Hyprland
 │       ├── swaylock/                # lock screen theme (niri)
 │       ├── waybar/  rofi/  mako/    # bar (waybar/ = Hyprland's; niri's is niri/waybar/), launcher, notifications
 │       ├── alacritty/  btop/  cava/ # terminal & TUI rice
@@ -113,6 +113,7 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | `Super + Shift + H / L` | swap the window with its left/right neighbour (carousel: move the column) |
 | `wdisplays` | arrange monitors on Wayland (SomeWM, niri): arandr's equivalent. Applies live and saves nothing; the WM's own file wins again on hot-plug, so copy a layout you keep into `configs/<host>/somewm.lua` (SomeWM) or let nwg-displays write `monitor.kdl` (niri) |
 | `tv-mirror.sh on` / `off` | laptop → TV mirror on X11/Awesome — see [docs/external-display.md](docs/external-display.md) first |
+| `~/.config/wm-scripts/mirror.sh on` / `off` | laptop → TV mirror on Wayland (SomeWM): `wl-mirror` shows the panel fullscreen on the TV. Under SomeWM a TV is otherwise its own screen at 1080p, right of the panel. See [docs/external-display.md](docs/external-display.md) |
 | `Mod+Shift+P` (Awesome) | restart picom (logs to `~/.cache/picom/`) — screen frozen? see [docs/desktop-freeze.md](docs/desktop-freeze.md) |
 | USB stick | auto-mounts to `/run/media/proasync/<label>` in every session (udiskie user service); eject: `udiskie-umount -a` or Thunar |
 

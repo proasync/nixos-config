@@ -115,6 +115,10 @@ chooses by `is_somewm`. Where SomeWM 1.4 and 2.x differ, it checks for the featu
   onto the next monitor (#825), and seams in bars at fractional scale (#826).
 - **`awful.layout.layouts` set the old way** logs a warning in 1.4 and 2.x. It is
   harmless: the list is right.
+- **A window's choice of screen for fullscreen is ignored** (main `93a22b29b`). 1.4.6
+  honours it. `wl-mirror --fullscreen-output` (`wm-scripts/mirror.sh`) asked for one
+  screen and went fullscreen on another, so on the laptop the mirror could land on the
+  panel instead of the TV. Test `mirror.sh` with two screens before switching.
 
 ## How it was tested
 
