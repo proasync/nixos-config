@@ -7,7 +7,7 @@
 --]]
 
 local awful        = require("awful")
-local capi         = { client = client }
+local capi         = { client = client, awesome = awesome }
 local math         = math
 local string       = string
 local pairs        = pairs
@@ -169,12 +169,16 @@ function quake.new(conf)
 
     local dropdown = setmetatable(conf, { __index = quake })
 
-    capi.client.connect_signal("manage", function(c)
+    -- proasync patch (2026-10-13): SomeWM 2.x no longer emits "manage" and
+    -- "unmanage"; its (and 1.4.6's) names are "request::manage" and
+    -- "request::unmanage". Awesome 4.3 has only the old ones.
+    local is_somewm = capi.awesome.release == "somewm"
+    capi.client.connect_signal(is_somewm and "request::manage" or "manage", function(c)
         if is_dropdown(c, dropdown.name) and c.screen == dropdown.screen then
             dropdown:display()
         end
     end)
-    capi.client.connect_signal("unmanage", function(c)
+    capi.client.connect_signal(is_somewm and "request::unmanage" or "unmanage", function(c)
         if is_dropdown(c, dropdown.name) and c.screen == dropdown.screen then
             dropdown.visible = false
         end

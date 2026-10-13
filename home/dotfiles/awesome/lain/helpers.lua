@@ -146,6 +146,56 @@ end
 
 -- }}}
 
+-- {{{ Notifications
+
+-- proasync patch (2026-10-13): naughty.notify, naughty.destroy and
+-- naughty.replace_text are Awesome 4.3's API, and SomeWM 2.x removed them.
+-- Where notification objects exist (SomeWM, 1.4.6 included), these use the
+-- objects instead; on Awesome 4.3 they call the old functions unchanged.
+local naughty = require("naughty")
+local notification_gone = setmetatable({}, { __mode = "k" })
+
+-- naughty.notify(args). The objects call "text" "message", and the
+-- replaces_id argument has no object equivalent, so that notification is
+-- destroyed first.
+function helpers.notify(args)
+    if not naughty.notification then return naughty.notify(args) end
+    local a = {}
+    for k, v in pairs(args) do a[k] = v end
+    a.message, a.text = a.message or a.text, nil
+    if a.replaces_id then
+        local old = naughty.get_by_id(a.replaces_id)
+        if old and not notification_gone[old] then old:destroy() end
+        a.replaces_id = nil
+    end
+    local n = naughty.notification(a)
+    n:connect_signal("destroyed", function() notification_gone[n] = true end)
+    return n
+end
+
+-- naughty.destroy(n). An object can be gone already (it timed out), and
+-- destroying it twice only warns.
+function helpers.notify_destroy(n)
+    if not n then return end
+    if not naughty.notification then return naughty.destroy(n) end
+    if not notification_gone[n] then n:destroy() end
+end
+
+-- naughty.replace_text(n, title, text): nil keeps the old value. False when
+-- the object is gone, so the caller shows a new one.
+function helpers.notify_replace(n, title, text)
+    if not naughty.notification then
+        naughty.replace_text(n, title, text)
+        return true
+    end
+    if notification_gone[n] then return false end
+    n.title   = title or n.title
+    n.message = text or n.message
+    return true
+end
+
+-- }}}
+
 -- {{{ Misc
 
 -- check if an element exist on a table

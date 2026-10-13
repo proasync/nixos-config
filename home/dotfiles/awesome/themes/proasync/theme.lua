@@ -12,7 +12,7 @@ local wibox = require("wibox")
 local dpi   = require("beautiful.xresources").apply_dpi
 
 local os = os
-local my_table = awful.util.table or gears.table -- 4.{0,1} compatibility
+local my_table = gears.table
 
 -- Catppuccin Mocha palette
 local colors = {
@@ -123,7 +123,11 @@ theme.titlebar_maximized_button_focus_inactive  = theme.dir .. "/icons/titlebar/
 theme.titlebar_maximized_button_normal_inactive = theme.dir .. "/icons/titlebar/maximized_normal_inactive.png"
 
 local markup = lain.util.markup
-local separators = lain.util.separators
+
+-- SomeWM 2.x draws widgets through its own renderer, Clay (wibox.clay, which
+-- SomeWM 1.4 and Awesome 4.3 do not have). The few things that differ there
+-- check this.
+local clay_renderer = pcall(require, "wibox.clay")
 
 -- Big keyboard layout badge (driven by rc.lua kbdcfg)
 local kbd_textbox = wibox.widget.textbox()
@@ -141,13 +145,20 @@ local keyboardlayout = kbd_textbox
 local clock = awful.widget.watch(
     "date +'%a %d %b %R'", 60,
     function(widget, stdout)
-        widget:set_markup(" " .. markup.font(theme.font, markup(colors.yellow, stdout)))
+        -- No leading space here: the bar puts spr before the clock. SomeWM 2.x
+        -- draws a text in one font, its first character's, and a space outside
+        -- the span is in this textbox's own font, "sans 8" (textboxes made
+        -- while this file loads get beautiful's default, not theme.font).
+        widget:set_markup(markup.font(theme.font, markup(colors.yellow, stdout)))
     end
 )
 
 -- Calendar
 theme.cal = lain.widget.cal({
     week_start = 2,
+    -- No bold under Clay: it draws a text in one font, and a bold run cost
+    -- the calendar today's highlight.
+    bold = not clay_renderer,
     attach_to = { clock },
     followtag = true,
     notification_preset = {
@@ -286,13 +297,13 @@ theme.volume = lain.widget.alsa({
         widget:set_markup(markup.font(theme.font, markup(colors.teal, " " .. level .. "% ")))
     end
 })
-theme.volume.widget:buttons(awful.util.table.join(
+theme.volume.widget:buttons(my_table.join(
                                awful.button({}, 4, function ()
-                                     awful.util.spawn("amixer set Master 1%+")
+                                     awful.spawn("amixer set Master 1%+")
                                      theme.volume.update()
                                end),
                                awful.button({}, 5, function ()
-                                     awful.util.spawn("amixer set Master 1%-")
+                                     awful.spawn("amixer set Master 1%-")
                                      theme.volume.update()
                                end)
 ))
@@ -309,18 +320,46 @@ local net = lain.widget.net({
 })
 
 -- Separators
+-- The arrow lain.util.separators.arrow_left draws (9 px wide; col1 in the two
+-- corners, col2 in the triangle pointing left; "alpha" leaves that part
+-- out), built from background containers instead: SomeWM 2.x's renderer
+-- skips widgets that draw themselves, which lain's separators are. The empty
+-- textbox is there because Awesome 4.3 draws no background without a child.
+local function arrow_left(col1, col2)
+    local function part(color, shape)
+        return {
+            wibox.widget.textbox(""),
+            bg     = color ~= "alpha" and color or nil,
+            shape  = shape,
+            widget = wibox.container.background,
+        }
+    end
+    return wibox.widget {
+        part(col1, function(cr, w, h)   -- top-left and bottom-left corners
+            cr:move_to(w, 0) cr:line_to(0, h / 2) cr:line_to(0, 0) cr:close_path()
+            cr:move_to(w, h) cr:line_to(0, h / 2) cr:line_to(0, h) cr:close_path()
+        end),
+        part(col2, function(cr, w, h)   -- the triangle pointing left
+            cr:move_to(w, 0) cr:line_to(0, h / 2) cr:line_to(w, h) cr:close_path()
+        end),
+        forced_width = 9,
+        layout = wibox.layout.stack,
+    }
+end
 local spr     = wibox.widget.textbox(' ')
-local arrl_dl = separators.arrow_left(colors.surface0, "alpha")
-local arrl_ld = separators.arrow_left("alpha", colors.surface0)
+local arrl_dl = arrow_left(colors.surface0, "alpha")
+local arrl_ld = arrow_left("alpha", colors.surface0)
 
-function theme.at_screen_connect(s)
+-- cfg comes from rc.lua: terminal, tagnames, taglist_buttons, tasklist_buttons
+-- (they used to be passed in awful.util, which SomeWM 2.x removed).
+function theme.at_screen_connect(s, cfg)
     -- Quake application
     -- Drop-down terminal (Super+C, rc.lua). lain finds its window by instance
     -- name; its default "-name %s" is xterm's flag, alacritty's is --class.
-    s.quake = lain.util.quake({ app = awful.util.terminal, argname = "--class %s" })
+    s.quake = lain.util.quake({ app = cfg.terminal, argname = "--class %s" })
 
     -- Tags
-    awful.tag(awful.util.tagnames, s, awful.layout.layouts[1])
+    awful.tag(cfg.tagnames, s, awful.layout.layouts[1])
 
     -- Create a promptbox for each screen
     s.mypromptbox = awful.widget.prompt()
@@ -340,11 +379,17 @@ function theme.at_screen_connect(s)
         border_width = dpi(2),
         border_color = colors.mauve,
         shape        = function(cr, w, h) gears.shape.rounded_rect(cr, w, h, dpi(8)) end,
-        placement    = function(d)   -- top right, just under the bar
+        -- Top right, just under the bar. Awesome 4.3 and SomeWM 1.4 hand a
+        -- placement the whole screen as bounds, so there it is done by hand.
+        -- Clay sizes the popup after the frame and takes only the built-in
+        -- corners, which honor_workarea keeps below the bar.
+        placement    = clay_renderer and awful.placement.top_right or function(d)
             local wa = s.workarea
             d.x = wa.x + wa.width - d.width - dpi(4)
             d.y = wa.y + dpi(4)
         end,
+        honor_workarea = clay_renderer or nil,
+        offset       = clay_renderer and { x = -dpi(4), y = dpi(4) } or nil,
         widget = {
             awful.widget.layoutlist {
                 screen      = s,
@@ -388,13 +433,13 @@ function theme.at_screen_connect(s)
                            awful.button({}, 4, function () awful.layout.inc( 1) end),
                            awful.button({}, 5, function () awful.layout.inc(-1) end)))
     -- Create a taglist widget
-    s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.all, awful.util.taglist_buttons)
+    s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.all, cfg.taglist_buttons)
 
     -- Create a tasklist widget (compact: icon + truncated title, fixed-width per entry)
     s.mytasklist = awful.widget.tasklist {
         screen  = s,
         filter  = awful.widget.tasklist.filter.currenttags,
-        buttons = awful.util.tasklist_buttons,
+        buttons = cfg.tasklist_buttons,
         style   = {
             shape_border_width = 0,
             shape  = gears.shape.rectangle,
@@ -496,6 +541,7 @@ function theme.at_screen_connect(s)
             wibox.container.background(neticon, colors.surface0),
             wibox.container.background(net.widget, colors.surface0),
             arrl_dl,
+            spr,   -- the space the clock's text used to start with
             clock,
             spr,
             arrl_ld,

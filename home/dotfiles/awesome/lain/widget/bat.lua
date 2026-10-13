@@ -8,7 +8,6 @@
 
 local helpers  = require("lain.helpers")
 local fs       = require("gears.filesystem")
-local naughty  = require("naughty")
 local wibox    = require("wibox")
 local math     = math
 local string   = string
@@ -22,7 +21,7 @@ local function factory(args)
     local pspath = args.pspath or "/sys/class/power_supply/"
 
     if not fs.is_dir(pspath) then
-        naughty.notify { text = "lain.widget.bat: invalid power supply path", timeout = 0 }
+        helpers.notify { text = "lain.widget.bat: invalid power supply path", timeout = 0 }
         return
     end
 
@@ -207,19 +206,19 @@ local function factory(args)
         if notify == "on" then
             if bat_now.status == "Discharging" then
                 if tonumber(bat_now.perc) <= n_perc[1] then
-                    bat.id = naughty.notify({
+                    bat.id = helpers.notify({
                         preset = bat_notification_critical_preset,
                         replaces_id = bat.id
                     }).id
                 elseif tonumber(bat_now.perc) <= n_perc[2] then
-                    bat.id = naughty.notify({
+                    bat.id = helpers.notify({
                         preset = bat_notification_low_preset,
                         replaces_id = bat.id
                     }).id
                 end
                 fullnotification = false
             elseif bat_now.status == "Full" and full_notify == "on" and not fullnotification then
-                bat.id = naughty.notify({
+                bat.id = helpers.notify({
                     preset = bat_notification_charged_preset,
                     replaces_id = bat.id
                 }).id

@@ -33,7 +33,7 @@ nixos-config/
 │   ├── updating.md            # how to update safely + post-update checklist
 │   ├── dev-environments.md    # pagoda/proasync monorepo dev setup on NixOS
 │   ├── external-display.md    # laptop → TV/projector runbook (read before touching xrandr)
-│   └── somewm-2.1.md          # SomeWM 2.1 (rounded corners): why we wait, upgrade checklist
+│   └── somewm-2.1.md          # SomeWM 2.x: config migration, rounded corners, upgrade checklist
 ├── hosts/                     # one folder per host, named exactly like the hostname
 │   ├── home-desktop/          # AMD GPU
 │   ├── proasync-laptop/       # Intel GPU/VA-API, HiDPI, power, hardware quirks
@@ -183,10 +183,13 @@ SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input
 - **Window animation** (SomeWM only): windows glide to their new place in 0.25 s when the
   tiling changes (not when switching workspaces). `layout_anim.duration` in `rc.lua` sets the speed; 0 turns it off. Not used
   in carousel, which animates its own scrolling.
-- **Rounded window corners:** not yet. 1.4 ignores a client shape. They arrive with 2.1,
-  but there the border stays square and leaves a notch at each corner. Our config also
-  needs a migration first, because `awful.util` is gone. Status, test results and the
-  upgrade checklist are in [docs/somewm-2.1.md](docs/somewm-2.1.md).
+- **SomeWM 2.x:** the shared config already runs on it (migrated 2026-10-13, tested on
+  2.1-dev), but we stay on 1.4 until 2.1 is tagged. Rounded window corners come with 2.1,
+  but there the border stays square and leaves a notch at each corner. What changed,
+  how it was tested and the upgrade checklist are in
+  [docs/somewm-2.1.md](docs/somewm-2.1.md).
+- **Notifications under SomeWM** use naughty's box layout (`request::display` in
+  `rc.lua`). Awesome keeps its built-in popups.
 - **Removing it:** drop `./somewm.nix` from the imports in `modules/common.nix` and the
   `somewm` input from `flake.nix`.
 

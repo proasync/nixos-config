@@ -7,7 +7,7 @@
 --]]
 
 local helpers = require("lain.helpers")
-local shell   = require("awful.util").shell
+local shell   = os.getenv("SHELL") or "/bin/sh" -- was awful.util.shell (gone in SomeWM 2.x)
 local wibox   = require("wibox")
 local string  = string
 

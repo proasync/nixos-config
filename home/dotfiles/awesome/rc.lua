@@ -34,7 +34,7 @@ local freedesktop                    = require("freedesktop")
 -- when client with a matching name is opened:
 local hotkeys_popup                  = require("awful.hotkeys_popup").widget
 require("awful.hotkeys_popup.keys")
-local my_table = awful.util.table or gears.table -- 4.{0,1} compatibility
+local my_table = gears.table
 local dpi      = require("beautiful.xresources").apply_dpi
 local hostname = io.popen("uname -n"):read("*l")
 
@@ -56,35 +56,57 @@ if is_somewm then
     -- switch, window opened or closed, resize, swap). 0.25 s, about what
     -- Raven2cz uses (0.1 s was so short it read as a flicker). Set
     -- duration = 0 to go back to instant. Workspace switches stay instant.
-    -- Not in carousel: it animates its own scrolling, and both would move the
-    -- same windows. This handler is connected before layout_animation's own
-    -- "arrange" handler, so it decides per screen just before that one runs.
+    -- SomeWM 1.4's carousel animates its own scrolling (it has
+    -- carousel.scroll_duration), and both would move the same windows, so
+    -- there the animation is off in carousel. This handler is connected
+    -- before layout_animation's own "arrange" handler, so it decides per
+    -- screen just before that one runs. From 2.x the carousel scrolls through
+    -- layout_animation itself, so it stays on.
     local layout_anim
-    screen.connect_signal("arrange", function(s)
-        if not layout_anim then return end
-        local l = awful.layout.get(s)
-        layout_anim.enabled = l ~= awful.layout.suit.carousel and l ~= awful.layout.suit.carousel.vertical
-    end)
+    local car = awful.layout.suit.carousel
+    if car and car.scroll_duration then
+        screen.connect_signal("arrange", function(s)
+            if not layout_anim then return end
+            local l = awful.layout.get(s)
+            layout_anim.enabled = l ~= car and l ~= car.vertical
+        end)
+    end
     layout_anim = require("somewm.layout_animation")
     layout_anim.duration = 0.25
-    layout_anim.easing   = "ease-out-cubic"
 end
 
 
 
--- {{{ Error handling
--- Check if awesome encountered an error during startup and fell back to
--- another config (This code will only ever execute for the fallback config)
-if awesome.startup_errors then
-    naughty.notify({
-        preset = naughty.config.presets.critical,
-        title = "Oops, there were errors during startup!",
-        text = awesome.startup_errors
-    })
-end
+-- {{{ Error handling and notification popups
+if is_somewm then
+    -- Awesome's newer naughty API, which SomeWM 1.4 already has. SomeWM 2.x
+    -- removed naughty.notify and the built-in popup, so without the
+    -- request::display handler no notification would show at all (apps',
+    -- errors). naughty itself turns startup errors and debug::error into
+    -- request::display_error.
+    naughty.connect_signal("request::display_error", function(message, startup)
+        naughty.notification {
+            urgency = "critical",
+            title   = "Oops, an error happened" .. (startup and " during startup!" or "!"),
+            message = message,
+        }
+    end)
+    naughty.connect_signal("request::display", function(n)
+        naughty.layout.box { notification = n }
+    end)
+else
+    -- Awesome 4.3: popups are built in; only errors need handling here.
+    -- Check if awesome encountered an error during startup and fell back to
+    -- another config (This code will only ever execute for the fallback config)
+    if awesome.startup_errors then
+        naughty.notify({
+            preset = naughty.config.presets.critical,
+            title = "Oops, there were errors during startup!",
+            text = awesome.startup_errors
+        })
+    end
 
--- Handle runtime errors after startup
-do
+    -- Handle runtime errors after startup
     local in_error = false
     awesome.connect_signal("debug::error", function(err)
         if in_error then return end
@@ -134,9 +156,6 @@ local editorgui                    = "code"
 local filemanager                  = "thunar"
 local terminal                     = "alacritty"
 
--- awesome variables
-awful.util.terminal                = terminal
-
 awful.layout.layouts               = {
     awful.layout.suit.tile,
     awful.layout.suit.floating,
@@ -173,11 +192,11 @@ local function carousel_consume_or_expel(dir)
     if n > 1 then carousel.expel_window() else carousel.push_window(dir) end
 end
 
-awful.util.tagnames                = { "➊", "➋", "➌", "➍", "➎", "➏", "➐", "➑", "➒" }
+local tagnames                     = { "➊", "➋", "➌", "➍", "➎", "➏", "➐", "➑", "➒" }
 awful.layout.suit.tile.left.mirror = true
 
 
-awful.util.taglist_buttons             = my_table.join(
+local taglist_buttons                  = my_table.join(
     awful.button({}, 1, function(t) t:view_only() end),
     awful.button({ modkey }, 1, function(t)
         if client.focus then
@@ -194,7 +213,7 @@ awful.util.taglist_buttons             = my_table.join(
     awful.button({}, 5, function(t) awful.tag.viewprev(t.screen) end)
 )
 
-awful.util.tasklist_buttons            = my_table.join(
+local tasklist_buttons                 = my_table.join(
     awful.button({}, 1, function(c)
         if c == client.focus then
             c.minimized = true
@@ -227,8 +246,7 @@ awful.util.tasklist_buttons            = my_table.join(
     awful.button({}, 5, function() awful.client.focus.byidx(-1) end)
 )
 
--- Load the theme once, here: its screen setup uses the tag names and the
--- taglist/tasklist buttons above. (It used to load twice; lain attaches each
+-- Load the theme once, here. (It used to load twice; lain attaches each
 -- widget's poll to a shared timer on every load, so every widget polled twice.)
 beautiful.init(theme_path)
 -- }}}
@@ -240,7 +258,7 @@ local myawesomemenu = {
     { "hotkeys", function() return false, hotkeys_popup.show_help end },
 }
 
-awful.util.mymainmenu = freedesktop.menu.build({
+local mymainmenu = freedesktop.menu.build({
     before = {
         { "Awesome", myawesomemenu },
     },
@@ -267,9 +285,16 @@ screen.connect_signal("arrange", function(s)
     end
 end)
 
---Create a wibox for each screen and add it
+--Create a wibox for each screen and add it. The theme gets these values
+-- here (they used to travel in awful.util, which SomeWM 2.x removed).
+local screen_cfg = {
+    terminal         = terminal,
+    tagnames         = tagnames,
+    taglist_buttons  = taglist_buttons,
+    tasklist_buttons = tasklist_buttons,
+}
 awful.screen.connect_for_each_screen(function(s)
-    beautiful.at_screen_connect(s)
+    beautiful.at_screen_connect(s, screen_cfg)
     s.systray = wibox.widget.systray()
     s.systray.visible = true
 end)
@@ -277,7 +302,7 @@ end)
 
 -- {{{ Mouse bindings
 root.buttons(my_table.join(
-    awful.button({}, 3, function() awful.util.mymainmenu:toggle() end),
+    awful.button({}, 3, function() mymainmenu:toggle() end),
     awful.button({}, 4, awful.tag.viewnext),
     awful.button({}, 5, awful.tag.viewprev)
 ))
@@ -307,17 +332,17 @@ globalkeys = my_table.join(
     awful.key({ modkey }, "space", function() kbdcfg.switch() end),
     awful.key({ modkey }, "c", function() awful.screen.focused().quake:toggle() end,
         { description = "drop-down terminal", group = "launcher" }),
-    awful.key({ modkey }, "r", function() awful.util.spawn("rofi -show drun -theme ~/.config/rofi/launcher.rasi") end,
+    awful.key({ modkey }, "r", function() awful.spawn("rofi -show drun -theme ~/.config/rofi/launcher.rasi") end,
         { description = "rofi launcher", group = "super" }),
-    awful.key({ modkey }, "v", function() awful.util.spawn("pavucontrol") end,
+    awful.key({ modkey }, "v", function() awful.spawn("pavucontrol") end,
         { description = "pulseaudio control", group = "super" }),
     -- Flameshot in both. X11: its legacy X11 grabber (home.nix sets
     -- useX11LegacyScreenshot). SomeWM: the Screenshot portal, i.e.
     -- xdg-desktop-portal-wlr running grim; its overlay is placed by a rule in
     -- configs/default/rules.lua.
-    awful.key({ modkey }, "p", function() awful.util.spawn("flameshot gui") end,
+    awful.key({ modkey }, "p", function() awful.spawn("flameshot gui") end,
         { description = "screenshot (flameshot)", group = "super" }),
-    awful.key({ modkey }, "x", function() awful.util.spawn_with_shell("~/.config/awesome/scripts/powermenu.sh") end,
+    awful.key({ modkey }, "x", function() awful.spawn.with_shell("~/.config/awesome/scripts/powermenu.sh") end,
         { description = "power menu", group = "hotkeys" }),
     awful.key({ modkey }, "Escape", function()
             if is_somewm then   -- no xkill on Wayland: click a window to kill it
@@ -328,15 +353,15 @@ globalkeys = my_table.join(
                     return false
                 end, "pirate")
             else
-                awful.util.spawn("xkill")
+                awful.spawn("xkill")
             end
         end,
         { description = "Kill proces", group = "hotkeys" }),
 
     -- super + shift + ...
-    awful.key({ modkey, "Shift" }, "Return", function() awful.util.spawn(filemanager) end),
+    awful.key({ modkey, "Shift" }, "Return", function() awful.spawn(filemanager) end),
     awful.key({ modkey, "Shift" }, "p", function()
-            if not is_somewm then awful.util.spawn_with_shell("~/.config/awesome/scripts/picom-restart.sh") end
+            if not is_somewm then awful.spawn.with_shell("~/.config/awesome/scripts/picom-restart.sh") end
         end,
         { description = "restart picom (screen frozen, cursor moves)", group = "hotkeys" }),
     awful.key({ modkey, "Shift" }, "d",
@@ -348,7 +373,7 @@ globalkeys = my_table.join(
         { description = "show dmenu", group = "hotkeys" }),
 
     -- ctrl + shift + ...
-    awful.key({ ctrlKey, "Shift" }, "Escape", function() awful.util.spawn("alacritty -e htop") end,
+    awful.key({ ctrlKey, "Shift" }, "Escape", function() awful.spawn("alacritty -e htop") end,
         { description = "task manager (htop)", group = "hotkeys" }),
 
 
@@ -498,17 +523,17 @@ globalkeys = my_table.join(
     awful.key({ modkey, }, ".", function() awful.screen.focus_relative(1) end,
         { description = "Focus next screen", group = "screens" }),
     -- super + ... function keys
-    awful.key({ modkey }, "F1", function() awful.util.spawn(browser1) end,
+    awful.key({ modkey }, "F1", function() awful.spawn(browser1) end,
         { description = browser1, group = "function keys" }),
-    awful.key({ modkey }, "F2", function() awful.util.spawn(editorgui) end,
+    awful.key({ modkey }, "F2", function() awful.spawn(editorgui) end,
         { description = "run gui editor", group = "function keys" }),
-    awful.key({ modkey }, "F3", function() awful.util.spawn("teams-for-linux") end,
+    awful.key({ modkey }, "F3", function() awful.spawn("teams-for-linux") end,
         { description = "teams-for-linux", group = "function keys" }),
-    awful.key({ modkey }, "F4", function() awful.util.spawn("dbeaver") end,
+    awful.key({ modkey }, "F4", function() awful.spawn("dbeaver") end,
         { description = "dbeaver", group = "function keys" }),
-    awful.key({ modkey }, "F5", function() awful.util.spawn("gimp") end,
+    awful.key({ modkey }, "F5", function() awful.spawn("gimp") end,
         { description = "gimp", group = "function keys" }),
-    awful.key({ modkey }, "F6", function() awful.util.spawn("inkscape") end,
+    awful.key({ modkey }, "F6", function() awful.spawn("inkscape") end,
         { description = "inkscape", group = "function keys" }),
     -- Layout resize (Super+Ctrl+HJKL — matching Hyprland)
     awful.key({ modkey, "Control" }, "h", function()
@@ -600,8 +625,8 @@ globalkeys = my_table.join(
             awful.prompt.run {
                 prompt       = "Run Lua code: ",
                 textbox      = awful.screen.focused().mypromptbox.widget,
-                exe_callback = awful.util.eval,
-                history_path = awful.util.get_cache_dir() .. "/history_eval"
+                exe_callback = function(s) return assert(load(s))() end,  -- was awful.util.eval
+                history_path = gears.filesystem.get_cache_dir() .. "/history_eval"
             }
         end,
         { description = "lua execute prompt", group = "awesome" })
@@ -628,9 +653,10 @@ clientkeys = my_table.join(
         c:raise()
     end,
         { description = "toggle maximize", group = "client" }),
-    awful.key({ modkey, "Shift" }, "space", awful.client.floating.toggle,
+    awful.key({ modkey, "Shift" }, "space", function(c) c.floating = not c.floating end,
         { description = "toggle floating", group = "client" }),
-    awful.key({ modkey, "Control" }, "Return", function(c) c:swap(awful.client.getmaster()) end,
+    -- The master is the first visible client (awful.client.getmaster, gone in SomeWM 2.x).
+    awful.key({ modkey, "Control" }, "Return", function(c) c:swap(awful.client.visible(awful.screen.focused())[1]) end,
         { description = "move to master", group = "client" }),
     -- Move window to screen (Super+Shift+,/. — matching Hyprland)
     awful.key({ modkey, "Shift" }, ",", function(c) c:move_to_screen(c.screen.index - 1) end,
@@ -717,8 +743,9 @@ root.keys(globalkeys)
 -- }}}
 
 -- {{{ Signals
--- Signal function to execute when a new client appears.
-client.connect_signal("manage", function(c)
+-- Signal function to execute when a new client appears. SomeWM 2.x only
+-- emits "request::manage" (1.4 has it too); Awesome 4.3 only "manage".
+client.connect_signal(is_somewm and "request::manage" or "manage", function(c)
     -- Set the windows at the slave,
     -- i.e. put it at the end of others instead of setting it master.
     -- if not awesome.startup then awful.client.setslave(c) end

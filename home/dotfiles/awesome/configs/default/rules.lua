@@ -1,8 +1,11 @@
 local awful = require("awful")
 local beautiful = require("beautiful")
+-- SomeWM: ruled.client, Awesome's newer name (in SomeWM 1.4 awful.rules is
+-- only an alias for it; 2.x removed the alias). Awesome 4.3 has only awful.rules.
+local client_rules = awesome.release == "somewm" and require("ruled.client") or awful.rules
 -- {{{ Rules
--- Rules to apply to new clients (through the "manage" signal).
-awful.rules.rules = {
+-- Rules to apply to new clients.
+client_rules.rules = {
   -- All clients will match this rule.
   {
     rule = {},
@@ -142,7 +145,7 @@ awful.rules.rules = {
 -- from what you see. Pin it over the whole screen instead. Awesome on X11
 -- places it right by itself.
 if awesome.release == "somewm" then
-  table.insert(awful.rules.rules, {
+  table.insert(client_rules.rules, {
     rule = { name = "flameshot" },
     properties = { floating = true, ontop = true, border_width = 0, titlebars_enabled = false },
     callback = function(c)

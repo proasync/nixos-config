@@ -12,6 +12,7 @@
 --]]
 
 local awful        = require("awful")
+local gstring      = require("gears.string")
 local sqrt         = math.sqrt
 local pairs        = pairs
 local client       = client
@@ -40,7 +41,7 @@ function util.menu_clients_current_tags(menu, args)
         local cls = t:clients()
 
         for _, c in pairs(cls) do
-            cls_t[#cls_t + 1] = { awful.util.escape(c.name) or "",
+            cls_t[#cls_t + 1] = { gstring.xml_escape(c.name) or "", -- was awful.util.escape
                                   function ()
                                       c.minimized = false
                                       client.focus = c
@@ -160,12 +161,14 @@ end
 
 -- Move current tag
 -- pos in {-1, 1} <-> {previous, next} tag position
+-- proasync patch (2026-10-13): t.index instead of awful.tag.move, which
+-- SomeWM 2.x removed (Awesome 4.3 has both; awful.tag.move just sets it).
 function util.move_tag(pos)
     local tag = awful.screen.focused().selected_tag
     if tonumber(pos) <= -1 then
-        awful.tag.move(tag.index - 1, tag)
+        tag.index = tag.index - 1
     else
-        awful.tag.move(tag.index + 1, tag)
+        tag.index = tag.index + 1
     end
 end
 

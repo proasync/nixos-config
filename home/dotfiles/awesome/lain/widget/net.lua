@@ -7,7 +7,6 @@
 --]]
 
 local helpers = require("lain.helpers")
-local naughty = require("naughty")
 local wibox   = require("wibox")
 local string  = string
 
@@ -89,7 +88,7 @@ local function factory(args)
 
             -- Notify only once when connection is lost
             if string.match(dev_now.carrier, "0") and notify == "on" and helpers.get_map(dev) then
-                naughty.notify {
+                helpers.notify {
                     title    = dev,
                     text     = "No carrier",
                     icon     = helpers.icons_dir .. "no_net.png",
