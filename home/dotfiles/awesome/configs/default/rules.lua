@@ -91,6 +91,7 @@ client_rules.rules = {
       },
       class = {
         "Arandr",
+        "wdisplays",     -- SomeWM's display settings (Wayland class, measured)
         "Arcolinux-welcome-app.py",
         "Blueberry",
         "Galculator",
