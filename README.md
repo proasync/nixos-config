@@ -111,6 +111,7 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | `Super + C` | drop-down terminal from the top of the screen; same key hides it, and it keeps running (Awesome, SomeWM) |
 | click the layout icon (top right) | dropdown of all layouts, current one highlighted; scroll on the icon cycles (Awesome, SomeWM) |
 | `Super + Shift + H / L` | swap the window with its left/right neighbour (carousel: move the column) |
+| `wdisplays` | arrange monitors on Wayland (SomeWM, niri): arandr's equivalent. Applies live and saves nothing; the WM's own file wins again on hot-plug, so copy a layout you keep into `configs/<host>/somewm.lua` (SomeWM) or let nwg-displays write `monitor.kdl` (niri) |
 | `tv-mirror.sh on` / `off` | laptop → TV mirror on X11/Awesome — see [docs/external-display.md](docs/external-display.md) first |
 | `Mod+Shift+P` (Awesome) | restart picom (logs to `~/.cache/picom/`) — screen frozen? see [docs/desktop-freeze.md](docs/desktop-freeze.md) |
 
@@ -154,6 +155,13 @@ SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input
   niri scripts in `wm-scripts/` (but no idle lock), tray icons via `nm-applet --indicator`.
 - **DPI.** SomeWM also reads `~/.Xresources`, so `rc.lua` pins its Lua-side DPI to 96 there.
   The laptop's 1.67× comes from the output scale in `configs/proasync-laptop/somewm.lua`.
+- **Monitor layout.** `configs/<host>/somewm.lua` is the saved layout: it runs at startup and
+  on every output added/removed (the laptop's handles docked/undocked). The Lua `output`
+  object takes `enabled`, `position`, `scale`, `transform`, `mode` and `adaptive_sync`. To
+  find a layout, use `wdisplays` (or `wlr-randr`): SomeWM implements wlr-output-management,
+  so they apply live, but save nothing. nwg-displays does not run here (it wants a niri,
+  sway or Hyprland socket). The default `somewm.lua` does nothing, so on a desktop without
+  its own file SomeWM places the outputs itself at every login.
 - **Check a change** with `somewm --check ~/.config/awesome/rc.lua` and `awesome -k`.
   Electron apps started from a VS Code terminal inherit `ELECTRON_RUN_AS_NODE=1` and fail
   with "Cannot find module 'electron'"; unset it when testing from there.

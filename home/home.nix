@@ -74,8 +74,9 @@ in
     satty
     brightnessctl
     playerctl
-    nwg-displays
+    nwg-displays   # niri only (needs its socket); writes hosts/<host>/niri/monitor.kdl
     wlr-randr
+    wdisplays      # arandr for wlr-output-management: SomeWM, niri, Hyprland, sway. Applies live, saves nothing
     libnotify
     socat
     openssl
