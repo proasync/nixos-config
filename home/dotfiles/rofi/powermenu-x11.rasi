@@ -1,12 +1,16 @@
-/* Rofi power menu for Awesome on X11: powermenu.rasi plus bigger sizes on the
- * laptop's 2880x1800 panel. Separate from powermenu.rasi for the reason given
- * in launcher.rasi. */
+/* Rofi power menu for Awesome on X11: powermenu.rasi plus the laptop panel's
+ * sizes, which are powermenu.rasi's times 1.67 so it looks as in SomeWM. Why
+ * this is a separate file, and why the fonts scale too: see launcher.rasi and
+ * launcher-x11.rasi. The window fills the screen in both (padding in %). */
 
 @import "powermenu.rasi"
 
 @media ( min-width: 2800px ) {
-    prompt       { font: "mononoki Nerd Font Bold 46.667"; }
-    entry        { font: "mononoki Nerd Font 40"; }
-    element      { padding: 24px 34px; border-radius: 16px; }
-    element-text { font: "mononoki Nerd Font 40"; }
+    mainbox      { spacing: 33px; }
+    inputbar     { spacing: 17px; }
+    prompt       { font: "mononoki Nerd Font Bold 30.06"; }
+    entry        { font: "mononoki Nerd Font 26.72"; }
+    listview     { spacing: 13px; }
+    element      { padding: 23px 33px; border-radius: 17px; }
+    element-text { font: "mononoki Nerd Font 26.72"; }
 }

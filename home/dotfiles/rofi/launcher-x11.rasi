@@ -1,17 +1,23 @@
-/* Rofi drun launcher for Awesome on X11: launcher.rasi plus bigger sizes on
- * screens 2800 px wide and up, i.e. proasync-laptop's 2880x1800 panel, which
- * X11 does not scale (tuned 2026-04, commit 227486b). 1x desktops never reach
- * this width. Why this is a separate file: see launcher.rasi. */
+/* Rofi drun launcher for Awesome on X11: launcher.rasi plus the laptop panel's
+ * sizes on screens 2800 px wide and up (proasync-laptop's 2880x1800 panel;
+ * 1x desktops never reach that width). Why this is a separate file: see
+ * launcher.rasi.
+ *
+ * The sizes are launcher.rasi's times 1.67, the scale SomeWM gives the panel
+ * (configs/proasync-laptop/somewm.lua), so the launcher looks the same in both.
+ * Fonts too: rofi draws at 96 DPI on X11 and ignores Xft.dpi. Measured
+ * 2026-10-14 (2880x1800 Xvfb vs headless SomeWM at 1.67): a list row 801x73 px
+ * with 27 px text in SomeWM. */
 
 @import "launcher.rasi"
 
 @media ( min-width: 2800px ) {
-    window       { width: 830px; border: 3px; border-radius: 20px; }
-    inputbar     { padding: 24px; border-radius: 20px 20px 0 0; }
-    prompt       { font: "mononoki Nerd Font 36.667"; padding: 0 14px 0 0; }
-    entry        { font: "mononoki Nerd Font 33.333"; }
-    listview     { spacing: 6px; padding: 14px; }
-    element      { padding: 16px 24px; border-radius: 14px; }
-    element-text { font: "mononoki Nerd Font 33.333"; }
-    element-icon { size: 40px; padding: 0 16px 0 0; }
+    window       { width: 835px; border: 3px; border-radius: 20px; }
+    inputbar     { padding: 23px; border-radius: 20px 20px 0 0; }
+    prompt       { font: "mononoki Nerd Font 23.38"; padding: 0 13px 0 0; }
+    entry        { font: "mononoki Nerd Font 21.71"; }
+    listview     { spacing: 7px; padding: 13px; }
+    element      { padding: 17px 23px; border-radius: 13px; }
+    element-text { font: "mononoki Nerd Font 21.71"; }
+    element-icon { size: 40px; padding: 0 17px 0 0; }
 }
