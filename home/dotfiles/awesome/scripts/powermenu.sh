@@ -4,9 +4,14 @@
 # Single keypress: s=Shutdown, r=Reboot, l=Logout, k=Lock, u=Suspend
 # Or use arrow keys + Enter to select
 
+# Awesome on X11 needs the laptop panel's big sizes; SomeWM (Wayland, which
+# runs this script too) scales rofi itself. See ~/.config/rofi/launcher.rasi.
+theme=powermenu-x11.rasi
+[ -n "${WAYLAND_DISPLAY:-}" ] && theme=powermenu.rasi
+
 rofi -dmenu -i \
     -p "Power" \
-    -theme ~/.config/rofi/powermenu.rasi \
+    -theme ~/.config/rofi/$theme \
     -kb-custom-1 "s" \
     -kb-custom-2 "r" \
     -kb-custom-3 "l" \

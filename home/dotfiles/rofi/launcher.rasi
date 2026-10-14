@@ -1,4 +1,12 @@
-/* Rofi drun launcher — Catppuccin Mocha */
+/* Rofi drun launcher — Catppuccin Mocha
+ *
+ * The Wayland compositors (SomeWM, niri) use this file as it is: they scale
+ * rofi themselves. Awesome on X11 uses launcher-x11.rasi, which adds the
+ * big-screen sizes for the laptop's 2880x1800 panel. They must not live here:
+ * under Wayland rofi often measures the panel at its full 2880 px before it
+ * learns the scale, so a min-width query matched there too, and the
+ * compositor then scaled the big sizes up again (seen 2026-10-14 in SomeWM:
+ * the launcher sometimes came up huge, and normal on the next try). */
 
 @import "catppuccin-mocha.rasi"
 
@@ -81,21 +89,4 @@ element-icon {
     size: 24px;
     padding: 0 10px 0 0;
     background-color: inherit;
-}
-
-/* Big screens without compositor scaling — i.e. proasync-laptop's
- * 2880x1800 panel under X11/Awesome (tuned 2026-04, commit 227486b).
- * A single 1x monitor never reaches this width; Wayland compositors scale
- * rofi themselves. rofi cannot tell its monitor on Wayland, and its patch in
- * home/packages/rofi.nix makes that count as width 0 there, so this never
- * applies under SomeWM or niri (before the patch it applied at random). */
-@media ( min-width: 2800px ) {
-    window       { width: 830px; border: 3px; border-radius: 20px; }
-    inputbar     { padding: 24px; border-radius: 20px 20px 0 0; }
-    prompt       { font: "mononoki Nerd Font 36.667"; padding: 0 14px 0 0; }
-    entry        { font: "mononoki Nerd Font 33.333"; }
-    listview     { spacing: 6px; padding: 14px; }
-    element      { padding: 16px 24px; border-radius: 14px; }
-    element-text { font: "mononoki Nerd Font 33.333"; }
-    element-icon { size: 40px; padding: 0 16px 0 0; }
 }

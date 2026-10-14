@@ -1,4 +1,5 @@
-/* Power menu — Catppuccin Mocha */
+/* Power menu — Catppuccin Mocha. Awesome on X11 uses powermenu-x11.rasi, which
+ * adds the laptop panel's big sizes; why they are not here: see launcher.rasi. */
 
 @import "catppuccin-mocha.rasi"
 
@@ -65,12 +66,4 @@ element-text {
     font: "mononoki Nerd Font 16";
     text-color: inherit;
     background-color: inherit;
-}
-
-/* Big screens without compositor scaling — see launcher.rasi. */
-@media ( min-width: 2800px ) {
-    prompt       { font: "mononoki Nerd Font Bold 46.667"; }
-    entry        { font: "mononoki Nerd Font 40"; }
-    element      { padding: 24px 34px; border-radius: 16px; }
-    element-text { font: "mononoki Nerd Font 40"; }
 }

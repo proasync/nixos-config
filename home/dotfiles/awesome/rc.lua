@@ -332,7 +332,11 @@ globalkeys = my_table.join(
     awful.key({ modkey }, "space", function() kbdcfg.switch() end),
     awful.key({ modkey }, "c", function() awful.screen.focused().quake:toggle() end,
         { description = "drop-down terminal", group = "launcher" }),
-    awful.key({ modkey }, "r", function() awful.spawn("rofi -show drun -theme ~/.config/rofi/launcher.rasi") end,
+    -- X11 needs the laptop panel's big sizes, which SomeWM scales itself
+    -- (why two files: ~/.config/rofi/launcher.rasi).
+    awful.key({ modkey }, "r", function()
+            awful.spawn("rofi -show drun -theme ~/.config/rofi/" .. (is_somewm and "launcher.rasi" or "launcher-x11.rasi"))
+        end,
         { description = "rofi launcher", group = "super" }),
     awful.key({ modkey }, "v", function() awful.spawn("pavucontrol") end,
         { description = "pulseaudio control", group = "super" }),
