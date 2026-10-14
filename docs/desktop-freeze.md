@@ -1,4 +1,4 @@
-# Desktop freezes on proasync-laptop (X11 / Awesome)
+# Desktop freezes and stalls on proasync-laptop (Awesome / SomeWM)
 
 What to do when the desktop stops responding, what to collect afterwards, and
 what past freezes turned out to be. Machine: ASUS Zenbook S 13 (UX5304MA),
@@ -52,6 +52,61 @@ ls -lt ~/.cache/picom/                       # picom log of the frozen session
 The last lines before a gap in the journal date the freeze; note what was
 started just before it.
 
+## Slow, or hangs every few seconds — measure it live
+
+For "everything is sluggish / freezes for a moment every ~30 s" while the
+machine still responds (any session: Awesome, SomeWM, niri). Measure **while it
+is happening**; afterwards the numbers look normal. Background: this laptop's
+NixOS runs from an **external USB SSD** (`sda`, SSK SSD, USB 10 Gb/s, UAS), so
+any stall of that disk freezes every app that writes, the desktop included.
+
+Already in place (don't re-investigate): `usbcore.autosuspend=-1` (the root
+SSD must never autosuspend), the Intel Sensor Hub blacklist (its firmware timed
+out every ~30 s and wedged i915 — the *previous* "hangs every 30 s", fixed;
+check with `lsmod | grep -i ish`, should be empty), zram + earlyoom.
+
+```sh
+uptime; top -b -n 2 -d 2 | grep '%Cpu' | tail -1   # high "wa" (iowait) → disk
+cat /proc/pressure/io      # "full avg10" = % of time programs were blocked on disk
+free -h                    # memory full? → see OOM section below
+ps -eo stat,wchan:20,comm | awk '$1 ~ /^D/'        # who is blocked; …+flush-8:0 = writes to sda stuck
+journalctl -k -b | grep -iE 'uas|reset|I/O error|blocked for more'   # USB/disk errors
+
+# disk, per second for 30 s: written MB/s and requests in flight (read/write)
+p=$(awk '$3=="sda"{print $10}' /proc/diskstats); for i in $(seq 30); do sleep 1
+  c=$(awk '$3=="sda"{print $10}' /proc/diskstats)
+  echo "$i  $(( (c-p)*512/1048576 )) MB/s  inflight $(cat /sys/block/sda/inflight | xargs)"; p=$c; done
+
+# latency of small "must be on disk" writes (what editors/browsers do constantly)
+dd if=/dev/zero of=~/.cache/lat bs=4k count=100 oflag=dsync; rm ~/.cache/lat
+```
+
+How to read it:
+
+| Measurement | Healthy | Seen 2026-10-14 (bad) |
+| --- | --- | --- |
+| `wa` in top | a few % | 49 % |
+| IO pressure `full avg60` | ≈ 0 | 66 |
+| writes in flight with 0 MB/s moving | never for seconds | 11–22 requests stuck 2–3 s, ~29 s apart |
+| `dd … oflag=dsync`, 100 writes | ≲ 0.3 s | 1.8 s (18 ms each) |
+
+Disk looks bad → check the SSD's health (temperature, wear, error counts):
+`nix shell nixpkgs#smartmontools -c sudo smartctl -a /dev/sda`. Also try another
+USB-C port, no hub, and feel whether the SSD is hot.
+
+Disk looks fine but the screen stutters → graphics. Caveat: the kernel worker
+`kworker/…+i915_flip` also shows state `D` for a moment during every normal
+frame, so sampling it is **not** proof of a stall unless it stays `D` for
+seconds. The usual suspect on Intel laptop panels is Panel Self Refresh (PSR).
+Test with `boot.kernelParams = [ "i915.enable_psr=0" ]` in
+`hosts/proasync-laptop/configuration.nix` (`nrs` + reboot; NixOS disables the
+systemd-boot command-line editor, so there's no one-off test). PSR saves about
+0.2–0.6 W, only while the picture is completely still — roughly 3–5 % of
+battery (~15–25 min per charge at the ~9.5 W this laptop draws in normal use).
+Middle ground if PSR is the cause: `i915.enable_psr=1` (keeps PSR1, drops the
+buggier PSR2). Battery draw for before/after comparisons:
+`cat /sys/class/power_supply/BAT*/power_now` (µW).
+
 ## picom logging
 
 picom is always started through
@@ -67,6 +122,7 @@ one run: `PICOM_LOG_LEVEL=debug ~/.config/awesome/scripts/picom-restart.sh`.
 | --- | --- | --- |
 | 2026-10-08 ~09:46 | Cursor moved; clicks, keys, workspace switching and Ctrl+Alt+F3 did nothing. Short power press → clean shutdown. | Kernel alive. No GPU hang, OOM, crash or display change in the logs; nothing logged for ~3.5 min after VS Code + `yarn dev:client` were started. Cause unknown — suspects: picom `glx` stall, X server blocked, or a client stuck holding an X grab. picom had no log then. Ctrl+Alt+F3 may simply have needed Fn. |
 | 2026-10-08 ~21:26 | Total freeze, power held. | **Out of memory.** journald "Under memory pressure", libinput "your system is too slow", Awesome main loop 6.4 s, InnoDB memory-pressure event — then nothing. No swap, so the kernel thrashed instead of killing a process. The process using the memory is not identifiable from the logs. |
+| 2026-10-14 ~20:30 (SomeWM, 3 min after boot) | Extremely slow, hangs every ~30 s; first time since the Sensor Hub fix. | **Disk stalls on the USB root SSD**: iowait 49 %, IO pressure full avg60 66 %, `flush-8:0` blocked, small writes stuck 2–3 s with nothing moving, ~29 s apart. No USB/UAS errors, TRIM fine, 47 % full; reads fast (900 MB/s), small sync writes slow (18 ms). Calm again 16 min after boot. `i915_flip` sampling was inconclusive (see caveat above). **No change made** — decision: measure live next time; SMART check pending. |
 
 ## Out-of-memory protection (since 2026-10-09)
 

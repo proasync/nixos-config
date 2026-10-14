@@ -36,7 +36,7 @@ nixos-config/
 ├── assets/                    # Build-time static assets
 ├── docs/
 │   ├── install.md             # install-day runbook: USB stick, scripts/install.sh, after the first boot
-│   ├── desktop-freeze.md      # laptop freeze runbook: escape hatches, logs, past incidents
+│   ├── desktop-freeze.md      # laptop freezes/slowness: escape hatches, live checks, past incidents
 │   ├── updating.md            # how to update safely + post-update checklist
 │   ├── dev-environments.md    # pagoda/proasync monorepo dev setup on NixOS
 │   ├── external-display.md    # laptop → TV/projector runbook, Awesome and SomeWM (read before touching xrandr)
