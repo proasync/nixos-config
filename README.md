@@ -4,15 +4,15 @@ Flake-based NixOS + Home Manager configuration for three machines:
 
 | | `home-desktop` | `proasync-laptop` | `work-desktop` |
 | --- | --- | --- | --- |
-| Hardware | i5-12400F + RX 7600 | ASUS Zenbook S 13 UX5304MA (Core Ultra 7 155U) | Ryzen 5 5600X + RX 470, 32 GB |
+| Hardware | i5-12400F + RX 7600 | ASUS Zenbook S 13 UX5304MA (Core Ultra 7 155U) | HP, Ryzen 5 5600G + RX 460/560D, 32 GB |
 | GPU | AMD (`amdgpu`) | Intel Arc iGPU (`modesetting` + iHD VA-API) | AMD (`amdgpu`) |
-| Display | standard DPI | 2880x1800 HiDPI (SDDM 2×, Xft.dpi 160, niri 1.67×) | 3 × 1920x1080/1200, standard DPI |
-| Host-only quirks | — | USB-root autosuspend guard, Intel ISH blacklist, i915 in initrd + `xe` blacklisted, iwlwifi force-load, thermald, power-profiles-daemon, lid handling, Bluetooth | — |
+| Display | standard DPI | 2880x1800 HiDPI (SDDM 2×, Xft.dpi 160, niri 1.67×) | 3 × 1920x1080, standard DPI |
+| Host-only quirks | — | USB-root autosuspend guard, Intel ISH blacklist, i915 in initrd + `xe` blacklisted, iwlwifi force-load, thermald, power-profiles-daemon, lid handling, Bluetooth | Bluetooth; Windows on its own NVMe (boot via F9) |
 | Remote access (Tailscale + tailnet-only SSH) | — | yes | yes |
 | Phone dev ports on LAN (8081, 4300) | yes | yes | — (phone uses Tailscale) |
 | SDDM theme | catppuccin-sddm-corners (Mononoki, larger text), penguin avatar | same + nixos-lightdark2 wallpaper, greeter at 2× on the panel | same as home-desktop |
 | Dev services | MariaDB, Apache+PHP, PostgreSQL | same | same |
-| Status | | | **not installed yet**: hardware config is a placeholder (see *Installing on a new machine*) |
+| Status | | | **not installed yet**: hardware config is a placeholder until `scripts/install.sh` runs ([docs/install.md](docs/install.md)) |
 
 - **WMs (all hosts):** Awesome (Xorg, the daily driver) and niri (Wayland, scrolling columns),
   plus SomeWM on trial (Wayland, runs Awesome's own config: see *SomeWM (trial)* below).
@@ -29,6 +29,7 @@ nixos-config/
 ├── flake.nix                  # Entry point — host list; mkHost <name> wires hosts/<name>/
 ├── assets/                    # Build-time static assets
 ├── docs/
+│   ├── install.md             # install-day runbook: USB stick, scripts/install.sh, after the first boot
 │   ├── desktop-freeze.md      # laptop freeze runbook: escape hatches, logs, past incidents
 │   ├── updating.md            # how to update safely + post-update checklist
 │   ├── dev-environments.md    # pagoda/proasync monorepo dev setup on NixOS
@@ -66,6 +67,7 @@ nixos-config/
 │       ├── claude/                  # Claude Code settings
 │       └── wallpapers/              # browsable by waypaper; stored via Git LFS (see below)
 └── scripts/
+    ├── install.sh             # Install from the NixOS live USB: disk, nixos-install, passwords
     └── setup-wordpress.sh     # One-time WordPress/WooCommerce dev setup
 ```
 
@@ -243,55 +245,17 @@ first. **Read [docs/updating.md](docs/updating.md) before updating** — procedu
 
 ## Installing on a new machine
 
-Before you start, if the machine has other disks (e.g. an old install you keep as a
-backup): **unplug them for the install.** Otherwise the installer may put the NixOS
-bootloader on the other disk's EFI partition, and `hardware-configuration.nix` may pick up
-its partitions. Afterwards NixOS is the default boot entry; reach the old disk through the
-firmware boot menu (F8/F11/F12) — systemd-boot does not list OSes on other disks.
+From the NixOS live USB, one script partitions the new disk, installs this repo's
+config for the host and sets the passwords:
 
-1. Install NixOS normally (UEFI; Secure Boot off). Create the user `proasync` (the
-   dotfile links hardcode `/home/proasync`). Keep the generated
-   `/etc/nixos/hardware-configuration.nix` and note `system.stateVersion` in
-   `/etc/nixos/configuration.nix`.
-2. `nix --extra-experimental-features 'nix-command flakes' shell nixpkgs#git nixpkgs#git-lfs`,
-   then clone this repo to `~/nixos-config` (that exact path — dotfiles link into it).
-   Wallpapers arrive as small LFS pointer text files until the *Git LFS* step below.
-3. If the host isn't in the repo yet: create `hosts/<newhost>/` with a `configuration.nix`
-   (GPU driver, optional module imports, whatever is genuinely host-specific — copy the
-   closest existing host) and `niri/monitor.kdl` (copy `home-desktop`'s empty one), and add
-   `"<newhost>"` to the host list in `flake.nix`. (`work-desktop` already exists.) Add
-   `hypr/monitors.conf` only if the host will run Hyprland.
-4. Copy the generated `hardware-configuration.nix` over `hosts/<newhost>/hardware-configuration.nix`
-   (for `work-desktop` this replaces the placeholder) and set `system.stateVersion` to the
-   value from step 1.
-5. `git add hosts/<newhost>/` (flakes only see tracked files), then
-   `sudo nixos-rebuild switch --flake ~/nixos-config#<newhost>` — spelled out, because the
-   hostname is still `nixos` until this first switch, so `nrs` can't find the host yet.
-6. Reboot, then commit the hardware config.
+```sh
+git clone https://github.com/proasync/nixos-config.git
+cd nixos-config
+sudo bash scripts/install.sh <host>
+```
 
-### Manual steps after install
-
-- **SSH keys** — generate (`ssh-keygen -t ed25519`) or restore from backup; add to GitHub.
-  Keys allowed to SSH *in* are listed in `modules/remote-access.nix`.
-- **Tailscale** (hosts importing `modules/remote-access.nix`) — `sudo tailscale up`. If an older
-  install of the same machine is still registered under the same name (e.g. the Arch
-  `work-desktop`), remove it in the Tailscale admin console first, or the new node gets a
-  `-1` suffix and `ssh proasync@work-desktop` reaches the old one.
-- **Git identity** — declared in `home/home.nix` (`programs.git.settings.user.*`); do **not** use `git config --global` (the config file is a read-only symlink).
-- **Git LFS** — `cd ~/nixos-config && git lfs update && git lfs pull`. Until this runs, the
-  wallpapers added since 2026-09-25 are small text pointer files, not images. Home Manager
-  (`programs.git.lfs`) installs git-lfs and its filters, but the per-repo hooks (needed so
-  `git push` uploads LFS objects) and the wallpaper downloads are per-clone.
-- **Wallpaper** — run `waypaper` (Wayland), or on X11 `feh --bg-scale <laptop img> [<external img>]`
-  (feh remembers it in `~/.fehbg`).
-- **App logins** — Chrome, VS Code, Signal, WhatsApp, Teams, Spotify, Obsidian.
-- **Dev repos** — see [docs/dev-environments.md](docs/dev-environments.md):
-
-  ```bash
-  mkdir -p ~/dev
-  git clone git@github.com:proasync/pagoda-monorepo.git ~/dev/pagoda-monorepo
-  git clone git@github.com:proasync/proasync-monorepo.git ~/dev/proasync-monorepo
-  git clone git@github.com:proasync/wisdom-woocommerce-plugin.git ~/dev/wisdom-woocommerce-plugin
-  ```
-
-- **WordPress dev env** (optional): `sudo bash ~/nixos-config/scripts/setup-wordpress.sh`
+It only offers disks that are neither the live USB nor Windows (NTFS/BitLocker), and
+asks you to type the disk's name and `ERASE`. **Read [docs/install.md](docs/install.md)
+first:** backups, writing the USB stick, the boot menu, adding a new host, and the
+manual steps after the first boot (commit the generated hardware config, Git LFS,
+Tailscale, app logins, dev repos).

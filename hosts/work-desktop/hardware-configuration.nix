@@ -1,5 +1,5 @@
-# PLACEHOLDER — replace this whole file on install day with the one
-# `nixos-generate-config` writes (/etc/nixos/hardware-configuration.nix).
+# PLACEHOLDER — scripts/install.sh replaces this whole file on install day with
+# the one `nixos-generate-config` writes (see docs/install.md).
 # It only exists so work-desktop builds before the machine runs NixOS.
 # The disk labels below are made up; booting with this file will fail.
 { config, lib, pkgs, modulesPath, ... }:
