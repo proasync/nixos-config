@@ -16,7 +16,9 @@ moving `work-desktop` off Arch; the same steps work for any host in `flake.nix`.
    back through Chrome sync. Check they are at passwords.google.com.
 3. **Disks.** Unplug any disk with an OS you want to keep safe (on `work-desktop`:
    the Arch disk, GIGABYTE 240 GB SATA). A Windows disk can stay: the script never
-   offers a disk holding NTFS or BitLocker, and never mounts or writes it.
+   offers a disk holding NTFS or BitLocker, and never mounts or writes it. Keep the
+   **backup stick unplugged** until after the first boot: it is ext4, so the script
+   would list it as a disk you can erase (it skips only the live USB and Windows).
 4. **A new host only** (not `work-desktop`, which exists): create `hosts/<newhost>/`
    with a `configuration.nix` (copy the closest host) and `niri/monitor.kdl` (copy
    `home-desktop`'s), add `"<newhost>"` to the host list in `flake.nix`, commit and
@@ -84,10 +86,13 @@ cause.
    git clone git@github.com:proasync/wisdom-woocommerce-plugin.git ~/dev/wisdom-woocommerce-plugin
    ```
 3. **Commit the hardware config** the script generated, so GitHub and the other
-   machines have it:
+   machines have it. The live USB cloned over HTTPS, which can't push (GitHub takes
+   no passwords, and the git config is a read-only link, so `gh auth setup-git`
+   can't add a helper). Switch the copy to SSH first, as on the other machines:
 
    ```sh
    cd ~/nixos-config
+   git remote set-url origin git@github.com:proasync/nixos-config.git
    git add hosts/work-desktop/hardware-configuration.nix
    git commit -m "work-desktop: hardware-configuration.nix from the install"
    git push
