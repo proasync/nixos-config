@@ -15,11 +15,12 @@
 #      No swap partition: modules/common.nix sets up zram swap
 #   4. mounts it at /mnt and runs nixos-generate-config
 #   5. copies this repo to /mnt/home/proasync/nixos-config (the dotfile links
-#      expect that path) and puts the generated hardware-configuration.nix
-#      into hosts/<host>/
+#      expect that path), puts the generated hardware-configuration.nix into
+#      hosts/<host>/ (staged) and points the copy at GitHub over SSH
 #   6. nixos-install --flake .../nixos-config#<host>
 #   7. asks for the root password, then the proasync password
-#   8. hands /home/proasync to proasync and unmounts
+#   8. hands /home/proasync to proasync, records the copy's files for git
+#      (or the new system lists the older wallpapers as modified), unmounts
 #
 # Only the chosen disk is written or mounted. Other disks keep their own
 # bootloaders; start them from the firmware boot menu.
@@ -138,6 +139,13 @@ cp -a "$repo" "$dest"
 cp "$hw" "$dest/hosts/$host/hardware-configuration.nix"
 # Flakes only see files git tracks; this also covers a brand-new hosts/<host>/.
 git -C "$dest" -c safe.directory='*' add "hosts/$host"
+# The live USB cloned over HTTPS, which can't push (GitHub takes no
+# passwords). The copy talks to GitHub over SSH, like the other machines;
+# that needs an SSH key on the new machine (docs/install.md).
+url=$(git -C "$dest" -c safe.directory='*' remote get-url origin 2>/dev/null || true)
+if [[ $url == https://github.com/* ]]; then
+  git -C "$dest" -c safe.directory='*' remote set-url origin "git@github.com:${url#https://github.com/}"
+fi
 
 # ── 6. Install ────────────────────────────────────────────
 step "Installing NixOS for $host"
@@ -154,6 +162,24 @@ until nixos-enter --root "$target" -c "$sysbin/passwd $user"; do echo "That did 
 # ── 8. Finish ─────────────────────────────────────────────
 step "Handing /home/$user to $user"
 nixos-enter --silent --root "$target" -c "$sysbin/chown -R $user:users /home/$user"
+
+# git keeps each file's size, times, inode and owner, and reads a file again
+# when that record no longer matches. The copy and the chown changed every
+# record, so the new system would read all files again, through Git LFS, and
+# LFS reads the older wallpapers (plain files under the LFS rule) as changed:
+# 66 "modified" files on work-desktop, and git pull refused. Record the files
+# as they are now, with the LFS filter off (the live USB has no git-lfs, and
+# the files are exactly what was cloned). git runs as root here, so .git is
+# handed back afterwards.
+step "Recording the repo copy for git"
+nolfs=(-c safe.directory='*' -c filter.lfs.clean= -c filter.lfs.smudge=
+       -c filter.lfs.process= -c filter.lfs.required=false)
+git -C "$dest" "${nolfs[@]}" update-index -q --refresh || true
+changed=$(git -C "$dest" "${nolfs[@]}" status --porcelain | grep -v " hosts/$host/" || true)
+nixos-enter --silent --root "$target" -c "$sysbin/chown -R $user:users /home/$user/nixos-config/.git"
+if [[ -n $changed ]]; then
+  printf '%sNote: besides hosts/%s/, git sees these changes in the copy:%s\n%s\n' "$yellow" "$host" "$reset" "$changed"
+fi
 
 step "Unmounting"
 sync

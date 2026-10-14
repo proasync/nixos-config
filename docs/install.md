@@ -77,10 +77,21 @@ cause.
 ## After the first boot
 
 1. **Log in** (SDDM): pick Awesome. Wired network is up by itself.
-2. **Restore the backup:** plug in the backup stick and follow the *Restore on
-   NixOS* section of its README: SSH keys and `gh` login first, since the steps
-   below need them. No backup? Create a key (`ssh-keygen -t ed25519`), add it to
-   GitHub, and clone the dev repos:
+2. **GitHub login and SSH key.** Pushing and cloning need an SSH key that GitHub
+   knows. If the backup has your own `~/.ssh` (`id_ed25519` and the like), restore
+   it as its README says. The `ssh_host_*` files under `etc/ssh` are the computer's
+   identity, not a GitHub key: leave them. Otherwise let `gh` make one:
+
+   ```sh
+   gh auth login
+   ```
+
+   Answer GitHub.com, **SSH**, yes to a new key, Enter (no passphrase), title
+   `work-desktop`, login with a web browser. `ssh -T git@github.com` then greets you
+   by name. The first time, it asks to confirm GitHub's key: it must be
+   `SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU`.
+3. **Restore the backup:** plug in the backup stick and follow the *Restore on
+   NixOS* section of its README. No backup? Clone the dev repos:
 
    ```sh
    mkdir -p ~/dev
@@ -88,40 +99,35 @@ cause.
    git clone git@github.com:proasync/proasync-monorepo.git ~/dev/proasync-monorepo
    git clone git@github.com:proasync/wisdom-woocommerce-plugin.git ~/dev/wisdom-woocommerce-plugin
    ```
-3. **Swap in a fresh copy of the repo and commit the hardware config.** The copy the
-   installer made can't be committed from: the live USB has no Git LFS, so git shows
-   the wallpapers as modified, and it was cloned over HTTPS, which can't push. A
-   fresh clone has neither problem. Copy each block from GitHub (copy button at the
-   top right of the block) and paste it in the terminal with Ctrl+Shift+V:
+4. **Commit the hardware config** the script generated (it is already staged), so
+   GitHub and the other machines have it, and fetch the newer wallpapers, which the
+   live USB left as small Git LFS placeholders:
 
    ```sh
-   cd ~ && git clone git@github.com:proasync/nixos-config.git nixos-config-new && cp nixos-config/hosts/work-desktop/hardware-configuration.nix nixos-config-new/hosts/work-desktop/ && cd nixos-config-new && git status --short
+   cd ~/nixos-config
+   git commit -m "work-desktop: hardware config from the install"
+   git push
+   git lfs pull
    ```
 
-   The last line it prints must be just
-   ` M hosts/work-desktop/hardware-configuration.nix`. Then:
-
-   ```sh
-   git add hosts/work-desktop/hardware-configuration.nix && git commit -m "work-desktop: hardware-configuration.nix from the install" && git push && cd ~ && mv nixos-config nixos-config-old && mv nixos-config-new nixos-config && echo ALL DONE
-   ```
-
-   The dotfile links point to the path `~/nixos-config`, so they follow the new copy.
-   Delete `~/nixos-config-old` once all is well. After this, `nrs` works as on the
-   other machines, and the wallpapers are real images (no `git lfs pull` needed).
-4. **Tailscale** (hosts importing `modules/remote-access.nix`): if an older install
+   `git status` should then be clean. The script set the copy up for this: GitHub
+   over SSH, and git's record of the files already matches the new disk. Without
+   that, git listed the older wallpapers as modified and refused to pull (fixed
+   2026-10-14). After this, `nrs` works as on the other machines.
+5. **Tailscale** (hosts importing `modules/remote-access.nix`): if an older install
    of the machine is registered under the same name (the Arch `work-desktop`),
    remove it in the Tailscale admin console first, or the new one gets a `-1`
    suffix. Then `sudo tailscale up`. Keys allowed to SSH in are listed in
    `modules/remote-access.nix`.
-5. **Monitors** (several screens): X places them in its own order. Arrange them
+6. **Monitors** (several screens): X places them in its own order. Arrange them
    with `arandr`. `work-desktop` has no `configs/work-desktop/` in Awesome's config
    yet to save the layout (see *Per-host settings* in the README).
-6. **Bluetooth:** pair the headphones again in blueman (tray icon).
-7. **Wallpaper:** `waypaper` on Wayland, or `feh --bg-scale <img> [<img> …]` on X11.
-8. **Apps:** log in to Chrome (sync brings passwords back), VS Code, Signal,
+7. **Bluetooth:** pair the headphones again in blueman (tray icon).
+8. **Wallpaper:** `waypaper` on Wayland, or `feh --bg-scale <img> [<img> …]` on X11.
+9. **Apps:** log in to Chrome (sync brings passwords back), VS Code, Signal,
    WhatsApp, Teams, Spotify, Obsidian. VS Code settings and extensions are not in
    this repo (see the end of [updating.md](updating.md)).
-9. **Dev repos and databases:** cloned and restored by the backup's restore steps;
+10. **Dev repos and databases:** cloned and restored by the backup's restore steps;
     what the system provides for them is in [dev-environments.md](dev-environments.md).
     Optional WordPress setup: `sudo bash ~/nixos-config/scripts/setup-wordpress.sh`.
 
