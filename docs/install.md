@@ -88,36 +88,40 @@ cause.
    git clone git@github.com:proasync/proasync-monorepo.git ~/dev/proasync-monorepo
    git clone git@github.com:proasync/wisdom-woocommerce-plugin.git ~/dev/wisdom-woocommerce-plugin
    ```
-3. **Commit the hardware config** the script generated, so GitHub and the other
-   machines have it. The live USB cloned over HTTPS, which can't push (GitHub takes
-   no passwords, and the git config is a read-only link, so `gh auth setup-git`
-   can't add a helper). Switch the copy to SSH first, as on the other machines:
+3. **Swap in a fresh copy of the repo and commit the hardware config.** The copy the
+   installer made can't be committed from: the live USB has no Git LFS, so git shows
+   the wallpapers as modified, and it was cloned over HTTPS, which can't push. A
+   fresh clone has neither problem. Copy each block from GitHub (copy button at the
+   top right of the block) and paste it in the terminal with Ctrl+Shift+V:
 
    ```sh
-   cd ~/nixos-config
-   git remote set-url origin git@github.com:proasync/nixos-config.git
-   git add hosts/work-desktop/hardware-configuration.nix
-   git commit -m "work-desktop: hardware-configuration.nix from the install"
-   git push
+   cd ~ && git clone git@github.com:proasync/nixos-config.git nixos-config-new && cp nixos-config/hosts/work-desktop/hardware-configuration.nix nixos-config-new/hosts/work-desktop/ && cd nixos-config-new && git status --short
    ```
 
-   After this, `nrs` works as on the other machines.
-4. **Git LFS** (wallpapers): `git lfs update && git lfs pull` in `~/nixos-config`.
-   Until then the wallpapers added since 2026-09-25 are small pointer files.
-5. **Tailscale** (hosts importing `modules/remote-access.nix`): if an older install
+   The last line it prints must be just
+   ` M hosts/work-desktop/hardware-configuration.nix`. Then:
+
+   ```sh
+   git add hosts/work-desktop/hardware-configuration.nix && git commit -m "work-desktop: hardware-configuration.nix from the install" && git push && cd ~ && mv nixos-config nixos-config-old && mv nixos-config-new nixos-config && echo ALL DONE
+   ```
+
+   The dotfile links point to the path `~/nixos-config`, so they follow the new copy.
+   Delete `~/nixos-config-old` once all is well. After this, `nrs` works as on the
+   other machines, and the wallpapers are real images (no `git lfs pull` needed).
+4. **Tailscale** (hosts importing `modules/remote-access.nix`): if an older install
    of the machine is registered under the same name (the Arch `work-desktop`),
    remove it in the Tailscale admin console first, or the new one gets a `-1`
    suffix. Then `sudo tailscale up`. Keys allowed to SSH in are listed in
    `modules/remote-access.nix`.
-6. **Monitors** (several screens): X places them in its own order. Arrange them
+5. **Monitors** (several screens): X places them in its own order. Arrange them
    with `arandr`. `work-desktop` has no `configs/work-desktop/` in Awesome's config
    yet to save the layout (see *Per-host settings* in the README).
-7. **Bluetooth:** pair the headphones again in blueman (tray icon).
-8. **Wallpaper:** `waypaper` on Wayland, or `feh --bg-scale <img> [<img> …]` on X11.
-9. **Apps:** log in to Chrome (sync brings passwords back), VS Code, Signal,
+6. **Bluetooth:** pair the headphones again in blueman (tray icon).
+7. **Wallpaper:** `waypaper` on Wayland, or `feh --bg-scale <img> [<img> …]` on X11.
+8. **Apps:** log in to Chrome (sync brings passwords back), VS Code, Signal,
    WhatsApp, Teams, Spotify, Obsidian. VS Code settings and extensions are not in
    this repo (see the end of [updating.md](updating.md)).
-10. **Dev repos and databases:** cloned and restored by the backup's restore steps;
+9. **Dev repos and databases:** cloned and restored by the backup's restore steps;
     what the system provides for them is in [dev-environments.md](dev-environments.md).
     Optional WordPress setup: `sudo bash ~/nixos-config/scripts/setup-wordpress.sh`.
 
