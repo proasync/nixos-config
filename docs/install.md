@@ -64,7 +64,10 @@ moving `work-desktop` off Arch; the same steps work for any host in `flake.nix`.
      the new `hardware-configuration.nix`, not yet committed.
    - **Root password** (twice): the rescue login, for when your own login fails.
    - **proasync password** (twice): your everyday login.
-5. At "Done": take out the stick, type `reboot`. NixOS is now first in the boot order.
+5. At "Done": type `reboot`, and take out the stick once the screen goes dark. Not
+   before: the live system runs from the stick and crashes without it. The install
+   itself is safe by then (written, synced and unmounted); if it did crash, hold the
+   power button and start again. NixOS is now first in the boot order.
 
 **If it stops with an error,** it prints which command failed. Nothing outside the
 chosen disk was touched. Run the same `sudo bash scripts/install.sh …` again: it

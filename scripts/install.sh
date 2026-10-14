@@ -159,5 +159,6 @@ step "Unmounting"
 sync
 umount -R "$target"
 
-printf '\n%sDone.%s Take out the USB stick, then type: reboot\n' "$green$bold" "$reset"
+printf '\n%sDone.%s Type: reboot   Take the USB stick out once the screen goes dark,\n' "$green$bold" "$reset"
+echo "not before: the live system runs from it and crashes without it (the install is safe either way)."
 echo "After the first login, continue with \"After the first boot\" in docs/install.md."
