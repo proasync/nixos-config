@@ -40,6 +40,7 @@ nixos-config/
 │   ├── updating.md            # how to update safely + post-update checklist
 │   ├── dev-environments.md    # pagoda/proasync monorepo dev setup on NixOS
 │   ├── external-display.md    # laptop → TV/projector runbook, Awesome and SomeWM (read before touching xrandr)
+│   ├── agent-tooling.md       # multi-agent coding setup (claude-squad, Codex) and the shared agent instructions
 │   └── somewm-2.1.md          # SomeWM 2.x: config migration, rounded corners, upgrade checklist
 ├── hosts/                     # one folder per host, named exactly like the hostname
 │   ├── home-desktop/          # AMD GPU
@@ -71,7 +72,7 @@ nixos-config/
 │       ├── alacritty/  btop/  cava/ # terminal & TUI rice
 │       ├── fastfetch/               # banner every new shell prints; logo NixOS2, 32 cols so lines don't wrap
 │       ├── claude/                  # Claude Code settings; CLAUDE.md = global agent instructions
-│       │                            #   (~/.claude/CLAUDE.md and ~/.codex/AGENTS.md link to it)
+│       │                            #   (~/.claude/CLAUDE.md and ~/.codex/AGENTS.md link to it), /onboard + /audit
 │       └── wallpapers/              # browsable by waypaper; stored via Git LFS (see below)
 └── scripts/
     ├── install.sh             # Install from the NixOS live USB: disk, nixos-install, passwords

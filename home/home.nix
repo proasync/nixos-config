@@ -366,19 +366,25 @@ in
     done
   '';
 
-  # Global agent instructions, one file for both agents: ~/.claude/CLAUDE.md
-  # (Claude Code) and ~/.codex/AGENTS.md (Codex) link straight to the repo's
-  # dotfiles/claude/CLAUDE.md (moved from the retired proasync-dotfiles repo,
-  # 2026-10-14). Direct links, not home.file: no read-only /nix/store hop for an
-  # editor to trip on, and a regular file already there (local edits) is left alone.
+  # Global agent instructions and the personal /onboard and /audit commands, linked
+  # straight to the repo's dotfiles/claude/: ~/.claude/CLAUDE.md (Claude Code) and
+  # ~/.codex/AGENTS.md (Codex) are the same file. Moved from the retired
+  # proasync-dotfiles repo (2026-10-14/15). Direct links, not home.file: no read-only
+  # /nix/store hop for an editor to trip on, and a regular file already there (local
+  # edits) is left alone; an old link (e.g. into ~/dev/proasync-dotfiles) is replaced.
+  # A new command file needs its own line here.
   home.activation.agentInstructions = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    src=/home/proasync/nixos-config/home/dotfiles/claude/CLAUDE.md
-    for dst in "$HOME/.claude/CLAUDE.md" "$HOME/.codex/AGENTS.md"; do
-      if [ -L "$dst" ] || [ ! -e "$dst" ]; then
-        run mkdir -p "$(dirname "$dst")"
-        run ln -sfn "$src" "$dst"
+    dots=/home/proasync/nixos-config/home/dotfiles/claude
+    linkAgentFile() {
+      if [ -L "$2" ] || [ ! -e "$2" ]; then
+        run mkdir -p "$(dirname "$2")"
+        run ln -sfn "$1" "$2"
       fi
-    done
+    }
+    linkAgentFile "$dots/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+    linkAgentFile "$dots/CLAUDE.md" "$HOME/.codex/AGENTS.md"
+    linkAgentFile "$dots/commands/onboard.md" "$HOME/.claude/commands/onboard.md"
+    linkAgentFile "$dots/commands/audit.md" "$HOME/.claude/commands/audit.md"
   '';
 
   # waypaper's config.ini is its own state (last wallpaper), not managed here.

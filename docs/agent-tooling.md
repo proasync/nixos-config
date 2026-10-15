@@ -76,10 +76,13 @@ See [`dev-environments.md`](dev-environments.md) for the full per-repo toolchain
 
 ## Shared agent brain
 
-- Global practices + the `/onboard` and `/audit` commands live in the
-  **proasync-dotfiles** repo, symlinked to `~/.claude/CLAUDE.md` and
-  `~/.codex/AGENTS.md` via its `bootstrap.sh`. Clone + bootstrap on any machine
-  for identical behavior.
+- Global practices + the `/onboard` and `/audit` commands live in
+  [`../home/dotfiles/claude/`](../home/dotfiles/claude/). An activation step in
+  `home/home.nix` (`agentInstructions`) links them to `~/.claude/CLAUDE.md`,
+  `~/.codex/AGENTS.md` and `~/.claude/commands/` on every host, so each machine gets
+  them at `nrs`. Edit them there and commit; a new command file also needs its own
+  `linkAgentFile` line in that step. (Until 2026-10-15 they were
+  a separate repo, proasync-dotfiles, linked in by its `bootstrap.sh`.)
 - proasync-monorepo carries its own `AGENTS.md` (= `CLAUDE.md`) plus
   `docs/agent-setup.md` and `docs/loops.md`.
 
