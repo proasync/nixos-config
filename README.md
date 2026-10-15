@@ -233,6 +233,11 @@ SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input
 - **System packages / services** (all hosts): `modules/common.nix`
 - **Host-specific anything**: `hosts/<hostname>/` (see *Per-host settings* above)
 - **Fonts**: `modules/common.nix` → `fonts.packages`
+- **Default app for a file type** (folders → Thunar, PDF → Chrome, images → imv…): `home/home.nix` →
+  `xdg.mimeApps.defaultApplications`. Set every type you care about: unset ones fall to whichever
+  app happens to claim them (VS Code claims folders). Check with `xdg-mime query default <type>`.
+- **Thunar** comes from `programs.thunar` (+ gvfs, tumbler) in `modules/common.nix`, not
+  `home.packages`, and its daemon starts with the session so "Show in folder" is instant.
 - **New dotfile dir**: put it in `home/dotfiles/` and add a `mkOutOfStoreSymlink` entry in `home/home.nix`
 - **New wallpaper**: drop it in `home/dotfiles/wallpapers/` and commit — `.gitattributes` routes it
   through Git LFS. Wallpapers committed before 2026-09-25 are still plain blobs (history wasn't

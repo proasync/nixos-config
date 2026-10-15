@@ -88,6 +88,28 @@
   # ── USB auto-mount ───────────────────────────────────
   services.udisks2.enable = true;
 
+  # ── File manager (Thunar) ──────────────────────────────
+  # Installed the NixOS way instead of as plain user packages: the module
+  # registers Thunar's D-Bus/systemd units and enables xfconf (its settings
+  # store); gvfs = trash and network/phone mounts, tumbler = thumbnails. As user
+  # packages, a cold Thunar took ~26 s to answer, so Chrome's "Show in folder"
+  # (portal → FileManager1) timed out at 25 s and fell back to the folder
+  # handler (2026-10-15).
+  programs.thunar = {
+    enable = true;
+    plugins = with pkgs; [ thunar-archive-plugin thunar-volman ];
+  };
+  services.gvfs.enable = true;
+  services.tumbler.enable = true;
+  # Start Thunar's daemon with the desktop session, so "Show in folder" never
+  # waits for a cold start. partOf stops it at logout: the next login may be a
+  # different WM/display and must get a fresh one.
+  systemd.user.services.thunar = {
+    wantedBy = [ "graphical-session.target" ];
+    partOf = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+  };
+
   # ── Audio (PipeWire) ──────────────────────────────────
   # Handles Bluetooth audio (A2DP hi-fi + HSP/HFP mic auto-switch) out of the box.
   services.pipewire = {

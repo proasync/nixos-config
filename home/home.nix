@@ -83,13 +83,8 @@ in
     socat
     openssl
 
-    # File management
-    thunar
-    thunar-archive-plugin
-    thunar-volman           # volume manager plugin for Thunar
-    tumbler               # thumbnail service for Thunar
+    # File management (Thunar + plugins, gvfs, tumbler: modules/common.nix)
     udiskie               # auto-mount daemon
-    gvfs                  # virtual filesystem (Thunar mount support)
     xarchiver
     unzip
     zip
@@ -519,6 +514,9 @@ in
       "image/tiff"    = "imv-dir.desktop";
       "image/svg+xml" = "imv-dir.desktop";
       "image/avif"    = "imv-dir.desktop";
+      # Folders: without this, code.desktop (which also claims inode/directory)
+      # won — Chrome's "Show in folder" fallback opened VS Code (2026-10-15).
+      "inode/directory" = "thunar.desktop";
       "image/heic"    = "imv-dir.desktop";
       # Video
       "video/mp4"                 = "mpv.desktop";
