@@ -50,7 +50,7 @@ in
     picom
     unclutter
     dmenu
-    rofi
+    (callPackage ./packages/rofi.nix { })   # launcher + power menu in every session; patched, see there
     feh            # X11 wallpaper (nitrogen was removed from nixpkgs)
     xwallpaper     # X11 wallpaper per monitor: waypaper's backend in Awesome, and its login restore
     numlockx
