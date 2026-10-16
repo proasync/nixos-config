@@ -18,7 +18,8 @@ Flake-based NixOS + Home Manager configuration for three machines:
   plus SomeWM on trial (Wayland, runs Awesome's own config: see *SomeWM (trial)* below).
   Hyprland is retired but its config is kept: see *Hyprland (retired)* below.
 - **Theme:** Catppuccin Mocha Mauve — SDDM, Awesome, niri, Waybar, Rofi, Alacritty, Mako, GTK, and the lock
-  screens (swaylock on Wayland, i3lock-color on X11)
+  screens (swaylock on Wayland, i3lock-color on X11). Dark everywhere: `gtk.colorScheme` also sets
+  the desktop-wide color-scheme, which Wayland apps (Signal, WhatsApp) get through the portal
 - **Wallpaper:** picked in `waypaper`, per monitor or for all of them. Its wrapper
   (`home/packages/waypaper.nix`) sets it with xwallpaper on X11 and through the `awww` daemon
   on Wayland; at login `awesome/scripts/wallpaper-restore.sh` (X11) and

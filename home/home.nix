@@ -307,12 +307,11 @@ in
       name = "Bibata-Modern-Ice";
       size = 24;
     };
-    gtk3.extraConfig = {
-      gtk-application-prefer-dark-theme = true;
-    };
-    gtk4.extraConfig = {
-      gtk-application-prefer-dark-theme = true;
-    };
+    # Dark for every GTK version (gtk-application-prefer-dark-theme), and the
+    # desktop-wide color-scheme = prefer-dark, which the portal hands to apps
+    # under Wayland: Electron apps (Signal, WhatsApp, …) under SomeWM and niri
+    # were light without it. Under X11 they go by the GTK theme instead.
+    colorScheme = "dark";
     # HM 26.05 stopped applying theme.name to GTK4 by default; keep the old look.
     gtk4.theme = config.gtk.theme;
   };
