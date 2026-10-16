@@ -7,7 +7,7 @@ Flake-based NixOS + Home Manager configuration for three machines:
 | Hardware | i5-12400F + RX 7600 | ASUS Zenbook S 13 UX5304MA (Core Ultra 7 155U) | HP, Ryzen 5 5600G + RX 460/560D, 32 GB |
 | GPU | AMD (`amdgpu`) | Intel Arc iGPU (`modesetting` + iHD VA-API) | AMD (`amdgpu`) |
 | Display | standard DPI | 2880x1800 HiDPI (SDDM 2×, Xft.dpi 160, niri 1.67×) | 3 × 1920x1080, standard DPI |
-| Host-only quirks | — | USB-root autosuspend guard, Intel ISH blacklist, i915 in initrd + `xe` blacklisted, iwlwifi force-load, thermald, power-profiles-daemon, lid handling, Bluetooth | Bluetooth; Windows on its own NVMe (boot via F9) |
+| Host-only quirks | — | USB-root autosuspend guard, Intel ISH blacklist, i915 in initrd + `xe` blacklisted, iwlwifi force-load, thermald, power-profiles-daemon, lid handling, Bluetooth | Bluetooth; Windows on its own NVMe (boot via F9); the office Brother printer as a permanent CUPS queue (its PPD in `hosts/work-desktop/`) |
 | Remote access (Tailscale + tailnet-only SSH) | — | yes | yes |
 | Phone dev ports on LAN (8081, 4300) | yes | yes | — (phone uses Tailscale) |
 | SDDM theme | catppuccin-sddm-corners (Mononoki, larger text), penguin avatar | same + nixos-lightdark2 wallpaper, greeter at 2× on the panel | same as home-desktop |

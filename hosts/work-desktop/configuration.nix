@@ -27,6 +27,36 @@
   };
   services.blueman.enable = true;
 
+  # ── Printer ────────────────────────────────────────────
+  # The office Brother DCP-L3550CDW, as on Arch: driverless (IPP Everywhere) at
+  # its fixed address, A4 and grayscale by default, the default printer.
+  # cups-browsed also finds it by itself, but only as a temporary queue, which
+  # Chrome's print dialog does not list. The PPD is the one CUPS generated from
+  # the printer on Arch, shipped here so that setting up the queue needs no
+  # network: model "everywhere" asks the printer at every boot, and fails while
+  # it is off. (The Zebra GK420d label printer is not set up yet: on USB, and
+  # on Arch a queue with device usb://Zebra%20Technologies/ZTC%20GK420d.)
+  services.printing.drivers = [
+    (pkgs.runCommand "brother-dcpl3550cdw-ppd" { } ''
+      install -Dm444 ${./brother-dcpl3550cdw.ppd} $out/share/cups/model/brother-dcpl3550cdw.ppd
+    '')
+  ];
+  hardware.printers = {
+    ensurePrinters = [{
+      name = "Brother_DCP-L3550CDW";
+      description = "Brother DCP-L3550CDW";
+      location = "Office";
+      deviceUri = "ipp://192.168.1.100/ipp/print";
+      model = "brother-dcpl3550cdw.ppd";
+      ppdOptions = {
+        PageSize = "A4";
+        ColorModel = "Gray";
+        Duplex = "None";
+      };
+    }];
+    ensureDefaultPrinter = "Brother_DCP-L3550CDW";
+  };
+
   # The release of the installer it is set up from (26.05). Never change it
   # after install: it pins stateful defaults such as database data layouts.
   system.stateVersion = "26.05";
