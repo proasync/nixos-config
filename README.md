@@ -19,10 +19,13 @@ Flake-based NixOS + Home Manager configuration for three machines:
   Hyprland is retired but its config is kept: see *Hyprland (retired)* below.
 - **Theme:** Catppuccin Mocha Mauve — SDDM, Awesome, niri, Waybar, Rofi, Alacritty, Mako, GTK, and the lock
   screens (swaylock on Wayland, i3lock-color on X11)
-- **Wallpaper:** picked in `waypaper`, one choice for all sessions. Its wrapper
-  (`home/packages/waypaper.nix`) sets it with feh on X11 and through the `awww` daemon on
-  Wayland; at login `awesome/scripts/wallpaper-restore.sh` (X11) and
-  `wm-scripts/wallpaper-restore.sh` (Wayland) re-apply it
+- **Wallpaper:** picked in `waypaper`, per monitor or for all of them. Its wrapper
+  (`home/packages/waypaper.nix`) sets it with xwallpaper on X11 and through the `awww` daemon
+  on Wayland; at login `awesome/scripts/wallpaper-restore.sh` (X11) and
+  `wm-scripts/wallpaper-restore.sh` (Wayland) re-apply it. The sessions share one waypaper
+  config: an "All" pick shows in all of them, a per-monitor pick only in the session it was
+  made in (X11 and Wayland name the monitors differently: `DisplayPort-0` vs `DP-1`), and a
+  new "All" pick replaces the per-monitor ones
 
 ## Repo structure
 
@@ -109,7 +112,7 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | `nrt` / `nrd` | rebuild test / dry-build |
 | `nrb` | rebuild for next boot, then reboot — when `nrs` refuses to switch live |
 | `niri validate` | check niri's config after editing it (niri reloads it on save; a broken file keeps the old one) |
-| `waypaper` | pick the wallpaper; Awesome, SomeWM and niri share it, and every login re-applies it |
+| `waypaper` | pick the wallpaper, per monitor (dropdown at the bottom) or for all; every login re-applies it |
 | `Super + W` | popup listing the keybindings (niri's sheet in niri; Hyprland's in Hyprland) |
 | `Super + X`, then `k` | lock the screen: i3lock-color on X11 (via xss-lock), swaylock on Wayland. Never automatic in Awesome or SomeWM; screens just turn off after 10 min idle |
 | `Super + Shift + T` | show/hide the focused window's titlebar (Awesome, SomeWM; off by default) |

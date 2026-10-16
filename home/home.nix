@@ -52,6 +52,7 @@ in
     dmenu
     rofi
     feh            # X11 wallpaper (nitrogen was removed from nixpkgs)
+    xwallpaper     # X11 wallpaper per monitor: waypaper's backend in Awesome, and its login restore
     numlockx
     flameshot
     xrandr
@@ -105,7 +106,7 @@ in
     spotify
     cava
     mpv
-    # Wallpaper picker for every session: feh on X11, awww on Wayland
+    # Wallpaper picker for every session, per monitor: xwallpaper on X11, awww on Wayland
     (callPackage ./packages/waypaper.nix { })
     libreoffice
 
