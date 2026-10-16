@@ -19,8 +19,10 @@ Flake-based NixOS + Home Manager configuration for three machines:
   Hyprland is retired but its config is kept: see *Hyprland (retired)* below.
 - **Theme:** Catppuccin Mocha Mauve — SDDM, Awesome, niri, Waybar, Rofi, Alacritty, Mako, GTK, and the lock
   screens (swaylock on Wayland, i3lock-color on X11)
-- **Wallpaper:** feh on X11 (`awesome/scripts/wallpaper-restore.sh` replays `~/.fehbg`); on niri, `waypaper`
-  picks it and `wm-scripts/wallpaper-restore.sh` re-applies it at login through the `awww` daemon
+- **Wallpaper:** picked in `waypaper`, one choice for all sessions. Its wrapper
+  (`home/packages/waypaper.nix`) sets it with feh on X11 and through the `awww` daemon on
+  Wayland; at login `awesome/scripts/wallpaper-restore.sh` (X11) and
+  `wm-scripts/wallpaper-restore.sh` (Wayland) re-apply it
 
 ## Repo structure
 
@@ -106,7 +108,7 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | `nrt` / `nrd` | rebuild test / dry-build |
 | `nrb` | rebuild for next boot, then reboot — when `nrs` refuses to switch live |
 | `niri validate` | check niri's config after editing it (niri reloads it on save; a broken file keeps the old one) |
-| `waypaper` | pick the niri wallpaper; it is re-applied at every niri login |
+| `waypaper` | pick the wallpaper; Awesome, SomeWM and niri share it, and every login re-applies it |
 | `Super + W` | popup listing the keybindings (niri's sheet in niri; Hyprland's in Hyprland) |
 | `Super + X`, then `k` | lock the screen: i3lock-color on X11 (via xss-lock), swaylock on Wayland. Never automatic in Awesome or SomeWM; screens just turn off after 10 min idle |
 | `Super + Shift + T` | show/hide the focused window's titlebar (Awesome, SomeWM; off by default) |

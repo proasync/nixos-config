@@ -120,10 +120,11 @@ cause.
    suffix. Then `sudo tailscale up`. Keys allowed to SSH in are listed in
    `modules/remote-access.nix`.
 6. **Monitors** (several screens): X places them in its own order. Arrange them
-   with `arandr`. `work-desktop` has no `configs/work-desktop/` in Awesome's config
-   yet to save the layout (see *Per-host settings* in the README).
+   with `arandr`, then save the layout as an `xrandr` command in Awesome's
+   `configs/<host>/autostart.lua`, as `configs/work-desktop/autostart.lua` does
+   (see *Per-host settings* in the README).
 7. **Bluetooth:** pair the headphones again in blueman (tray icon).
-8. **Wallpaper:** `waypaper` on Wayland, or `feh --bg-scale <img> [<img> …]` on X11.
+8. **Wallpaper:** pick one in `waypaper` (any session; they share it).
 9. **Apps:** log in to Chrome (sync brings passwords back), VS Code, Signal,
    WhatsApp, Teams, Spotify, Obsidian. VS Code settings and extensions are not in
    this repo (see the end of [updating.md](updating.md)).

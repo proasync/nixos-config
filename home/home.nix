@@ -105,7 +105,8 @@ in
     spotify
     cava
     mpv
-    waypaper
+    # Wallpaper picker for every session: feh on X11, awww on Wayland
+    (callPackage ./packages/waypaper.nix { })
     libreoffice
 
     # Terminal rice

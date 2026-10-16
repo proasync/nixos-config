@@ -1,6 +1,10 @@
 local awful = require("awful")
 local gears = require("gears")
 
+-- A host's autostart.lua may load this file with its X11 monitor layout (an
+-- xrandr command) as argument, as configs/work-desktop/ does.
+local x11_screen_layout = ...
+
 -- Function to run commands once
 local function run_once(cmd)
   awful.spawn.with_shell("pgrep -u $USER -fx '" .. cmd .. "' > /dev/null || (" .. cmd .. ")")
@@ -35,4 +39,12 @@ local startup_apps = is_somewm and {
 
 for _, app in ipairs(startup_apps) do
   run_once(app)
+end
+
+-- X11: the monitor layout, then the wallpaper picked in waypaper, in that order:
+-- feh places it by the screen positions of the moment. SomeWM restores its
+-- wallpaper in rc.lua.
+if not is_somewm then
+  awful.spawn.with_shell((x11_screen_layout and x11_screen_layout .. "; " or "")
+    .. "~/.config/awesome/scripts/wallpaper-restore.sh")
 end
