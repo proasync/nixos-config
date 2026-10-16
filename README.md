@@ -102,7 +102,11 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 - Awesome does the same at runtime: `home/dotfiles/awesome/configs/<hostname>/`, falling back
   to `configs/default/`. Under SomeWM it also loads `somewm.lua` from there (Wayland output
   scale and position; the laptop's mirrors its niri `monitor.kdl`). Don't copy the `proasync-laptop` folder to a desktop; it runs the
-  laptop's xrandr/DPI setup.
+  laptop's xrandr/DPI setup. The fallback is per file: a host's `autostart.lua` or `rules.lua`
+  can load the default one and add to it, as work-desktop's do (Chrome, Teams, Signal,
+  WhatsApp and Spotify on the HDMI monitor, tags 1, 2, 7, 8, 9). To place things on a monitor, find it by
+  output name with `require("outputs")`: Awesome and SomeWM number the screens differently,
+  and name the outputs differently too (`HDMI-A-0` under X11, `HDMI-A-1` under Wayland).
 
 ## Day-to-day
 
@@ -166,7 +170,8 @@ SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input
 - **DPI.** SomeWM also reads `~/.Xresources`, so `rc.lua` pins its Lua-side DPI to 96 there.
   The laptop's 1.67× comes from the output scale in `configs/proasync-laptop/somewm.lua`.
 - **Monitor layout.** `configs/<host>/somewm.lua` is the saved layout: it runs at startup and
-  on every output added/removed (the laptop's handles docked/undocked). The Lua `output`
+  on every output added/removed (the laptop's handles docked/undocked; work-desktop's keeps
+  its three monitors in the same order as under X11). The Lua `output`
   object takes `enabled`, `position`, `scale`, `transform`, `mode` and `adaptive_sync`. To
   find a layout, use `wdisplays` (or `wlr-randr`): SomeWM implements wlr-output-management,
   so they apply live, but save nothing. nwg-displays does not run here (it wants a niri,

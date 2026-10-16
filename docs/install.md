@@ -121,7 +121,9 @@ cause.
 6. **Monitors** (several screens): X places them in its own order. Arrange them
    with `arandr`, then save the layout as an `xrandr` command in Awesome's
    `configs/<host>/autostart.lua`, as `configs/work-desktop/autostart.lua` does
-   (see *Per-host settings* in the README).
+   (see *Per-host settings* in the README). Under SomeWM, arrange them with
+   `wdisplays` and copy the positions into `configs/<host>/somewm.lua` (work-desktop's
+   is the example); the names differ there (`DP-1`, not `DisplayPort-0`).
 7. **Bluetooth:** pair the headphones again in blueman (tray icon).
 8. **Wallpaper:** pick one in `waypaper` (any session; they share it).
 9. **Apps:** log in to Chrome (sync brings passwords back), VS Code, Signal,

@@ -1,18 +1,25 @@
 local awful = require("awful")
 local gears = require("gears")
 
--- A host's autostart.lua may load this file with its X11 monitor layout (an
--- xrandr command) as argument, as configs/work-desktop/ does.
-local x11_screen_layout = ...
+-- A host's autostart.lua may load this file with options, as
+-- configs/work-desktop/ does:
+--   x11_screen_layout  its X11 monitor layout (an xrandr command)
+--   chrome_output      the outputs Chrome opens on, by every name the monitor
+--                      goes by (X11 and Wayland differ; see outputs.lua);
+--                      without it, or with none connected, the focused screen
+local opts = ... or {}
+local screen_of = require("outputs")
 
 -- Function to run commands once
 local function run_once(cmd)
   awful.spawn.with_shell("pgrep -u $USER -fx '" .. cmd .. "' > /dev/null || (" .. cmd .. ")")
 end
 
--- Launch Google Chrome on tag "➊" after startup settles
+-- Launch Google Chrome on tag "➊" after startup settles. Focusing its screen
+-- first also places a window that arrives without its startup id.
 gears.timer.start_new(2, function()
-  local s = awful.screen.focused()
+  local s = screen_of((table.unpack or unpack)(opts.chrome_output or {})) or awful.screen.focused()
+  awful.screen.focus(s)
   local tag = s.tags[1]
   awful.spawn("google-chrome-stable --no-default-browser-check", {
     screen = s,
@@ -42,9 +49,10 @@ for _, app in ipairs(startup_apps) do
 end
 
 -- X11: the monitor layout, then the wallpaper picked in waypaper, in that order:
--- feh places it by the screen positions of the moment. SomeWM restores its
--- wallpaper in rc.lua.
+-- the wallpaper is placed by the screen positions of the moment. SomeWM
+-- restores its wallpaper in rc.lua.
 if not is_somewm then
+  local x11_screen_layout = opts.x11_screen_layout
   awful.spawn.with_shell((x11_screen_layout and x11_screen_layout .. "; " or "")
     .. "~/.config/awesome/scripts/wallpaper-restore.sh")
 end
