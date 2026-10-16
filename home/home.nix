@@ -321,6 +321,17 @@ in
     "Xcursor.size" = 24;
   };
 
+  # ── picom: no XDG autostart ────────────────────────────
+  # picom ships an XDG autostart entry, and NixOS's niri module turns on
+  # runXdgAutostartIfNone, which runs such entries in Awesome's X11 session.
+  # Started that way picom finds no config and exits ("Backend not specified"),
+  # leaving a failed app-picom@autostart unit. Awesome's rc.lua starts the real
+  # one with ~/.config/awesome/picom.conf. Hidden=true here shadows the entry.
+  xdg.configFile."autostart/picom.desktop".text = ''
+    [Desktop Entry]
+    Hidden=true
+  '';
+
   # ── Dotfiles (symlinked to repo for live editing) ──────
   # Scripts shared by the Wayland compositors (niri, and Hyprland if it comes
   # back): power menu, lock, Chrome launcher, touchpad toggle.
