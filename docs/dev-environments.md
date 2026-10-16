@@ -71,7 +71,7 @@ per machine.
 so the global version never leaks into repo work as long as direnv is allowed. If a
 repo command complains about the Node version, you're probably outside the direnv shell.
 
-## WordPress (wisdom-woocommerce-plugin)
+## WordPress
 
 MariaDB + Apache/PHP 8.4 (mysqli, gd, imagick, soap, …) run on both hosts via
 `modules/dev-services.nix`; one-time site setup is `scripts/setup-wordpress.sh`,

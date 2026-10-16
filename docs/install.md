@@ -95,9 +95,8 @@ cause.
 
    ```sh
    mkdir -p ~/dev
-   git clone git@github.com:proasync/pagoda-monorepo.git ~/dev/pagoda-monorepo
+   git clone git@github.com:pagodalogistics/wisdom-monorepo.git ~/dev/pagoda-monorepo
    git clone git@github.com:proasync/proasync-monorepo.git ~/dev/proasync-monorepo
-   git clone git@github.com:proasync/wisdom-woocommerce-plugin.git ~/dev/wisdom-woocommerce-plugin
    ```
 4. **Commit the hardware config** the script generated (it is already staged), so
    GitHub and the other machines have it, and fetch the newer wallpapers, which the
