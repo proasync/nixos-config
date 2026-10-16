@@ -503,6 +503,8 @@ in
       "x-scheme-handler/https" = "google-chrome.desktop";
       "text/html"              = "google-chrome.desktop";
       "application/xhtml+xml"  = "google-chrome.desktop";
+      # PDF in Chrome too; without an entry the first app claiming it won (Brave)
+      "application/pdf"        = "google-chrome.desktop";
       "image/jpeg"    = "imv-dir.desktop";
       "image/png"     = "imv-dir.desktop";
       "image/gif"     = "imv-dir.desktop";
