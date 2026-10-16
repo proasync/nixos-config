@@ -66,7 +66,8 @@ nixos-config/
 │       ├── waybar/  rofi/  mako/    # bar (waybar/ = Hyprland's; niri's is niri/waybar/), launcher, notifications
 │       ├── alacritty/  btop/  cava/ # terminal & TUI rice
 │       ├── fastfetch/               # banner every new shell prints; logo NixOS2, 32 cols so lines don't wrap
-│       ├── claude/                  # Claude Code settings
+│       ├── claude/                  # Claude Code settings; CLAUDE.md = global agent instructions
+│       │                            #   (~/.claude/CLAUDE.md and ~/.codex/AGENTS.md link to it)
 │       └── wallpapers/              # browsable by waypaper; stored via Git LFS (see below)
 └── scripts/
     ├── install.sh             # Install from the NixOS live USB: disk, nixos-install, passwords

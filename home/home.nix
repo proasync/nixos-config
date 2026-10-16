@@ -366,6 +366,21 @@ in
     done
   '';
 
+  # Global agent instructions, one file for both agents: ~/.claude/CLAUDE.md
+  # (Claude Code) and ~/.codex/AGENTS.md (Codex) link straight to the repo's
+  # dotfiles/claude/CLAUDE.md (moved from the retired proasync-dotfiles repo,
+  # 2026-10-14). Direct links, not home.file: no read-only /nix/store hop for an
+  # editor to trip on, and a regular file already there (local edits) is left alone.
+  home.activation.agentInstructions = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    src=/home/proasync/nixos-config/home/dotfiles/claude/CLAUDE.md
+    for dst in "$HOME/.claude/CLAUDE.md" "$HOME/.codex/AGENTS.md"; do
+      if [ -L "$dst" ] || [ ! -e "$dst" ]; then
+        run mkdir -p "$(dirname "$dst")"
+        run ln -sfn "$src" "$dst"
+      fi
+    done
+  '';
+
   # waypaper's config.ini is its own state (last wallpaper), not managed here.
   # swww was renamed to awww (nixpkgs 2026-03, binaries too), so point an old
   # `backend = swww` at awww. Idempotent; a no-op once migrated or if absent.
