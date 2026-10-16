@@ -31,8 +31,9 @@
   };
 
   # Keys allowed to log in as proasync (in addition to ~/.ssh/authorized_keys).
-  # Public keys only — this one is also published at github.com/proasync.keys.
+  # Public keys only — the laptop's is also published at github.com/proasync.keys.
   users.users.proasync.openssh.authorizedKeys.keys = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILA3JqWRlAjdBcHD54sS4jKQcE644orgmHLh0V7fxgif andreas@pagodalog.com"   # proasync-laptop
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE72Q9+NHVn1Y8Xta+a3Bi4WT+uh1J4tBv7KdHki7YKe phone-termius"   # phone (Termius app)
   ];
 }
