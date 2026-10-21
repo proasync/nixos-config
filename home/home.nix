@@ -121,7 +121,7 @@ in
     # repo's release binary inside its nix-shell. See home/packages/pswarm.nix.
     (callPackage ./packages/pswarm.nix { })
     nodejs_22   # general-purpose Node; repos pin their own via shell.nix + direnv
-                # (pagoda → Node 18, proasync → Node 20)
+                # (pagoda → Node 24, proasync → Node 20)
     yarn
     rsync
     jq
@@ -130,6 +130,15 @@ in
     gh
     awscli2
     ngrok
+    # Shopify CLI (`shopify app deploy -c dev`, `shopify app dev -c dev`) for
+    # pagoda's apps/shopify-app. Bundles its own Node; ignore its "npm install -g
+    # @shopify/cli@latest" upgrade hint — global npm installs can't write to the store.
+    # Wrapped so `app dev` uses Nix's cloudflared: unwrapped, the CLI downloads
+    # cloudflared into its own store path and fails with EROFS (read-only file system).
+    (writeShellScriptBin "shopify" ''
+      export SHOPIFY_CLI_CLOUDFLARED_PATH="''${SHOPIFY_CLI_CLOUDFLARED_PATH:-${cloudflared}/bin/cloudflared}"
+      exec ${shopify-cli}/bin/shopify "$@"
+    '')
     # Native node-module build toolchain (bcrypt, zpl-image, better-sqlite3 …
     # need these when prebuilt binaries don't run on NixOS)
     python3

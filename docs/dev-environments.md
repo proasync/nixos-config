@@ -9,7 +9,7 @@ actual dependencies — update this doc when those change.
 | Layer | Provides | Where |
 | --- | --- | --- |
 | Per-repo `shell.nix` + `.envrc` (direnv) | the **pinned Node version** and package manager for that repo | in each monorepo |
-| Home Manager (`home/home.nix`) | fallback Node 22, yarn, native build toolchain, CLI tools (aws, heroku, gh, jq, ngrok, wp-cli), watchman | this repo |
+| Home Manager (`home/home.nix`) | fallback Node 22, yarn, native build toolchain, CLI tools (aws, heroku, gh, jq, ngrok, shopify-cli, wp-cli), watchman | this repo |
 | NixOS (`modules/common.nix`) | nix-ld with Electron/Chromium libs, docker, CUPS printing, firewall ports, direnv is enabled via HM | this repo |
 | NixOS (`modules/dev-services.nix`) | PostgreSQL (`proasync` + `portal` DBs, trust auth), MariaDB (`wordpress`), Apache+PHP | this repo, imported by both hosts |
 
@@ -19,10 +19,7 @@ per machine.
 
 ## pagoda-monorepo (Yarn 1 + Turborepo, "wisdom" platform)
 
-- **Node 18.18** pinned by the repo's own `shell.nix` (engines `>=18.18 <19` for the
-  core apps). Exceptions: `apps/shopify-app` wants Node ≥20.10 and
-  `apps/printing-service` (Electron 33) is happiest on ≥20 — both currently ride on
-  `.yarnrc`'s `--ignore-engines`.
+- **Node 24** pinned by the repo's own `shell.nix` (engines `24.x`, since 2026-10; was 18.18).
 - **Yarn 1.22.19** via corepack (`"packageManager"` field) — the repo shellHook handles it.
 - **PostgreSQL**: `console-api` and `gateway-api` hardcode host `127.0.0.1`, user
   `postgres`, db **`portal`** in their `knexfile.ts`. `modules/dev-services.nix`
@@ -43,6 +40,13 @@ per machine.
   `pkg-config`) is in `home.packages`.
 - **CLI tools used by repo scripts**: `aws`, `heroku`, `jq`, `docker` — all provided
   (docker daemon enabled in common.nix; user is in the `docker` group).
+- **Shopify app (`apps/shopify-app`)**: `shopify` (nixpkgs `shopify-cli`, wrapped to set
+  `SHOPIFY_CLI_CLOUDFLARED_PATH` to nixpkgs' `cloudflared` — unwrapped, `shopify app dev`
+  tries to download cloudflared into the read-only store and fails with EROFS) and `ngrok`
+  from `home.packages`. ngrok's config (authtoken + the `gateway-api` / `shopify-app`
+  tunnels) lives in `~/.config/ngrok/ngrok.yml`, which is not managed by Nix — copy it
+  by hand to a new machine (the 2026-10 USB backup has it). Dev workflow: the repo's
+  `docs/projects/shopify-integration/README.md` → Dev Setup (`yarn dev:shopify-app`).
 - Deploy targets: S3 (awscli) + Heroku. `BROWSER=google-chrome` is exported by the
   repo's `.envrc` and Chrome is installed.
 
