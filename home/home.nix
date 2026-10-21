@@ -95,6 +95,7 @@ in
     teams-for-linux
     whatsapp-electron
     signal-desktop
+    slack       # was a snap on the Arch work-desktop
 
     # Productivity & media
     obsidian
