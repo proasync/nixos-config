@@ -125,6 +125,9 @@ right host. Shared config lives in `modules/` and `home/`; anything host-specifi
 | `Super + C` | drop-down terminal from the top of the screen; same key hides it, and it keeps running (Awesome, SomeWM) |
 | click the layout icon (top right) | dropdown of all layouts, current one highlighted; scroll on the icon cycles (Awesome, SomeWM) |
 | `Super + Shift + H / L` | swap the window with its left/right neighbour (carousel: move the column) |
+| `Super + R` / `Super + X` | rofi launcher / power menu; the same key again closes it. Under SomeWM rofi is an overlay that once stayed open with Escape going to the window behind it, so this is the sure way out; a click on any window also closes it (Awesome, SomeWM) |
+| `Super + , / .` | focus the screen to the left/right, by position, wrapping around (Awesome, SomeWM; not by screen number, which changes when a monitor drops out and returns) |
+| `Super + Shift + , / .` | move the window to the screen to the left/right; focus and pointer follow it, so the same key moves it on |
 | `wdisplays` | arrange monitors on Wayland (SomeWM, niri): arandr's equivalent. Applies live and saves nothing; the WM's own file wins again on hot-plug, so copy a layout you keep into `configs/<host>/somewm.lua` (SomeWM) or let nwg-displays write `monitor.kdl` (niri) |
 | `tv-mirror.sh on` / `off` | laptop → TV mirror on X11/Awesome — see [docs/external-display.md](docs/external-display.md) first |
 | `~/.config/wm-scripts/mirror.sh on` / `off` | laptop → TV mirror on Wayland (SomeWM): `wl-mirror` shows the panel fullscreen on the TV. Under SomeWM a TV is otherwise its own screen at 1080p, right of the panel. See [docs/external-display.md](docs/external-display.md) |

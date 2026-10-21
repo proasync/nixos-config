@@ -323,6 +323,56 @@ kbdcfg.switch = function()
     if beautiful.set_keyboard_layout then beautiful.set_keyboard_layout(t[1]) end
 end
 
+-- Screens by position: left to right (then top to bottom), wrapping around.
+-- Screen numbers follow the order screens were created, and under SomeWM that
+-- changes whenever a monitor drops out and returns (screen-restore.lua), so
+-- "next by number" flipped direction (2026-10-21). Position never does.
+local function screen_beside(s, step)
+    local list = {}
+    for o in screen do list[#list + 1] = o end
+    table.sort(list, function(a, b)
+        if a.geometry.x ~= b.geometry.x then return a.geometry.x < b.geometry.x end
+        return a.geometry.y < b.geometry.y
+    end)
+    for i, o in ipairs(list) do
+        if o == s then return list[(i - 1 + step) % #list + 1] end
+    end
+    return s
+end
+
+-- Move a window to the screen beside it; focus and the pointer go with it, so
+-- the same key moves it on (sloppy focus would hand focus to whatever window is
+-- under the pointer). Delayed: the layout places the window first.
+local function move_beside(c, step)
+    local s = screen_beside(c.screen, step)
+    if s == c.screen then return end
+    c:move_to_screen(s)
+    gears.timer.delayed_call(function()
+        if not c.valid then return end
+        local g = c:geometry()
+        mouse.coords({ x = g.x + g.width / 2, y = g.y + g.height / 2 }, true)
+        client.focus = c
+        c:raise()
+    end)
+end
+
+-- rofi (launcher, power menu) is an overlay on Wayland, not a window. Once one
+-- stayed open under SomeWM with Escape going to the window behind it
+-- (2026-10-21; not reproduced since), so it can always be closed: its key
+-- toggles it, and a click on a window closes it (clientbuttons), as rofi
+-- itself does under X11.
+local function rofi_toggle(cmd)
+    awful.spawn.with_shell("pkill -x rofi || " .. cmd)
+end
+
+local function rofi_open()
+    if not is_somewm or not layer_surface then return false end
+    for _, l in ipairs(layer_surface.get() or {}) do
+        if l.namespace == "rofi" then return true end
+    end
+    return false
+end
+
 -- {{{ Key bindings
 globalkeys = my_table.join(
 
@@ -335,9 +385,9 @@ globalkeys = my_table.join(
     -- X11 needs the laptop panel's big sizes, which SomeWM scales itself
     -- (why two files: ~/.config/rofi/launcher.rasi).
     awful.key({ modkey }, "r", function()
-            awful.spawn("rofi -show drun -theme ~/.config/rofi/" .. (is_somewm and "launcher.rasi" or "launcher-x11.rasi"))
+            rofi_toggle("rofi -show drun -theme ~/.config/rofi/" .. (is_somewm and "launcher.rasi" or "launcher-x11.rasi"))
         end,
-        { description = "rofi launcher", group = "super" }),
+        { description = "rofi launcher (again: close it)", group = "super" }),
     awful.key({ modkey }, "v", function() awful.spawn("pavucontrol") end,
         { description = "pulseaudio control", group = "super" }),
     -- Flameshot in both. X11: its legacy X11 grabber (home.nix sets
@@ -346,8 +396,8 @@ globalkeys = my_table.join(
     -- configs/default/rules.lua.
     awful.key({ modkey }, "p", function() awful.spawn("flameshot gui") end,
         { description = "screenshot (flameshot)", group = "super" }),
-    awful.key({ modkey }, "x", function() awful.spawn.with_shell("~/.config/awesome/scripts/powermenu.sh") end,
-        { description = "power menu", group = "hotkeys" }),
+    awful.key({ modkey }, "x", function() rofi_toggle("~/.config/awesome/scripts/powermenu.sh") end,
+        { description = "power menu (again: close it)", group = "hotkeys" }),
     awful.key({ modkey }, "Escape", function()
             if is_somewm then   -- no xkill on Wayland: click a window to kill it
                 mousegrabber.run(function(m)
@@ -521,11 +571,11 @@ globalkeys = my_table.join(
         { description = "reload awesome", group = "awesome" }),
 
     -- Screens
-    -- Screen focus (Super+,/. — matching Hyprland)
-    awful.key({ modkey, }, ",", function() awful.screen.focus_relative(-1) end,
-        { description = "Focus previous screen", group = "screens" }),
-    awful.key({ modkey, }, ".", function() awful.screen.focus_relative(1) end,
-        { description = "Focus next screen", group = "screens" }),
+    -- Screen focus (Super+,/. — matching Hyprland), by position (screen_beside)
+    awful.key({ modkey, }, ",", function() awful.screen.focus(screen_beside(awful.screen.focused(), -1)) end,
+        { description = "focus the screen to the left", group = "screens" }),
+    awful.key({ modkey, }, ".", function() awful.screen.focus(screen_beside(awful.screen.focused(), 1)) end,
+        { description = "focus the screen to the right", group = "screens" }),
     -- super + ... function keys
     awful.key({ modkey }, "F1", function() awful.spawn(browser1) end,
         { description = browser1, group = "function keys" }),
@@ -662,11 +712,11 @@ clientkeys = my_table.join(
     -- The master is the first visible client (awful.client.getmaster, gone in SomeWM 2.x).
     awful.key({ modkey, "Control" }, "Return", function(c) c:swap(awful.client.visible(awful.screen.focused())[1]) end,
         { description = "move to master", group = "client" }),
-    -- Move window to screen (Super+Shift+,/. — matching Hyprland)
-    awful.key({ modkey, "Shift" }, ",", function(c) c:move_to_screen(c.screen.index - 1) end,
-        { description = "move to previous screen", group = "client" }),
-    awful.key({ modkey, "Shift" }, ".", function(c) c:move_to_screen(c.screen.index + 1) end,
-        { description = "move to next screen", group = "client" })
+    -- Move window to screen (Super+Shift+,/. — matching Hyprland), by position
+    awful.key({ modkey, "Shift" }, ",", function(c) move_beside(c, -1) end,
+        { description = "move to the screen to the left", group = "client" }),
+    awful.key({ modkey, "Shift" }, ".", function(c) move_beside(c, 1) end,
+        { description = "move to the screen to the right", group = "client" })
 )
 
 -- Bind all key numbers to tags.
@@ -730,6 +780,7 @@ end
 
 clientbuttons = gears.table.join(
     awful.button({}, 1, function(c)
+        if rofi_open() then awful.spawn({ "pkill", "-x", "rofi" }, false) end
         c:emit_signal("request::activate", "mouse_click", { raise = true })
     end),
     awful.button({ modkey }, 1, function(c)
