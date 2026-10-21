@@ -124,6 +124,20 @@ theme.titlebar_maximized_button_normal_inactive = theme.dir .. "/icons/titlebar/
 
 local markup = lain.util.markup
 
+-- The first n characters of a UTF-8 string (Awesome's Lua 5.2 has no utf8
+-- library): counts the bytes that start a character, not continuation bytes.
+local function cut_chars(s, n)
+    local count = 0
+    for i = 1, #s do
+        local b = s:byte(i)
+        if b < 0x80 or b >= 0xC0 then
+            count = count + 1
+            if count > n then return s:sub(1, i - 1) end
+        end
+    end
+    return s
+end
+
 -- SomeWM 2.x draws widgets through its own renderer, Clay (wibox.clay, which
 -- SomeWM 1.4 and Awesome 4.3 do not have). The few things that differ there
 -- check this.
@@ -352,6 +366,15 @@ local arrl_ld = arrow_left("alpha", colors.surface0)
 
 -- cfg comes from rc.lua: terminal, tagnames, taglist_buttons, tasklist_buttons
 -- (they used to be passed in awful.util, which SomeWM 2.x removed).
+-- The now-playing widget is the one widget made per screen (below), with its
+-- own 2 s timer. Under SomeWM a monitor that drops out takes its screen with
+-- it, and the timer kept running for the dead screen: every return of the
+-- monitor added one, and after a few days of screens sleeping SomeWM ran ~66,
+-- starting ~33 playerctl a second and slowing everything (2026-10-21).
+screen.connect_signal("removed", function(s)
+    if s.nowplaying_timer then s.nowplaying_timer:stop() end
+end)
+
 function theme.at_screen_connect(s, cfg)
     -- Quake application
     -- Drop-down terminal (Super+C, rc.lua). lain finds its window by instance
@@ -479,16 +502,20 @@ function theme.at_screen_connect(s, cfg)
         },
     }
 
-    -- Spotify / MPRIS now-playing widget (playerctl)
-    s.nowplaying = awful.widget.watch(
-        { "sh", "-c", "playerctl metadata --format '{{artist}} - {{title}}' 2>/dev/null | head -c 60" },
+    -- Spotify / MPRIS now-playing widget (playerctl). The text goes into Pango
+    -- markup, so it is escaped: a title with "&" made every update an error
+    -- (2026-10-19). It is cut at 60 characters, not bytes: a byte cut could split
+    -- an å or é and break the markup too.
+    s.nowplaying, s.nowplaying_timer = awful.widget.watch(
+        { "playerctl", "metadata", "--format", "{{artist}} - {{title}}" },
         2,
         function(widget, stdout)
             local text = stdout:gsub("\n", "")
             if text == "" then
                 widget:set_markup("")
             else
-                widget:set_markup(markup.font(theme.font, markup(colors.mauve, " 󰎈 " .. text .. " ")))
+                widget:set_markup(markup.font(theme.font, markup(colors.mauve,
+                    " 󰎈 " .. gears.string.xml_escape(cut_chars(text, 60)) .. " ")))
             end
         end
     )

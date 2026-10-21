@@ -16,8 +16,13 @@ local function run_once(cmd)
 end
 
 -- Launch Google Chrome on tag "➊" after startup settles. Focusing its screen
--- first also places a window that arrives without its startup id.
+-- first also places a window that arrives without its startup id. Not when a
+-- Chrome window is already open: Awesome's restart and SomeWM's hot reload
+-- (somewm-client reload) run this file again, with the windows still there.
 gears.timer.start_new(2, function()
+  for _, c in ipairs(client.get()) do
+    if (c.class or ""):lower() == "google-chrome" then return false end
+  end
   local s = screen_of((table.unpack or unpack)(opts.chrome_output or {})) or awful.screen.focused()
   awful.screen.focus(s)
   local tag = s.tags[1]

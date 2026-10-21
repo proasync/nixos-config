@@ -3,7 +3,7 @@
 -- preferred 60 Hz and scale 1, as arranged in wdisplays on 2026-10-16. The
 -- same order as under X11 (autostart.lua here), where the outputs are named
 -- DVI-D-0, DisplayPort-0 and HDMI-A-0. wdisplays can change it live, until the
--- next plug or unplug runs arrange() again.
+-- next plug, unplug or output switched back on runs arrange() again.
 
 local gears = require("gears")
 
@@ -23,3 +23,6 @@ arrange()
 output.connect_signal("added", arrange)
 -- During "removed" the output may still be listed; look again once it is gone.
 output.connect_signal("removed", function() gears.timer.delayed_call(arrange) end)
+-- An output switched off and on again (wdisplays, wlr-randr) is not added anew,
+-- only gets a screen again, which wlroots placed at the right end (x = 5760).
+screen.connect_signal("added", function() gears.timer.delayed_call(arrange) end)

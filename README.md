@@ -179,6 +179,18 @@ SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input
   so they apply live, but save nothing. nwg-displays does not run here (it wants a niri,
   sway or Hyprland socket). The default `somewm.lua` does nothing, so on a desktop without
   its own file SomeWM places the outputs itself at every login.
+- **A monitor that drops out** (DisplayPort/HDMI monitors disconnect in deep standby, e.g.
+  over a weekend) is removed on Wayland, and SomeWM moves its windows to another screen;
+  X11 keeps the layout, so Awesome never did this. Here they drop out whenever they sleep,
+  several times a day. `screen-restore.lua` notes every window's monitor and tag while all
+  monitors are there, and moves them back once all have returned (SomeWM's own save of a
+  vanishing screen's tags is never restored in 1.4, and sometimes held no windows). Each
+  removal and return is logged: `journalctl --user -t somewm-screens`. Per-screen widget
+  timers must stop with their screen (theme.lua's now-playing does): one that kept running
+  piled up to ~66 over a few days of sleeps and made everything slow (2026-10-21).
+- **Reload without losing windows:** `somewm-client reload` rebuilds SomeWM's Lua side from
+  `rc.lua` (validated first) and keeps every window on its tag; the autostart skips Chrome
+  when a Chrome window is open. (`somewm-client restart` would end the session.)
 - **Check a change** with `somewm --check ~/.config/awesome/rc.lua` and `awesome -k`.
   Electron apps started from a VS Code terminal inherit `ELECTRON_RUN_AS_NODE=1` and fail
   with "Cannot find module 'electron'"; unset it when testing from there.

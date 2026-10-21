@@ -847,7 +847,10 @@ end
 
 load_config("rules.lua")
 load_config("autostart.lua")
-if is_somewm then load_config("somewm.lua") end   -- Wayland output layout
+if is_somewm then
+    load_config("somewm.lua")    -- Wayland output layout
+    require("screen-restore")    -- windows back to a monitor that returns (screen-restore.lua)
+end
 
 -- Autostart applications
 
