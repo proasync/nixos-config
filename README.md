@@ -10,7 +10,7 @@ Flake-based NixOS + Home Manager configuration for three machines:
 | Host-only quirks | — | USB-root autosuspend guard, Intel ISH blacklist, i915 in initrd + `xe` blacklisted, iwlwifi force-load, thermald, power-profiles-daemon, lid handling, Bluetooth | Bluetooth; Windows on its own NVMe (boot via F9); the office Brother printer as a permanent CUPS queue (its PPD in `hosts/work-desktop/`) |
 | Remote access (Tailscale + tailnet-only SSH) | — | yes | yes |
 | Phone dev ports on LAN (8081, 4300) | yes | yes | — (phone uses Tailscale) |
-| SDDM theme | catppuccin-sddm-corners (Mononoki, larger text), penguin avatar | same + nixos-lightdark2 wallpaper, greeter at 2× on the panel | same as home-desktop |
+| SDDM theme | catppuccin-sddm-corners (Mononoki, larger text), penguin avatar | same + nixos-lightdark2 wallpaper, greeter at 2× on the panel | same + skull-hacking-time wallpaper |
 | Dev services | MariaDB, Apache+PHP, PostgreSQL | same | same |
 | Status | | | **not installed yet**: hardware config is a placeholder until `scripts/install.sh` runs ([docs/install.md](docs/install.md)) |
 

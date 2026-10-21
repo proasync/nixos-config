@@ -57,6 +57,10 @@
     ensureDefaultPrinter = "Brother_DCP-L3550CDW";
   };
 
+  # SDDM wallpaper (modules/sddm-theme.nix): "skull hacking time", a copy of
+  # ~/new-wallpapers/skull-hacking-time-4k-rh.jpg (3840x2160).
+  proasync.sddmBackground = ./sddm-background.jpg;
+
   # The release of the installer it is set up from (26.05). Never change it
   # after install: it pins stateful defaults such as database data layouts.
   system.stateVersion = "26.05";
