@@ -4,6 +4,12 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+    # pSwarm, Andreas's agent-coding desktop app, packaged by its own repo (the checkout's
+    # develop branch; update = commit there, `nix flake update pswarm` here, `nrs`).
+    pswarm = {
+      url = "git+file:///home/proasync/dev/proasync-monorepo?ref=develop";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -39,6 +45,7 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = { inherit inputs; }; # home.nix takes pSwarm from inputs
           home-manager.users.proasync.imports =
             [ ./home/home.nix ]
             ++ lib.optional (builtins.pathExists ./hosts/${name}/home.nix)

@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=pSwarm
-Comment=Agent-coding cockpit: Claude Code sessions in parallel git worktrees
-Exec=pswarm
-Icon=/home/proasync/dev/proasync-monorepo/apps/pswarm-desktop/src-tauri/icons/128x128.png
-Terminal=false
-Categories=Development;
-StartupWMClass=pswarm

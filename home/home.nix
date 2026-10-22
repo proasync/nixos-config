@@ -1,4 +1,4 @@
-{ config, pkgs, lib, osConfig, ... }:
+{ config, pkgs, lib, osConfig, inputs, ... }:
 
 let
   # Shared by every host. Anything host-specific goes in hosts/<host>/home.nix
@@ -118,9 +118,9 @@ in
     # sessions. Built from source (not in nixpkgs). Provides `cs`. Needs tmux
     # (enabled below) + gh (present). See home/packages/claude-squad.nix.
     (callPackage ./packages/claude-squad.nix { })
-    # pSwarm desktop app launcher (proasync-monorepo/apps/pswarm-desktop): runs the
-    # repo's release binary inside its nix-shell. See home/packages/pswarm.nix.
-    (callPackage ./packages/pswarm.nix { })
+    # pSwarm desktop app (proasync-monorepo/apps/pswarm-desktop), the Nix package from its
+    # repo's flake: the `pswarm` command, the app-menu entry and the icon come with it.
+    inputs.pswarm.packages.${pkgs.system}.pswarm
     nodejs_22   # general-purpose Node; repos pin their own via shell.nix + direnv
                 # (pagoda → Node 24, proasync → Node 20)
     yarn
@@ -491,8 +491,7 @@ in
   };
 
   # Desktop entries
-  home.file.".local/share/applications/pswarm.desktop".source =
-    ./applications/pswarm.desktop;
+  # (pswarm.desktop comes with the pSwarm package since 2026-10-22.)
   home.file.".local/share/applications/imv-dir.desktop".source =
     ./applications/imv-dir.desktop;
   home.file.".local/share/applications/cava.desktop".source =

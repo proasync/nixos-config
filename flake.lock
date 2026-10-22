@@ -36,10 +36,32 @@
         "type": "github"
       }
     },
+    "pswarm": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792676745,
+        "narHash": "sha256-J4b/kHdM6XhlpiWunb+sDf/qMDNq0lYXozk0Dwhe8VM=",
+        "ref": "develop",
+        "rev": "1a89b105bbceec4520fdcee68ad46d6aa64e43d5",
+        "revCount": 178,
+        "type": "git",
+        "url": "file:///home/proasync/dev/proasync-monorepo"
+      },
+      "original": {
+        "ref": "develop",
+        "type": "git",
+        "url": "file:///home/proasync/dev/proasync-monorepo"
+      }
+    },
     "root": {
       "inputs": {
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
+        "pswarm": "pswarm",
         "somewm": "somewm"
       }
     },
