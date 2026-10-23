@@ -33,6 +33,9 @@ so everything changed at once. Nix caught the config-level breakage at build tim
    from an extra `nixpkgs-unstable` input. 26.11 is due around end of November 2026.
 3. **Do it on a branch, on one machine first**, and only merge/push after a
    reboot into the new system worked. Other hosts follow with `git pull` + rebuild.
+   First also `git -C ~/dev/proasync-monorepo pull` (on `develop`): the `pswarm` flake
+   input reads that local checkout, so a rebuild fails if it lacks the commit
+   `flake.lock` pins (see docs/install.md, open issue).
 
 ## Procedure
 

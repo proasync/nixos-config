@@ -41,6 +41,14 @@ moving `work-desktop` off Arch; the same steps work for any host in `flake.nix`.
 
 ## Install day
 
+> **Open issue (2026-10-23): the `pswarm` flake input.** Since 2026-10-22 `flake.nix`
+> takes pSwarm from `git+file:///home/proasync/dev/proasync-monorepo` (a local checkout,
+> because the monorepo is private and `sudo nixos-rebuild` evaluates as root, without
+> your GitHub key). The live USB has no such checkout, so `install.sh` will fail when it
+> evaluates the flake. Untested; decide how to handle it before the next install (e.g.
+> clone the monorepo to that path on the live system first, or make the input
+> optional).
+
 1. Plug in the stick and the network cable, power on, open the boot menu (**F9** on
    HP; often F8, F11 or F12 elsewhere) and pick the stick's entry starting with
    **UEFI**. Secure Boot must be off in the firmware (already off on `work-desktop`); the
@@ -98,6 +106,10 @@ cause.
    git clone git@github.com:pagodalogistics/wisdom-monorepo.git ~/dev/pagoda-monorepo
    git clone git@github.com:proasync/proasync-monorepo.git ~/dev/proasync-monorepo
    ```
+
+   Do this before the first `nrs`: the `pswarm` flake input reads
+   `~/dev/proasync-monorepo` (branch `develop`, at least the commit `flake.lock`
+   pins), and `nrs` fails without it.
 4. **Commit the hardware config** the script generated (it is already staged), so
    GitHub and the other machines have it, and fetch the newer wallpapers, which the
    live USB left as small Git LFS placeholders:
