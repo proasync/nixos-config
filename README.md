@@ -7,7 +7,7 @@ Flake-based NixOS + Home Manager configuration for three machines:
 | Hardware | i5-12400F + RX 7600 | ASUS Zenbook S 13 UX5304MA (Core Ultra 7 155U) | HP, Ryzen 5 5600G + RX 460/560D, 32 GB |
 | GPU | AMD (`amdgpu`) | Intel Arc iGPU (`modesetting` + iHD VA-API) | AMD (`amdgpu`) |
 | Display | standard DPI | 2880x1800 HiDPI (SDDM 2×, Xft.dpi 160, niri 1.67×) | 3 × 1920x1080, standard DPI |
-| Host-only quirks | — | USB-root autosuspend guard, Intel ISH blacklist, i915 in initrd + `xe` blacklisted, iwlwifi force-load, thermald, power-profiles-daemon, lid handling, Bluetooth | Bluetooth; Windows on its own NVMe (boot via F9); the office Brother printer as a permanent CUPS queue (its PPD in `hosts/work-desktop/`) |
+| Host-only quirks | — | USB-root autosuspend guard, Intel ISH blacklist, i915 in initrd + `xe` blacklisted, iwlwifi force-load, thermald, power-profiles-daemon, lid handling, Bluetooth | Bluetooth; Windows on its own NVMe (boot via F9); the office Brother printer as a permanent CUPS queue (its PPD in `hosts/work-desktop/`); monitor ports forced connected (`video=…:e`), so sleeping monitors don't disconnect |
 | Remote access (Tailscale + tailnet-only SSH) | — | yes | yes |
 | Phone dev ports on LAN (8081, 4300) | yes | yes | — (phone uses Tailscale) |
 | SDDM theme | catppuccin-sddm-corners (Mononoki, larger text), penguin avatar | same + nixos-lightdark2 wallpaper, greeter at 2× on the panel | same + skull-hacking-time wallpaper |
@@ -188,7 +188,10 @@ SDDM session ("somewm"), built from the `release/1.4` branch (the `somewm` input
   several times a day. `screen-restore.lua` notes every window's monitor and tag while all
   monitors are there, and moves them back once all have returned (SomeWM's own save of a
   vanishing screen's tags is never restored in 1.4, and sometimes held no windows). Each
-  removal and return is logged: `journalctl --user -t somewm-screens`. Per-screen widget
+  removal and return is logged: `journalctl --user -t somewm-screens`. On 2026-10-23 a
+  drop-out crashed SomeWM itself (wlroots assertion while removing the monitor) and the
+  session with every window was gone, so work-desktop forces its ports connected
+  (`boot.kernelParams` in its `configuration.nix`): its monitors no longer drop out at all. Per-screen widget
   timers must stop with their screen (theme.lua's now-playing does): one that kept running
   piled up to ~66 over a few days of sleeps and made everything slow (2026-10-21).
 - **Reload without losing windows:** `somewm-client reload` rebuilds SomeWM's Lua side from

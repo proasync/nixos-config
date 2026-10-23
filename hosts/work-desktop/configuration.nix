@@ -19,6 +19,17 @@
   # amdgpu; VA-API comes from mesa (radeonsi), which hardware.graphics enables.
   services.xserver.videoDrivers = [ "amdgpu" ];
 
+  # Monitor ports always "connected". The DP and HDMI monitors (and now and
+  # then the DVI one) disconnect when they sleep, several times a day. Under
+  # Wayland a disconnected monitor is removed and its windows moved; on
+  # 2026-10-23 SomeWM crashed doing that (wlr_output_finish: a listener left
+  # on the output) and took the session, every window, with it. Forced
+  # connected, a sleeping monitor stays an output: screens still go dark
+  # after 10 min, nothing is removed. These are the RX card's ports (the
+  # iGPU's are DP-2 and HDMI-A-2). A monitor that is really unplugged stays an
+  # output too, until this is removed.
+  boot.kernelParams = [ "video=DP-1:e" "video=HDMI-A-1:e" "video=DVI-D-1:e" ];
+
   # ── Bluetooth ──────────────────────────────────────────
   # Realtek USB radio; headphones (Sony MDR-XB950B1) are re-paired in blueman.
   hardware.bluetooth = {
