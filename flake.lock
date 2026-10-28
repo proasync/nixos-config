@@ -43,11 +43,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793201398,
-        "narHash": "sha256-GYqFzzQSODEfl6KMVv0UA2hQ5G4CBiTpNbEKHvMQI6o=",
+        "lastModified": 1793216266,
+        "narHash": "sha256-ahp78ZpNd9VA/2QShzfsDQ7bWxq1kPIddU/VCVoZpY8=",
         "ref": "develop",
-        "rev": "5f52aa380bb4bb4427e039a8bbf2d7a2b4e83d80",
-        "revCount": 203,
+        "rev": "cfb697f7169b76eac3bad44ef169cef5825b3694",
+        "revCount": 208,
         "type": "git",
         "url": "file:///home/proasync/dev/proasync-monorepo"
       },
