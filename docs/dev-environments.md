@@ -11,7 +11,7 @@ actual dependencies — update this doc when those change.
 | Per-repo `shell.nix` + `.envrc` (direnv) | the **pinned Node version** and package manager for that repo | in each monorepo |
 | Home Manager (`home/home.nix`) | fallback Node 22, yarn, native build toolchain, CLI tools (aws, heroku, gh, jq, ngrok, shopify-cli, wp-cli), watchman | this repo |
 | NixOS (`modules/common.nix`) | nix-ld with Electron/Chromium libs, docker, CUPS printing, firewall ports, direnv is enabled via HM | this repo |
-| NixOS (`modules/dev-services.nix`) | PostgreSQL (`proasync` + `portal` DBs, trust auth), MariaDB (`wordpress`), Apache+PHP | this repo, imported by both hosts |
+| NixOS (`modules/dev-services.nix`) | PostgreSQL (`proasync` + `portal` DBs, trust auth), MariaDB (`wordpress`), Apache+PHP | this repo, imported by all three hosts |
 
 `programs.direnv` (with `nix-direnv`) is enabled in `home/home.nix`, so cd-ing into
 either monorepo automatically enters its `shell.nix`. Run `direnv allow` once per repo
@@ -77,14 +77,15 @@ repo command complains about the Node version, you're probably outside the diren
 
 ## WordPress
 
-MariaDB + Apache/PHP 8.4 (mysqli, gd, imagick, soap, …) run on both hosts via
+MariaDB + Apache/PHP 8.4 (mysqli, gd, imagick, soap, …) run on all three hosts via
 `modules/dev-services.nix`; one-time site setup is `scripts/setup-wordpress.sh`,
 `wp-cli` is installed globally.
 
 PHP runs as **mod_php** inside Apache (`libphp.so`, no PHP-FPM service), and its version is
 whatever the locked nixpkgs ships — so **PHP security fixes arrive only with a `nixpkgs` update**
-(`docs/updating.md`). Apache listens on `0.0.0.0:80`; the firewall keeps it off the LAN, but
-`tailscale0` is trusted, so every tailnet device can reach it. Example: PHP2Shell
+(`docs/updating.md`). Apache listens on `0.0.0.0:80`; the firewall keeps it off the LAN, but on
+the two hosts with `modules/remote-access.nix` (proasync-laptop, work-desktop) `tailscale0` is
+trusted, so every tailnet device can reach it there. Example: PHP2Shell
 (CVE-2026-109618 / -109619, pre-auth RCE, exploited in the wild) is fixed in 8.4.27; the
 2026-10-08 lock had 8.4.26, the 2026-11-01 lock has 8.4.27. Check what Apache loads:
 `grep -o '/nix/store/[^"]*libphp[^"]*' /etc/httpd/httpd.conf`. When not doing WordPress work,
