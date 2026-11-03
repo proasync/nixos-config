@@ -120,7 +120,7 @@ in
     (callPackage ./packages/claude-squad.nix { })
     # pSwarm desktop app (proasync-monorepo/apps/pswarm-desktop), the Nix package from its
     # repo's flake: the `pswarm` command, the app-menu entry and the icon come with it.
-    inputs.pswarm.packages.${pkgs.system}.pswarm
+    inputs.pswarm.packages.${pkgs.stdenv.hostPlatform.system}.pswarm
     nodejs_22   # general-purpose Node; repos pin their own via shell.nix + direnv
                 # (pagoda → Node 24, proasync → Node 20)
     yarn

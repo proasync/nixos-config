@@ -80,3 +80,12 @@ repo command complains about the Node version, you're probably outside the diren
 MariaDB + Apache/PHP 8.4 (mysqli, gd, imagick, soap, …) run on both hosts via
 `modules/dev-services.nix`; one-time site setup is `scripts/setup-wordpress.sh`,
 `wp-cli` is installed globally.
+
+PHP runs as **mod_php** inside Apache (`libphp.so`, no PHP-FPM service), and its version is
+whatever the locked nixpkgs ships — so **PHP security fixes arrive only with a `nixpkgs` update**
+(`docs/updating.md`). Apache listens on `0.0.0.0:80`; the firewall keeps it off the LAN, but
+`tailscale0` is trusted, so every tailnet device can reach it. Example: PHP2Shell
+(CVE-2026-109618 / -109619, pre-auth RCE, exploited in the wild) is fixed in 8.4.27; the
+2026-10-08 lock had 8.4.26, the 2026-11-01 lock has 8.4.27. Check what Apache loads:
+`grep -o '/nix/store/[^"]*libphp[^"]*' /etc/httpd/httpd.conf`. When not doing WordPress work,
+`sudo systemctl stop httpd` removes the exposure.
