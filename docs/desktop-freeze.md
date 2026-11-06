@@ -145,6 +145,28 @@ nix shell nixpkgs#gdb -c coredumpctl debug <PID> \
 journalctl --user -t somewm-screens -n 10          # monitors removed just before?
 ```
 
+## One monitor stays black after the screens were off (work-desktop)
+
+Everything looks fine from the computer: `wlr-randr` and `wlopm` list the
+output as on, `grim -o DP-1 shot.png` shows its windows, the kernel calls the
+port connected with link status good. The monitor just gets no picture.
+
+This is the forced-connected DisplayPort port (`video=DP-1:e`, see
+[configuration.nix](../hosts/work-desktop/configuration.nix)). When the monitor
+on it sleeps and drops out, amdgpu stands in an emulated sink; for HDMI and DVI
+that sink still gets a real signal, for DisplayPort it is `SIGNAL_TYPE_VIRTUAL`
+(`emulated_link_detect` in `amdgpu_dm.c`): nothing is sent, so the monitor never
+wakes, and the driver waits for a monitor that is asleep. None of these brought
+it back: a mode set (`wlr-randr --mode` to 59.94 Hz and back), switching the
+monitor off and on, `echo 1 > /sys/kernel/debug/dri/0000:01:00.0/DP-1/trigger_hotplug`,
+replugging the DP→HDMI adapter. **A reboot does.**
+
+Prevention: idle screen-off leaves DP-1 on (`idle_off` in
+[configs/work-desktop/somewm.lua](../home/dotfiles/awesome/configs/work-desktop/somewm.lua),
+used by swayidle in rc.lua), so that monitor never sleeps. Untested: hibernation
+or suspend switch every monitor off, so the middle one may stay black after a
+resume too.
+
 ## picom logging
 
 picom is always started through
@@ -163,6 +185,7 @@ one run: `PICOM_LOG_LEVEL=debug ~/.config/awesome/scripts/picom-restart.sh`.
 | 2026-10-14 ~20:30 (SomeWM, 3 min after boot) | Extremely slow, hangs every ~30 s; first time since the Sensor Hub fix. | **Disk stalls on the USB root SSD**: iowait 49 %, IO pressure full avg60 66 %, `flush-8:0` blocked, small writes stuck 2–3 s with nothing moving, ~29 s apart. No USB/UAS errors, TRIM fine, 47 % full; reads fast (900 MB/s), small sync writes slow (18 ms). Calm again 16 min after boot. `i915_flip` sampling was inconclusive (see caveat above). **No change made** — decision: measure live next time; SMART check pending. |
 | 2026-10-19 to 21 (work-desktop, SomeWM) | Very slow after the screens woke; windows piled up on one monitor. | **The monitors drop out when they sleep** (DP and HDMI, several times a day): Wayland removes the screen and moves its windows. Each return added another now-playing widget timer for the dead screen: ~66 after a few days, ~33 `playerctl` a second. Fixed: the timer stops with its screen (theme.lua), screen-restore.lua moves windows back. |
 | 2026-10-23 ~09:09 (work-desktop, SomeWM) | Coming back in the morning, moving the mouse: session gone, back at the login screen, every window closed. | **SomeWM crashed** (SIGABRT) while wlroots removed DVI-D-1, which had disconnected as the monitors woke: `wlr_output_finish: Assertion wl_list_empty(&output->events.bind.listener_list)` (a SomeWM bug, not fixed in newer release/1.4 commits). Fix: the monitor ports are forced connected (`video=…:e` in `hosts/work-desktop/configuration.nix`), so monitors no longer drop out. |
+| 2026-11-04 and 11-06 (work-desktop, SomeWM) | After the screens had been off (no sleep or hibernation), the middle monitor stayed black; the other two woke. | **Side effect of the forced ports**: a forced DisplayPort port sends a sleeping monitor nothing (see "One monitor stays black" above). Mode set, monitor power button, amdgpu `trigger_hotplug` and replugging the adapter did not help; a reboot did. Fix: idle screen-off leaves DP-1 on. |
 
 ## Out-of-memory protection (since 2026-10-09)
 

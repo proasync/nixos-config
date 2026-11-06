@@ -27,7 +27,9 @@
   # connected, a sleeping monitor stays an output: screens still go dark
   # after 10 min, nothing is removed. These are the RX card's ports (the
   # iGPU's are DP-2 and HDMI-A-2). A monitor that is really unplugged stays an
-  # output too, until this is removed.
+  # output too, until this is removed. A forced DP port can't wake its monitor
+  # once it has slept (amdgpu sends it nothing), so idle screen-off leaves DP-1
+  # on: home/dotfiles/awesome/configs/work-desktop/somewm.lua.
   boot.kernelParams = [ "video=DP-1:e" "video=HDMI-A-1:e" "video=DVI-D-1:e" ];
 
   # ── Bluetooth ──────────────────────────────────────────

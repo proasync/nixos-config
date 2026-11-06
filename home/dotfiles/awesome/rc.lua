@@ -883,23 +883,23 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 
 -- }}}
 
--- Load per-host rules and autostart, fall back to default
+-- Load per-host rules and autostart, fall back to default; returns what the file returns
 local function load_config(name)
     local host_path = config_dir .. "configs/" .. hostname .. "/" .. name
     local default_path = config_dir .. "configs/default/" .. name
     local f = io.open(host_path, "r")
     if f then
         f:close()
-        dofile(host_path)
-    else
-        dofile(default_path)
+        return dofile(host_path)
     end
+    return dofile(default_path)
 end
 
 load_config("rules.lua")
 load_config("autostart.lua")
+local somewm_host = {}
 if is_somewm then
-    load_config("somewm.lua")    -- Wayland output layout
+    somewm_host = load_config("somewm.lua") or {}    -- Wayland output layout; idle_off below
     require("screen-restore")    -- windows back to a monitor that returns (screen-restore.lua)
 end
 
@@ -935,8 +935,13 @@ else
     -- Idle: screens off after 10 min, back on at input. No automatic lock, by
     -- choice; `loginctl lock-session` still locks (the power menu calls
     -- wm-scripts/lock.sh directly). Restarted on every (re)load so changed
-    -- options take effect.
+    -- options take effect. A host's somewm.lua may return idle_off, the
+    -- outputs to switch off (default all); work-desktop leaves one on.
+    local off = "--off '*'"
+    if somewm_host.idle_off then
+        off = "--off " .. table.concat(somewm_host.idle_off, " --off ")
+    end
     awful.spawn.with_shell("pkill -u $USER -x swayidle; swayidle -w"
-        .. [[ timeout 600 "wlopm --off '*'" resume "wlopm --on '*'"]]
+        .. [[ timeout 600 "wlopm ]] .. off .. [[" resume "wlopm --on '*'"]]
         .. " lock $HOME/.config/wm-scripts/lock.sh")
 end

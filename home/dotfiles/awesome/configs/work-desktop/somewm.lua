@@ -26,3 +26,12 @@ output.connect_signal("removed", function() gears.timer.delayed_call(arrange) en
 -- An output switched off and on again (wdisplays, wlr-randr) is not added anew,
 -- only gets a screen again, which wlroots placed at the right end (x = 5760).
 screen.connect_signal("added", function() gears.timer.delayed_call(arrange) end)
+
+-- Idle screen-off (swayidle in rc.lua) leaves DP-1, the middle monitor, on.
+-- The ports are forced connected (hosts/work-desktop/configuration.nix); when
+-- the monitor on a forced DisplayPort port sleeps and drops out, amdgpu stands
+-- in a virtual sink that sends no signal, so the monitor never wakes again,
+-- not even switched off and on or with the adapter replugged; only a reboot
+-- brings it back (2026-11-04, 2026-11-06). Kept on, it never sleeps. HDMI and
+-- DVI stand-ins still send a signal, so those two wake as they should.
+return { idle_off = { "DVI-D-1", "HDMI-A-1" } }
